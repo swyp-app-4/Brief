@@ -1,0 +1,223 @@
+package com.example.brife.feature.auth
+
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.brife.R
+import com.example.brife.ui.theme.BgDefault
+import com.example.brife.ui.theme.BrifeTheme
+import com.example.brife.ui.theme.TextBody
+
+private val SulphurPoint = FontFamily(
+    Font(R.font.sulphur_point_bold, FontWeight.Bold)
+)
+
+@Composable
+fun LoginScreen(
+    onKakaoClick: () -> Unit = {},
+    onNaverClick: () -> Unit = {},
+    onGoogleClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = BgDefault
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BgDefault)
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            LogoSection()
+
+            Spacer(modifier = Modifier.height(56.dp))
+
+            SocialLoginDivider()
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            SocialLoginButton(
+                text = "카카오 로그인",
+                backgroundColor = Color(0xFFFEE500),
+                contentColor = Color(0xFF191919),
+                iconRes = R.drawable.ic_kakao,   // 아이콘 없으면 제거 가능
+                onClick = onKakaoClick
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            SocialLoginButton(
+                text = "네이버 로그인",
+                backgroundColor = Color(0xFF03C75A),
+                contentColor = Color.White,
+                iconRes = R.drawable.ic_naver,   // 아이콘 없으면 제거 가능
+                onClick = onNaverClick
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            SocialLoginButton(
+                text = "구글 로그인",
+                backgroundColor = Color.White,
+                contentColor = Color(0xFF464646),
+                borderColor = Color(0xFFE3E5E8),
+                iconRes = R.drawable.ic_google,  // 아이콘 없으면 제거 가능
+                onClick = onGoogleClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun LogoSection() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.brife_logo),
+            contentDescription = "Brife Logo",
+            modifier = Modifier.size(72.dp)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Brife",
+            color = Color(0xFF464646),
+            fontFamily = SulphurPoint,
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "간편한 지식 습득을 경험해요",
+            color = TextBody,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Normal
+        )
+    }
+}
+
+@Composable
+private fun SocialLoginDivider() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.dp)
+                .background(Color(0xFFCCCCCC))
+        )
+
+        Text(
+            text = " 소셜 로그인 ",
+            color = Color(0xFF767676),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.dp)
+                .background(Color(0xFFCCCCCC))
+        )
+    }
+}
+
+@Composable
+private fun SocialLoginButton(
+    text: String,
+    backgroundColor: Color,
+    contentColor: Color,
+    @DrawableRes iconRes: Int? = null,
+    borderColor: Color = Color.Transparent,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(14.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = backgroundColor,
+            contentColor = contentColor
+        ),
+        border = if (borderColor != Color.Transparent) {
+            androidx.compose.foundation.BorderStroke(1.dp, borderColor)
+        } else {
+            null
+        },
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (iconRes != null) {
+                Image(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = text,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+            }
+
+            Text(
+                text = text,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun LoginScreenPreview() {
+    BrifeTheme {
+        LoginScreen()
+    }
+}
