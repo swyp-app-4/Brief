@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: brife
+
+  # default: 로컬 개발 환경
+  profiles:
+    active: local
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# 네이버 뉴스 API
+external:
+  naver:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
+    base-url: https://openapi.naver.com/v1/search/news.json
