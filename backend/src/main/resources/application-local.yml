@@ -22,4 +22,4 @@ spring:
     exclude:
 #      - org.springframework.ai.model.vertex.autoconfigure.gemini.VertexAiGeminiAutoConfiguration
 #      - org.springframework.ai.model.vertex.autoconfigure.embedding.VertexAiEmbeddingAutoConfiguration
-#      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration

@@ -55,5 +55,7 @@ Docker Compose를 사용하여 PostgreSQL(pgvector 18)과 Redis(8-alpine)를 세
 ```bash
 docker compose up -d
 ```
-3. 이후 실행 시 .env 파일이 제대로 적용이 되지 않은 경우에는 IntelliJ 기준 Run -> Edit Configurations -> ![스크린샷 2026-03-11 오후 1.23.00.png](../../../../../../var/folders/l0/xv0psp7d5p15mjzcc53cxqfc0000gn/T/TemporaryItems/NSIRD_screencaptureui_moJGgC/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202026-03-11%20%EC%98%A4%ED%9B%84%201.23.00.png)
-다음과 같이 세팅해주시면 됩니다.
+3. 이후 실행 시 .env 파일이 제대로 적용이 되지 않은 경우에는 IntelliJ 기준 
+   1. Run -> Edit Configurations
+   2. EnvFile 탭(EnvFile 플러그인 설치 필요)
+   3. Enable EnvFile 체크 및 '+' 버튼을 눌러 프로젝트 루트에 있는 .env 파일을 선택하시면 적용 됩니다.
