@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
@@ -25,7 +25,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -73,68 +72,75 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             SocialLoginButton(
-                text = "카카오 로그인",
+                text = "카카오로 로그인",
                 backgroundColor = Color(0xFFFEE500),
                 contentColor = Color(0xFF191919),
-                iconRes = R.drawable.ic_kakao,   // 아이콘 없으면 제거 가능
+                iconRes = R.drawable.ic_kakao,
                 onClick = onKakaoClick
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             SocialLoginButton(
-                text = "네이버 로그인",
+                text = "네이버로 로그인",
                 backgroundColor = Color(0xFF03C75A),
                 contentColor = Color.White,
-                iconRes = R.drawable.ic_naver,   // 아이콘 없으면 제거 가능
+                iconRes = R.drawable.ic_naver,
                 onClick = onNaverClick
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             SocialLoginButton(
-                text = "구글 로그인",
+                text = "Google로 로그인",
                 backgroundColor = Color.White,
                 contentColor = Color(0xFF464646),
                 borderColor = Color(0xFFE3E5E8),
-                iconRes = R.drawable.ic_google,  // 아이콘 없으면 제거 가능
+                iconRes = R.drawable.ic_google,
                 onClick = onGoogleClick
             )
         }
     }
 }
 
+
+
 @Composable
 private fun LogoSection() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.brife_logo),
-            contentDescription = "Brife Logo",
-            modifier = Modifier.size(72.dp)
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.brife_logo),
+                contentDescription = "Brife Logo",
+                modifier = Modifier.size(24.dp)
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-        Text(
-            text = "Brife",
-            color = Color(0xFF464646),
-            fontFamily = SulphurPoint,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold
-        )
+            Text(
+                text = "Brife",
+                color = Color(0xFF464646),
+                fontFamily = SulphurPoint,
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = "간편한 지식 습득을 경험해요",
             color = TextBody,
-            fontSize = 15.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Normal
         )
     }
 }
+
 
 @Composable
 private fun SocialLoginDivider() {
@@ -192,23 +198,24 @@ private fun SocialLoginButton(
         },
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+        Box(
+            modifier = Modifier.fillMaxWidth()
         ) {
             if (iconRes != null) {
                 Image(
                     painter = painterResource(id = iconRes),
-                    contentDescription = text,
-                    modifier = Modifier.size(20.dp)
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.CenterStart)
                 )
-                Spacer(modifier = Modifier.size(8.dp))
             }
 
             Text(
                 text = text,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.align(Alignment.Center)
             )
         }
     }
