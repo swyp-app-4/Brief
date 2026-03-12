@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.brife.R
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.InterestCard
 import com.example.brife.ui.component.PrimaryButton
@@ -32,12 +33,12 @@ fun OnboardingInterestScreen(
     onNextClick: () -> Unit = {}
 ) {
     val interests = listOf(
-        "시사•정치",
-        "경제•재테크",
-        "IT•테크",
-        "문화•예술",
-        "연예•스포츠",
-        "라이프•성장"
+        "시사•정치" to R.drawable.news_politics,
+        "경제•재테크" to R.drawable.economy,
+        "IT•테크" to R.drawable.ittech,
+        "문화•예술" to R.drawable.cultureart,
+        "연예•스포츠" to R.drawable.entsports,
+        "라이프•성장" to R.drawable.lifegrowth
     )
 
     var selectedInterests by remember {
@@ -77,9 +78,10 @@ fun OnboardingInterestScreen(
             contentPadding = PaddingValues(vertical = 4.dp)
         ) {
 
-            items(interests) { interest ->
+            items(interests) { (interest, iconRes) ->
                 InterestCard(
                     text = interest,
+                    iconRes = iconRes,
                     selected = interest in selectedInterests,
                     onClick = {
                         selectedInterests =
@@ -92,6 +94,7 @@ fun OnboardingInterestScreen(
                 )
             }
         }
+
 
 
         PrimaryButton(
