@@ -21,7 +21,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,10 +39,16 @@ import com.example.brife.R
 import com.example.brife.ui.theme.BgDefault
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.TextBody
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.example.brife.ui.component.AppText
 
 private val SulphurPoint = FontFamily(
     Font(R.font.sulphur_point_bold, FontWeight.Bold)
 )
+enum class SocialLoginType {
+    KAKAO, NAVER, GOOGLE
+}
 
 @Composable
 fun LoginScreen(
@@ -48,6 +57,15 @@ fun LoginScreen(
     onGoogleClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+
+    var showTerms by remember { mutableStateOf(false) }
+    var loginType by remember { mutableStateOf<SocialLoginType?>(null) }
+
+    fun openTerms(type: SocialLoginType) {
+        loginType = type
+        showTerms = true
+    }
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = BgDefault
@@ -75,7 +93,7 @@ fun LoginScreen(
                 backgroundColor = Color(0xFFFEE500),
                 contentColor = Color(0xFF191919),
                 iconRes = R.drawable.ic_kakao,
-                onClick = onKakaoClick
+                onClick = { openTerms(SocialLoginType.KAKAO) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -85,7 +103,7 @@ fun LoginScreen(
                 backgroundColor = Color(0xFF03C75A),
                 contentColor = Color.White,
                 iconRes = R.drawable.ic_naver,
-                onClick = onNaverClick
+                onClick = { openTerms(SocialLoginType.NAVER) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -96,8 +114,24 @@ fun LoginScreen(
                 contentColor = Color(0xFF464646),
                 borderColor = Color(0xFFE3E5E8),
                 iconRes = R.drawable.ic_google,
-                onClick = onGoogleClick
+                onClick = { openTerms(SocialLoginType.GOOGLE) }
             )
+
+            if (showTerms) {
+                LoginTermsBottomSheet(
+                    onDismiss = { showTerms = false },
+                    onNext = {
+                        showTerms = false
+
+                        when (loginType) {
+                            SocialLoginType.KAKAO -> onKakaoClick()
+                            SocialLoginType.NAVER -> onNaverClick()
+                            SocialLoginType.GOOGLE -> onGoogleClick()
+                            null -> {}
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -131,11 +165,10 @@ private fun LogoSection() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Text(
+        AppText(
             text = "간편한 지식 습득을 경험해요",
-            color = TextBody,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Normal
+            style = MaterialTheme.typography.titleSmall,
+            color = TextBody
         )
     }
 }
@@ -154,11 +187,10 @@ private fun SocialLoginDivider() {
                 .background(Color(0xFFCCCCCC))
         )
 
-        Text(
+        AppText(
             text = " 소셜 로그인 ",
+            style = MaterialTheme.typography.bodyMedium,
             color = Color(0xFF767676),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
 
@@ -210,10 +242,10 @@ private fun SocialLoginButton(
                 )
             }
 
-            Text(
+            AppText(
                 text = text,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.labelLarge,
+                color = contentColor,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
