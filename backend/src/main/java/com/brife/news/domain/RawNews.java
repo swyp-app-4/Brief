@@ -1,4 +1,4 @@
-package com.swap.news.domain;
+package com.brife.news.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
