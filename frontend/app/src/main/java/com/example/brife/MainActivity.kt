@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.brife.feature.onboarding.SplashScreen
+import com.example.brife.navigation.AppNavGraph
 import com.example.brife.ui.theme.BrifeTheme
 
 class MainActivity : ComponentActivity() {
@@ -14,7 +15,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             BrifeTheme {
-                SplashScreen()
+                AppNavGraph()
             }
         }
     }

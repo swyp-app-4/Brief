@@ -97,10 +97,12 @@ fun LoginTermsBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+
             PrimaryButton(
                 text = "다음",
+                onClick = onNext,
                 enabled = isEnabled,
-                onClick = onNext
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
@@ -209,7 +211,8 @@ private fun LoginTermsBottomSheetPreviewContainer() {
     if (showSheet) {
         LoginTermsBottomSheet(
             onDismiss = { showSheet = false },
-            onNext = { showSheet = false }
+            onNext = { showSheet = false },
+
         )
     }
 }
@@ -263,8 +266,9 @@ private fun LoginTermsBottomSheetAllAgreePreviewContainer() {
 
                 PrimaryButton(
                     text = "다음",
+                    onClick = {},
                     enabled = true,
-                    onClick = {}
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
