@@ -4,7 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.brife.feature.onboarding.SplashScreen
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.Modifier
 import com.example.brife.navigation.AppNavGraph
 import com.example.brife.ui.theme.BrifeTheme
 
@@ -15,7 +22,15 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             BrifeTheme {
-                AppNavGraph()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(
+                            WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
+                        )
+                ) {
+                    AppNavGraph()
+                }
             }
         }
     }
