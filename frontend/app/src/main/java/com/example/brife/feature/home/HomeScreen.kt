@@ -139,8 +139,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(420.dp),
-                        contentPadding = PaddingValues(horizontal = 40.dp),
-                        pageSpacing = 16.dp
+                        contentPadding = PaddingValues(horizontal = 40.dp)
                     ) { page ->
                         Card(
                             modifier = Modifier
