@@ -1,5 +1,7 @@
 package com.example.brife.feature.home
 
+import android.R.attr.padding
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -10,8 +12,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.brife.R
 import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
 import kotlinx.coroutines.delay
@@ -34,61 +39,77 @@ fun HomeScreen(
         showBottomSheet = true
     }
 
-    Scaffold(
-        topBar = {
-            AppTopBar(onSettingClick = { /* 설정 이동 로직 */ })
-        },
-        bottomBar = {
-            AppNavigationBar(
-                selectedIndex = selectedIndex,
-                onItemSelected = { selectedIndex = it }
-            )
-        },
-        containerColor = Color.White
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Image(
+            painter = painterResource(R.drawable.homescreen_bg),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(450.dp),
-                contentPadding = PaddingValues(horizontal = 40.dp),
-                pageSpacing = 16.dp
-            ) { page ->
-                Card(
-                    modifier = Modifier.fillMaxSize(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.LightGray)
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                AppTopBar(onSettingClick = { /* 설정 이동 로직 */ })
+            },
+            bottomBar = {
+                AppNavigationBar(
+                    selectedIndex = selectedIndex,
+                    onItemSelected = { selectedIndex = it }
+                )
+            }
+        ) { innerPadding ->
+
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = cardItems[page],
-                            style = MaterialTheme.typography.headlineMedium
-                        )
+                    Spacer(modifier = Modifier.height(50.dp))
+
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(450.dp),
+                        contentPadding = PaddingValues(horizontal = 40.dp),
+                        pageSpacing = 16.dp
+                    ) { page ->
+                        Card(
+                            modifier = Modifier.fillMaxSize(),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.LightGray)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = cardItems[page],
+                                    style = MaterialTheme.typography.headlineMedium
+                                )
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        if (showBottomSheet) {
-            HomeToLoginBottomSheet(
-                sheetState = sheetState,
-                onDismissRequest = { showBottomSheet = false },
-                onLoginClick = {
-                    showBottomSheet = false
-                    onLoginClick()
+                if (showBottomSheet) {
+                    HomeToLoginBottomSheet(
+                        sheetState = sheetState,
+                        onDismissRequest = { showBottomSheet = false },
+                        onLoginClick = {
+                            showBottomSheet = false
+                            onLoginClick()
+                        }
+                    )
                 }
-            )
+            }
         }
     }
 }

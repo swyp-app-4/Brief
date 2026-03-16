@@ -39,6 +39,9 @@ fun AppTopBar(
                 )
             }
         },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent
+        ),
 
         modifier = modifier
     )
