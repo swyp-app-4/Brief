@@ -1,6 +1,8 @@
 package com.example.brife.ui.component
 
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -23,6 +25,8 @@ fun AppNavigationBar(
         containerColor = Color.White,
         tonalElevation = 0.dp
     ) {
+
+        Spacer(modifier = Modifier.width(20.dp))
 
         NavigationBarItem(
             selected = selectedIndex == 0,
@@ -103,6 +107,8 @@ fun AppNavigationBar(
                 indicatorColor = Color.Transparent // 선택 시 배경 원형 제거
             )
         )
+
+        Spacer(modifier = Modifier.width(20.dp))
     }
 }
 

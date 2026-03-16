@@ -14,14 +14,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
+import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onLoginClick: () -> Unit = {}
+) {
     var selectedIndex by remember { mutableIntStateOf(0) }
+    var showBottomSheet by remember { mutableStateOf(false) }
 
-    // 캐로셀을 위한 데이터 (예시)
     val cardItems = listOf("카드 뉴스 1", "카드 뉴스 2", "카드 뉴스 3")
     val pagerState = rememberPagerState(pageCount = { cardItems.size })
+    val sheetState = rememberModalBottomSheetState()
+
+    // 3초 후 바텀시트 노출
+    LaunchedEffect(Unit) {
+        delay(3000)
+        showBottomSheet = true
+    }
 
     Scaffold(
         topBar = {
@@ -43,12 +54,11 @@ fun HomeScreen() {
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 카드 뉴스 캐로셀 (HorizontalPager)
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(450.dp), // 카드 높이 조정
+                    .height(450.dp),
                 contentPadding = PaddingValues(horizontal = 40.dp),
                 pageSpacing = 16.dp
             ) { page ->
@@ -61,17 +71,27 @@ fun HomeScreen() {
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = cardItems[page], style = MaterialTheme.typography.headlineMedium)
+                        Text(
+                            text = cardItems[page],
+                            style = MaterialTheme.typography.headlineMedium
+                        )
                     }
                 }
             }
+        }
 
-            // 추가적인 내용이 필요하면 여기에 배치
+        if (showBottomSheet) {
+            HomeToLoginBottomSheet(
+                sheetState = sheetState,
+                onDismissRequest = { showBottomSheet = false },
+                onLoginClick = {
+                    showBottomSheet = false
+                    onLoginClick()
+                }
+            )
         }
     }
 }
-
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

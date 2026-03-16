@@ -21,17 +21,20 @@ fun AppTopBar(
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
-        title = {
+        title = {},
+        navigationIcon = {
             Image(
                 painter = painterResource(id = R.drawable.brife_logo),
                 contentDescription = "Brife Logo",
-                modifier = Modifier.size(width = 80.dp, height = 30.dp) // 로고 크기 조정
+                modifier = Modifier
+//                    .padding(start = 16.dp)
+                    .size(width = 60.dp, height = 20.dp) // 로고 크기 조정
             )
         },
         actions = {
             IconButton(onClick = onSettingClick) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_setting), // 또는 R.drawable.ic_setting
+                    painter = painterResource(id = R.drawable.ic_setting),
                     contentDescription = "Settings"
                 )
             }
