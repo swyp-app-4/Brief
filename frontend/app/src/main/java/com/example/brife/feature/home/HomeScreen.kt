@@ -64,21 +64,51 @@ fun HomeScreen(
         ) { innerPadding ->
 
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
             ) {
+                // 뒤쪽 일러스트 레이어
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+//                        .padding(top = 20.dp), // 상단 여백 조절
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.homescreen_illust2),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(75.dp)
+                            .offset(x = 30.dp
+//                                ,y = 1.dp
+                            ) // 카드 뒷쪽으로 겹치게 조정
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.homescreen_illust1),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(210.dp)
+                            .offset(x = (-40).dp
+//                                , y = 10.dp
+                            ) // 카드 뒷쪽으로 겹치게 조정
+                    )
+                }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(150.dp))
+                    Spacer(modifier = Modifier.height(85.dp))
 
                     HorizontalPager(
                         state = pagerState,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(400.dp),
+                            .height(420.dp),
                         contentPadding = PaddingValues(horizontal = 40.dp),
                         pageSpacing = 16.dp
                     ) { page ->

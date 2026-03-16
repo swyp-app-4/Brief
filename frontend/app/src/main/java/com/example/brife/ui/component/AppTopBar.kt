@@ -27,7 +27,7 @@ fun AppTopBar(
                 painter = painterResource(id = R.drawable.brife_logo),
                 contentDescription = "Brife Logo",
                 modifier = Modifier
-//                    .padding(start = 16.dp)
+//                    .padding(start = 8.dp)
                     .size(width = 60.dp, height = 20.dp) // 로고 크기 조정
             )
         },
