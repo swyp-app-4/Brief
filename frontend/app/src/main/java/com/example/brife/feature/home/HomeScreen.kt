@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -71,20 +72,21 @@ fun HomeScreen(
                         .padding(innerPadding),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(50.dp))
+                    Spacer(modifier = Modifier.height(150.dp))
 
                     HorizontalPager(
                         state = pagerState,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(450.dp),
+                            .height(400.dp),
                         contentPadding = PaddingValues(horizontal = 40.dp),
                         pageSpacing = 16.dp
                     ) { page ->
                         Card(
                             modifier = Modifier.fillMaxSize(),
+                            shape = RoundedCornerShape(24.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.LightGray)
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
