@@ -82,7 +82,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .size(75.dp)
                             .offset(x = 30.dp
-//                                ,y = 1.dp
+                                ,y = -25.dp
                             ) // 카드 뒷쪽으로 겹치게 조정
                     )
                     Image(
