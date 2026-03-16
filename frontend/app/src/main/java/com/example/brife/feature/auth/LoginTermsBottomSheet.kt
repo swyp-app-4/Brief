@@ -7,8 +7,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,6 +20,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,9 +53,13 @@ fun LoginTermsBottomSheet(
     val allAgree = serviceAgree && privacyAgree
     val isEnabled = allAgree
 
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        dragHandle = null
+        dragHandle = null,
+        sheetState = sheetState
     ) {
         Column(
             modifier = Modifier
@@ -104,6 +112,7 @@ fun LoginTermsBottomSheet(
                 enabled = isEnabled,
                 modifier = Modifier.fillMaxWidth()
             )
+
         }
     }
 }
@@ -185,92 +194,3 @@ fun TermsRow(
 
 
 
-
-
-
-@Preview(name = "약관 바텀시트 - 기본", showBackground = true, showSystemUi = true)
-@Composable
-fun LoginTermsBottomSheetPreview() {
-    BrifeTheme {
-        LoginTermsBottomSheetPreviewContainer()
-    }
-}
-
-@Preview(name = "약관 바텀시트 - 전체 동의 선택", showBackground = true, showSystemUi = true)
-@Composable
-fun LoginTermsBottomSheetAllAgreePreview() {
-    BrifeTheme {
-        LoginTermsBottomSheetAllAgreePreviewContainer()
-    }
-}
-
-@Composable
-private fun LoginTermsBottomSheetPreviewContainer() {
-    var showSheet by remember { mutableStateOf(true) }
-
-    if (showSheet) {
-        LoginTermsBottomSheet(
-            onDismiss = { showSheet = false },
-            onNext = { showSheet = false },
-
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun LoginTermsBottomSheetAllAgreePreviewContainer() {
-    var showSheet by remember { mutableStateOf(true) }
-
-    if (showSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showSheet = false },
-            dragHandle = null
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-            ) {
-                AppText(
-                    text = "시작 전에 약관을\n확인해 주세요",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                TermsRow(
-                    text = "전체 동의",
-                    checked = true,
-                    highlightBox = true,
-                    onCheckedChange = {}
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                TermsRow(
-                    text = "서비스 이용약관 필수 동의",
-                    checked = true,
-                    onCheckedChange = {}
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                TermsRow(
-                    text = "개인정보 처리 방침 필수 동의",
-                    checked = true,
-                    onCheckedChange = {}
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                PrimaryButton(
-                    text = "다음",
-                    onClick = {},
-                    enabled = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    }
-}
