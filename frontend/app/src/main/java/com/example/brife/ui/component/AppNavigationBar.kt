@@ -74,7 +74,7 @@ fun AppNavigationBar(
                     ),
                     contentDescription = "보관함",
                     tint = Color.Unspecified, // 원본 아이콘 색상 유지
-                    modifier = Modifier.size(width = 24.dp, height = 45.dp)
+                    modifier = Modifier.size(width = 30.dp, height = 50.dp)
                 )
             },
             label = null, // 텍스트가 아이콘에 포함되어 있으므로 null
@@ -94,7 +94,7 @@ fun AppNavigationBar(
                     ),
                     contentDescription = "프로필",
                     tint = Color.Unspecified, // 원본 아이콘 색상 유지
-                    modifier = Modifier.size(width = 24.dp, height = 45.dp)
+                    modifier = Modifier.size(width = 30.dp, height = 50.dp)
                 )
             },
             label = null, // 텍스트가 아이콘에 포함되어 있으므로 null
