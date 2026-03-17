@@ -43,7 +43,7 @@ public class RawNews {
     @Column(name = "source_url", nullable = false, length = 500)
     private String sourceUrl;
 
-    @Column(name = "naver_url", length = 500, unique = true)
+    @Column(name = "naver_url", nullable = false, length = 500, unique = true)
     private String naverUrl;
 
     @Column(name = "pub_date", nullable = false)
