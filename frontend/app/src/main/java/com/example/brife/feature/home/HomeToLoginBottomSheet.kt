@@ -35,18 +35,9 @@ fun HomeToLoginBottomSheet(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(420.dp) // 시트만 키움?
-                .wrapContentHeight()
+//                .heightIn(min = 520.dp)
         ) {
-//            // 🔥 일러스트 (위에 겹치게)
-//            Image(
-//                painter = painterResource(id = R.drawable.illust4_login),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .align(Alignment.TopCenter)
-//                    .size(140.dp)
-//                    .offset(y = (-30).dp) // 살짝 위로 튀어나오게
-//            )
+
 
             Column(
                 modifier = Modifier
@@ -57,7 +48,8 @@ fun HomeToLoginBottomSheet(
                         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                     )
                     .padding(horizontal = 24.dp)
-                    .padding(bottom = 48.dp), // 하단 여백을 늘려 시트 높이 확보
+                    .padding(top = 0.dp, bottom = 32.dp)
+                    .navigationBarsPadding(), // 하단 시스템바 안전 여백
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
@@ -80,7 +72,7 @@ fun HomeToLoginBottomSheet(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(5.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
                     onClick = onDismissRequest,
@@ -109,7 +101,6 @@ fun HomeToLoginBottomSheet(
                     .size(200.dp) // 전체 모습이 잘 보이도록 크기 설정
             )
         }
-
     }
 }
 

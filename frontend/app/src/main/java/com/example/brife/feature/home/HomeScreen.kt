@@ -77,7 +77,9 @@ fun HomeScreen(
     }
 
     val pagerState = rememberPagerState(pageCount = { cardItems.size })
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
     LaunchedEffect(Unit) {
         delay(3000)
