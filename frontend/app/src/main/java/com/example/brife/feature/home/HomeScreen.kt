@@ -127,7 +127,7 @@ fun HomeScreen(
                                     //추가코드
                                     // 3. 핵심: 현재 카드 크기는 유지하면서 옆 카드만 중앙으로 이동
                                     // 약 40dp 정도 당겨서 옆 카드가 화면 안으로 더 들어오게 함
-                                    translationX = -pageOffset * 30.dp.toPx()
+                                    translationX = -pageOffset * 22.dp.toPx()
                                 },
                             shape = RoundedCornerShape(20.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
