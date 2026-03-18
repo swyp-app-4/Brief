@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.compose.ui.zIndex
 import com.example.brife.R
 import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
@@ -88,19 +89,28 @@ fun HomeScreen(
                         state = pagerState,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(420.dp),
-                        contentPadding = PaddingValues(horizontal = 55.dp), // 옆 카드 노출
-                        pageSpacing = 16.dp
+                            .height(450.dp),
+                        contentPadding = PaddingValues(horizontal = 35.dp), // 옆 카드 노출
+                        pageSpacing = 0.dp
                     ) { page ->
+
+                        //추가코드
+                        // 현재 페이지와의 상대적 거리 계산 (음수/양수 포함)
+                        val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                        val absOffset = pageOffset.absoluteValue
+
+
                         Card(
                             modifier = Modifier
                                 .fillMaxSize()
+                                //추가코드
+                                .zIndex(1f - absOffset.coerceIn(0f, 1f)) // 중앙 카드가 위로 오도록 설정
                                 .graphicsLayer {
                                     val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
 
-                                    // 현재 페이지 1.0, 주변 페이지 0.85 크기
+                                    // 현재 페이지 1.0, 주변 페이지 0.8 크기
                                     val scale = lerp(
-                                        start = 0.85f,
+                                        start = 0.7f,
                                         stop = 1f,
                                         fraction = 1f - pageOffset.coerceIn(0f, 1f)
                                     )
@@ -113,8 +123,13 @@ fun HomeScreen(
                                         stop = 1f,
                                         fraction = 1f - pageOffset.coerceIn(0f, 1f)
                                     )
+
+                                    //추가코드
+                                    // 3. 핵심: 현재 카드 크기는 유지하면서 옆 카드만 중앙으로 이동
+                                    // 약 40dp 정도 당겨서 옆 카드가 화면 안으로 더 들어오게 함
+                                    translationX = -pageOffset * 30.dp.toPx()
                                 },
-                            shape = RoundedCornerShape(24.dp),
+                            shape = RoundedCornerShape(20.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
@@ -150,7 +165,7 @@ fun HomeScreen(
                     }
 
                     // 하단 유연한 여백
-                    Spacer(modifier = Modifier.weight(1.2f))
+                    Spacer(modifier = Modifier.weight(0.1f))
                 }
             }
         }
