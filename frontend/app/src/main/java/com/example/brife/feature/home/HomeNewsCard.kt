@@ -43,18 +43,12 @@ data class HomeNewsCardItem(
 )
 
 @Composable
-fun HomeNewsCard(
+fun HomeNewsCardContent(
     item: HomeNewsCardItem,
     modifier: Modifier = Modifier,
     onShareClick: () -> Unit = {}
 ) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Column(
+     Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp, vertical = 18.dp)
@@ -108,7 +102,7 @@ fun HomeNewsCard(
             )
         }
     }
-}
+
 
 @Composable
 private fun CategoryChip(
@@ -207,7 +201,7 @@ private fun HomeNewsCardPreview() {
         color = Color(0xFFF3F3F3),
         modifier = Modifier.padding(16.dp)
     ) {
-        HomeNewsCard(
+        HomeNewsCardContent(
             item = HomeNewsCardItem(
                 category = "경제",
                 title = "기준금리 동결 속 소비 회복 기대감 확대",
