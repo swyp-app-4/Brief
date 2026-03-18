@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -116,7 +117,7 @@ private fun CategoryChip(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(999.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(Gray600)
             .padding(horizontal = 10.dp, vertical = 5.dp),
         contentAlignment = Alignment.Center
@@ -139,22 +140,18 @@ private fun SummaryInsightBox(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .border(
-                width = 1.dp,
-                color = Color(0xFFE7E7E7),
-                shape = RoundedCornerShape(16.dp)
-            )
-            .background(Color(0xFFF8F8F8))
+            .background(Color(0xFFF5F9FF))
             .padding(vertical = 16.dp)
     ) {
         SectionBlock(
             title = "간단요약",
             content = summary,
+            iconResId = R.drawable.brife_logo, // brife_logo 아이콘 추가
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = 16.dp),
+            modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp),
             color = Color(0xFFE3E3E3),
             thickness = 1.dp
         )
@@ -162,6 +159,7 @@ private fun SummaryInsightBox(
         SectionBlock(
             title = "살펴보기",
             content = insight,
+            iconResId = R.drawable.ic_look,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
     }
@@ -171,14 +169,24 @@ private fun SummaryInsightBox(
 private fun SectionBlock(
     title: String,
     content: String,
+    iconResId: Int,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-            color = Color.Black
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painter = painterResource(id = iconResId),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                color = Color.Black
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
