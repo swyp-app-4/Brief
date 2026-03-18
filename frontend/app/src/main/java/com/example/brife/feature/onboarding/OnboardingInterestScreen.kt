@@ -61,7 +61,7 @@ fun OnboardingInterestScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         AppText(
-            text = "관심사를 바탕으로\n뉴스를 추천해드릴게요",
+            text = "원하는 관심사를\n최대 3개까지 선택해주세요",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
