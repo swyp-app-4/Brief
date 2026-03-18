@@ -48,7 +48,7 @@ fun HomeScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // 1. 배경 이미지를 가장 아래 레이어에 배치 (전체 화면)
+        // 1. 배경 이미지를 가장 아래 레이어에 배치 (전체 화면 - 상태바 포함)
         Image(
             painter = painterResource(id = R.drawable.homescreen_bg),
             contentDescription = null,
@@ -57,7 +57,7 @@ fun HomeScreen(
         )
 
         Scaffold(
-            containerColor = Color.Transparent, // Scaffold를 투명하게 설정
+            containerColor = Color.Transparent, // 배경 이미지가 보이도록 투명 설정
             topBar = {
                 AppTopBar(onSettingClick = { })
             },
@@ -68,18 +68,13 @@ fun HomeScreen(
                 )
             }
         ) { innerPadding ->
-            // 2. 콘텐츠 영역
-            // 하단 네비바 영역을 제외한 윗부분에만 흰색 배경을 깔고 싶다면
-            // 아래 Box에 background(Color.White)를 주지 않고 투명하게 유지합니다.
-
+            // 상단바와 하단바를 제외한 영역
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = innerPadding.calculateTopPadding()) // 상단바 영역 확보
-                    .padding(bottom = innerPadding.calculateBottomPadding()) // 하단바 영역 제외
+                    .padding(top = innerPadding.calculateTopPadding())
+                    .padding(bottom = innerPadding.calculateBottomPadding())
             ) {
-
-                // 2. 메인 콘텐츠 (일러스트 + 카드 + 인디케이터)
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -87,86 +82,51 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // 상단 유연한 여백
-                    Spacer(modifier = Modifier.weight(0.15f))
+                    Spacer(modifier = Modifier.weight(1f))
 
-                    // 카드 + 일러스트 그룹 영역
-                    Box(
+                    // 카드 뉴스 캐로셀
+                    HorizontalPager(
+                        state = pagerState,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-//                    // 뒤쪽 일러스트 레이어
-//                    Row(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .align(Alignment.Center)
-//                            .offset(y = (-180).dp), // 카드 위쪽에 걸치도록 위치 조정
-//                        horizontalArrangement = Arrangement.Center,
-//                        verticalAlignment = Alignment.Bottom
-//                    ) {
-//                        Image(
-//                            painter = painterResource(id = R.drawable.homescreen_illust2),
-//                            contentDescription = null,
-//                            modifier = Modifier
-//                                .size(60.dp)
-//                                .offset(x = 24.dp, y = (-12).dp)
-//                        )
-//
-//                        Image(
-//                            painter = painterResource(id = R.drawable.homescreen_illust1),
-//                            contentDescription = null,
-//                            modifier = Modifier
-//                                .size(170.dp)
-//                                .offset(x = (-24).dp)
-//                        )
-//                    }
-
-                        // 카드 뉴스 캐로셀 레이어
-                        HorizontalPager(
-                            state = pagerState,
+                            .height(420.dp),
+                        contentPadding = PaddingValues(horizontal = 55.dp), // 옆 카드 노출
+                        pageSpacing = 16.dp
+                    ) { page ->
+                        Card(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(400.dp),
-                            contentPadding = PaddingValues(horizontal = 55.dp), // 양옆 카드 노출
-                            pageSpacing = 16.dp
-                        ) { page ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer {
-                                        val pageOffset =
-                                            ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
 
-                                        // 현재 페이지 1.0, 주변 페이지 0.85 크기
-                                        val scale = lerp(
-                                            start = 0.85f,
-                                            stop = 1f,
-                                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                                        )
-                                        scaleX = scale
-                                        scaleY = scale
-
-                                        // 주변 카드는 약간 투명하게
-                                        alpha = lerp(
-                                            start = 0.6f,
-                                            stop = 1f,
-                                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                                        )
-                                    },
-                                shape = RoundedCornerShape(24.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White)
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = cardItems[page],
-                                        style = MaterialTheme.typography.headlineMedium
+                                    // 현재 페이지 1.0, 주변 페이지 0.85 크기
+                                    val scale = lerp(
+                                        start = 0.85f,
+                                        stop = 1f,
+                                        fraction = 1f - pageOffset.coerceIn(0f, 1f)
                                     )
-                                }
+                                    scaleX = scale
+                                    scaleY = scale
+
+                                    // 주변 카드는 약간 투명하게
+                                    alpha = lerp(
+                                        start = 0.6f,
+                                        stop = 1f,
+                                        fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                                    )
+                                },
+                            shape = RoundedCornerShape(24.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = cardItems[page],
+                                    style = MaterialTheme.typography.headlineMedium
+                                )
                             }
                         }
                     }
@@ -179,10 +139,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         repeat(cardItems.size) { index ->
-                            val color =
-                                if (pagerState.currentPage == index) Color.White else Color.White.copy(
-                                    alpha = 0.5f
-                                )
+                            val color = if (pagerState.currentPage == index) Color.White else Color.White.copy(alpha = 0.5f)
                             Box(
                                 modifier = Modifier
                                     .padding(horizontal = 4.dp)
@@ -194,7 +151,7 @@ fun HomeScreen(
                     }
 
                     // 하단 유연한 여백
-                    Spacer(modifier = Modifier.weight(0.1f))
+                    Spacer(modifier = Modifier.weight(1.2f))
                 }
             }
         }
