@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,7 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.brife.R
+import com.example.brife.data.remote.NetworkModule
+import com.example.brife.data.repository.OnboardingRepository
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.InterestCard
 import com.example.brife.ui.component.PrimaryButton
@@ -32,18 +37,19 @@ fun OnboardingInterestScreen(
     modifier: Modifier = Modifier,
     onNextClick: () -> Unit = {}
 ) {
-    val interests = listOf(
-        "시사•정치" to R.drawable.news_politics,
-        "경제•재테크" to R.drawable.economy,
-        "IT•테크" to R.drawable.ittech,
-        "문화•예술" to R.drawable.cultureart,
-        "연예•스포츠" to R.drawable.entsports,
-        "라이프•성장" to R.drawable.lifegrowth
+    val repository = OnboardingRepository(NetworkModule.onboardingApiService)
+    val viewModel: OnboardingViewModel = viewModel(
+        factory = OnboardingViewModelFactory(repository)
     )
 
-    var selectedInterests by remember {
-        mutableStateOf(setOf<String>())
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            onNextClick()
+        }
     }
+
 
     Column(
         modifier = modifier
@@ -68,40 +74,77 @@ fun OnboardingInterestScreen(
         )
 
         Spacer(modifier = Modifier.height(60.dp))
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(vertical = 4.dp)
-        ) {
-
-            items(interests) { (interest, iconRes) ->
-                InterestCard(
-                    text = interest,
-                    iconRes = iconRes,
-                    selected = interest in selectedInterests,
-                    onClick = {
-                        selectedInterests =
-                            if (interest in selectedInterests) {
-                                selectedInterests - interest
-                            } else {
-                                selectedInterests + interest
-                            }
-                    }
+        when {
+            uiState.isLoading -> {
+                Text(
+                    text = "카테고리 불러오는 중...",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    textAlign = TextAlign.Center
                 )
             }
+
+            else -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(vertical = 4.dp)
+                ) {
+                    items(uiState.categories) { category ->
+                        InterestCard(
+                            text = category.groupName,
+                            iconRes = getInterestIconRes(category.groupName),
+                            selected = uiState.selectedCategoryIds.contains(category.id),
+                            onClick = {
+                                if (
+                                    uiState.selectedCategoryIds.size < 3 ||
+                                    uiState.selectedCategoryIds.contains(category.id)
+                                ) {
+                                    viewModel.toggleCategory(category.id)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
+
+        uiState.errorMessage?.let {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
 
 
         PrimaryButton(
-            text = "다음",
-            onClick = onNextClick,
+            text = if (uiState.isSubmitting) "저장 중..." else "다음",
+            onClick = { viewModel.submitInterests() },
             modifier = Modifier.fillMaxWidth()
         )
+    }
+}
+
+private fun getInterestIconRes(groupName: String): Int {
+    return when (groupName) {
+        "시사 정치", "시사•정치" -> R.drawable.news_politics
+        "경제 재테크", "경제•재테크" -> R.drawable.economy
+        "IT 테크", "IT•테크" -> R.drawable.ittech
+        "문화 예술", "문화•예술" -> R.drawable.cultureart
+        "엔터 스포츠", "연예•스포츠", "엔터•스포츠" -> R.drawable.entsports
+        "라이프 성장", "라이프•성장" -> R.drawable.lifegrowth
+        else -> R.drawable.news_politics
     }
 }
 
