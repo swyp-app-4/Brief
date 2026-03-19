@@ -13,5 +13,7 @@ object NavRoutes {
     const val HOME = "home"
     const val EXPLORE = "explore"
     const val ARCHIVE = "archive"
+    const val ARCHIVE_DETAIL = "archive_detail"   // 추가: 폴더 상세 화면 (폴더 이름을 인자로 받을 수 있도록 설정 가능)
+
     const val PROFILE = "profile"
 }

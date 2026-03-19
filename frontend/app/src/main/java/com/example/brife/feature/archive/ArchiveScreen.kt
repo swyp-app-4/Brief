@@ -28,11 +28,12 @@ import com.example.brife.R
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.ComponentDefault
+import com.example.brife.ui.theme.InterestSelected
 import com.example.brife.ui.theme.PrimaryNormal
 import com.example.brife.feature.archive.component.CreateFolderBottomSheet
 @Composable
 fun ArchiveScreen(
-
+    onNavigateToDetail: (String) -> Unit, // 상세 화면 이동 콜백 추가
     modifier: Modifier = Modifier // MainScreen에서 전달받은 padding을 적용하기 위함
 ) {
 
@@ -60,7 +61,7 @@ fun ArchiveScreen(
                 }
                 append("개")
             },
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleSmall,
             color = Color.Black,
             modifier = Modifier.fillMaxWidth()
         )
@@ -90,7 +91,7 @@ fun ArchiveScreen(
             // 오른쪽: 즐겨찾기 폴더
             ArchiveFolderCard(
                 modifier = Modifier.weight(1f),
-                onClick = { /* TODO: 즐겨찾기 이동 로직 */ }
+                onClick = { onNavigateToDetail("즐겨찾기") }
             ) {
                 Box(
                     modifier = Modifier
@@ -100,7 +101,7 @@ fun ArchiveScreen(
                     // 중앙 상단에는 텍스트 (선택 사항, 필요 없으면 제거 가능)
                     AppText(
                         text = "즐겨찾기",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.align(Alignment.TopStart)
                     )
 
@@ -125,12 +126,12 @@ fun ArchiveScreen(
                 rowFolders.forEach { folderName ->
                     ArchiveFolderCard(
                         modifier = Modifier.weight(1f),
-                        onClick = { /* TODO: 폴더 상세 이동 */ }
+                        onClick = { onNavigateToDetail(folderName) }
                     ) {
                         Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                             AppText(
                                 text = folderName,
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.align(Alignment.TopStart)
                             )
                         }
@@ -165,6 +166,7 @@ fun ArchiveScreen(
 @Composable
 fun ArchiveFolderCard(
     modifier: Modifier = Modifier,
+    selected: Boolean = false, //선택 상태 추가 (상세 화면 진입 시 or 필요 시)
     onClick: () -> Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -174,7 +176,7 @@ fun ArchiveFolderCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = ComponentDefault // InterestCard와 동일한 배경색
+            containerColor = if (selected) InterestSelected else ComponentDefault
         )
     ) {
         Box(
