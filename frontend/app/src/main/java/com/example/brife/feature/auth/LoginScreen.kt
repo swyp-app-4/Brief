@@ -46,26 +46,18 @@ import com.example.brife.ui.component.AppText
 private val SulphurPoint = FontFamily(
     Font(R.font.sulphur_point_bold, FontWeight.Bold)
 )
-enum class SocialLoginType {
-    KAKAO, NAVER, GOOGLE
-}
+
 
 @Composable
 fun LoginScreen(
+    uiState: LoginUiState,
     onKakaoClick: () -> Unit = {},
     onNaverClick: () -> Unit = {},
     onGoogleClick: () -> Unit = {},
+    onDismissTerms: () -> Unit = {},
+    onAgreeTerms: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-
-    var showTerms by remember { mutableStateOf(false) }
-    var loginType by remember { mutableStateOf<SocialLoginType?>(null) }
-
-    fun openTerms(type: SocialLoginType) {
-        loginType = type
-        showTerms = true
-    }
-
     Surface(
         modifier = modifier.fillMaxSize(),
         color = BgDefault
@@ -89,53 +81,52 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             SocialLoginButton(
-                text = "카카오로 로그인",
+                text = if (uiState.isLoading) "로그인 중..." else "카카오로 로그인",
                 backgroundColor = Color(0xFFFEE500),
                 contentColor = Color(0xFF191919),
                 iconRes = R.drawable.ic_kakao,
-                onClick = { openTerms(SocialLoginType.KAKAO) }
+                onClick = onKakaoClick
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             SocialLoginButton(
-                text = "네이버로 로그인",
+                text = if (uiState.isLoading) "로그인 중..." else "네이버로 로그인",
                 backgroundColor = Color(0xFF03C75A),
                 contentColor = Color.White,
                 iconRes = R.drawable.ic_naver,
-                onClick = { openTerms(SocialLoginType.NAVER) }
+                onClick = onNaverClick
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             SocialLoginButton(
-                text = "Google로 로그인",
+                text = if (uiState.isLoading) "로그인 중..." else "Google로 로그인",
                 backgroundColor = Color.White,
                 contentColor = Color(0xFF464646),
                 borderColor = Color(0xFFE3E5E8),
                 iconRes = R.drawable.ic_google,
-                onClick = { openTerms(SocialLoginType.GOOGLE) }
+                onClick = onGoogleClick
             )
 
-            if (showTerms) {
-                LoginTermsBottomSheet(
-                    onDismiss = { showTerms = false },
-                    onNext = {
-                        showTerms = false
+            uiState.errorMessage?.let {
+                Spacer(modifier = Modifier.height(16.dp))
+                AppText(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
 
-                        when (loginType) {
-                            SocialLoginType.KAKAO -> onKakaoClick()
-                            SocialLoginType.NAVER -> onNaverClick()
-                            SocialLoginType.GOOGLE -> onGoogleClick()
-                            null -> {}
-                        }
-                    }
+            if (uiState.showTermsBottomSheet) {
+                LoginTermsBottomSheet(
+                    onDismiss = onDismissTerms,
+                    onNext = onAgreeTerms
                 )
             }
         }
     }
 }
-
 
 
 @Composable
@@ -256,6 +247,9 @@ private fun SocialLoginButton(
 @Composable
 private fun LoginScreenPreview() {
     BrifeTheme {
-        LoginScreen()
+        LoginScreen(
+            uiState = LoginUiState()
+
+        )
     }
 }

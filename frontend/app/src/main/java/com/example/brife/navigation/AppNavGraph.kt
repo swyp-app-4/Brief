@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.brife.feature.auth.LoginRoute
 import com.example.brife.feature.auth.LoginScreen
 import com.example.brife.feature.home.HomeScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
@@ -53,7 +54,17 @@ fun AppNavGraph() {
         }
 
         composable(NavRoutes.LOGIN) {
-            LoginScreen(
+            LoginRoute(
+                onNavigateToHome = {
+                    navController.navigate(NavRoutes.HOME) {
+                        popUpTo(NavRoutes.LOGIN) { inclusive = true }
+                    }
+                },
+                onNavigateToOnboarding = {
+                    navController.navigate(NavRoutes.ONBOARDING_INTEREST) {
+                        popUpTo(NavRoutes.LOGIN) { inclusive = true }
+                    }
+                }
             )
         }
     }
