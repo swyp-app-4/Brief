@@ -4,7 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +36,9 @@ fun ArchiveScreen(
     modifier: Modifier = Modifier // MainScreen에서 전달받은 padding을 적용하기 위함
 ) {
 
-    val folderCount = 1
+    // 1. 추가된 폴더 리스트 상태 (초기값은 빈 리스트)
+    var folders by remember { mutableStateOf(listOf<String>()) }
+    val folderCount = folders.size + 1 // 즐겨찾기 기본 포함
     var showBottomSheet by remember { mutableStateOf(false) }
 
 
@@ -43,6 +47,7 @@ fun ArchiveScreen(
             .fillMaxSize()
             .background(Color.White)
             .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()) // 폴더가 많아지면 스크롤 가능
     ) {
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -110,18 +115,49 @@ fun ArchiveScreen(
                 }
             }
         }
+        // 3. 동적으로 추가되는 폴더 영역 (2개씩 배치)
+        folders.chunked(2).forEach { rowFolders ->
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                rowFolders.forEach { folderName ->
+                    ArchiveFolderCard(
+                        modifier = Modifier.weight(1f),
+                        onClick = { /* TODO: 폴더 상세 이동 */ }
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                            AppText(
+                                text = folderName,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.align(Alignment.TopStart)
+                            )
+                        }
+                    }
+                }
+                // 홀수 개일 경우 빈 공간을 채워 정렬 유지
+                if (rowFolders.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
         if (showBottomSheet) {
             CreateFolderBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
                 onSave = { name ->
-                    //TODO: 실제 폴더 저장 로직 수행 (API 호출 )
+                    folders = folders + name // 리스트에 추가
                     showBottomSheet = false
-                }
+                },
+                currentFolderCount = folderCount,
+                existingFolders = folders + "즐겨찾기" // 중복 체크용 리스트 전달
             )
         }
-
     }
-                }
+}
 
 /**
  * InterestCard 스타일을 계승한 아카이브 전용 폴더 카드
