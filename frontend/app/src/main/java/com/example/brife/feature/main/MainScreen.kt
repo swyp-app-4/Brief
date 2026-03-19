@@ -43,12 +43,13 @@ fun MainScreen(
                         showSettings = false,
                         centerTitle = true
                     )
+
                     NavRoutes.PROFILE -> AppTopBar(showSettings = false,)
                 }
             },
             bottomBar = {
                 AppNavigationBar(
-                    selectedIndex = when(currentRoute) {
+                    selectedIndex = when (currentRoute) {
                         NavRoutes.HOME -> 0
                         NavRoutes.EXPLORE -> 1
                         NavRoutes.ARCHIVE -> 2
@@ -56,7 +57,7 @@ fun MainScreen(
                         else -> 0
                     },
                     onItemSelected = { index ->
-                        val route = when(index) {
+                        val route = when (index) {
                             0 -> NavRoutes.HOME
                             1 -> NavRoutes.EXPLORE
                             2 -> NavRoutes.ARCHIVE
@@ -71,20 +72,31 @@ fun MainScreen(
                     }
                 )
             }
+            // MainScreen.kt 내부 수정
         ) { innerPadding ->
             NavHost(
                 navController = navController,
                 startDestination = NavRoutes.HOME,
+                // NavHost 자체에는 바텀바 영역만 확보 (상단은 비워둠)
                 modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
             ) {
-                composable(NavRoutes.HOME) { HomeScreen(
-                    onLoginClick = onNavigateToLogin, // 2. 여기다 전달!
-                    topPadding = innerPadding.calculateTopPadding() // 상단바 높이를 전달
-                )
+                composable(NavRoutes.HOME) {
+                    HomeScreen(
+                        onLoginClick = onNavigateToLogin,
+                        // HomeScreen은 이 padding을 배경 위에 콘텐츠 배치용으로만 사용 (이미지는 꽉 참)
+                        topPadding = innerPadding.calculateTopPadding()
+                    )
                 }
-                composable(NavRoutes.EXPLORE) { ExploreScreen() }
-                composable(NavRoutes.ARCHIVE) { ArchiveScreen() }
-                composable(NavRoutes.PROFILE) { ProfileScreen() }
+                composable(NavRoutes.EXPLORE) {
+                    // ExploreScreen, ArchiveScreen 등은 Modifier로 상단 패딩을 강제 적용
+                    ExploreScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
+                }
+                composable(NavRoutes.ARCHIVE) {
+                    ArchiveScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
+                }
+                composable(NavRoutes.PROFILE) {
+                    ProfileScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
+                }
             }
         }
     }

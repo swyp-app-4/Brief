@@ -33,9 +33,9 @@ fun ArchiveScreen(
     val folderCount = 1
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(Color.White) // 아카이브는 깨끗한 흰색 배경
+            .background(Color.White)
             .padding(horizontal = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(20.dp))
