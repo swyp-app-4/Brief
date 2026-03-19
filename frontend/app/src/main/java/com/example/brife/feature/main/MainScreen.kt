@@ -28,11 +28,13 @@ fun MainScreen(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: NavRoutes.HOME
+    val backgroundColor = if (currentRoute == NavRoutes.HOME) Color.Transparent else Color.White
+
 
     // 상위 Box에서 배경 이미지 제거
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            containerColor = Color.Transparent, // 하위 화면의 배경색/이미지가 보이도록 투명 유지
+            containerColor = backgroundColor,
             topBar = {
                 when (currentRoute) {
                     NavRoutes.HOME -> AppTopBar()

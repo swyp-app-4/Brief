@@ -133,20 +133,3 @@ fun ArchiveFolderCard(
 
 
 
-//@Preview(showBackground = true, device = "spec:width=1080px,height=2340px,dpi=440", name = "메인 적용 프리뷰")
-//@Composable
-//fun ArchiveScreenInMainPreview() {
-//    BrifeTheme {
-//        // ArchiveScreen이 아닌 MainScreen을 호출하여
-//        // 하단 바 등이 포함된 전체 레이아웃 내에서의 모습을 확인합니다.
-//        MainScreen(rememberNavController())
-//    }
-//}
-
-@Preview(showBackground = true, name = "아카이브 단독 프리뷰")
-@Composable
-fun ArchiveScreenPreview() {
-    BrifeTheme {
-        ArchiveScreen()
-    }
-}
