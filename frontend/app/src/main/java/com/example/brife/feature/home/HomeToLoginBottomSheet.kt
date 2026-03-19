@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.PrimaryButton
-import com.example.brife.ui.theme.CtaActive
 import com.example.brife.ui.theme.CtaDisabled
 import androidx.compose.foundation.background
 

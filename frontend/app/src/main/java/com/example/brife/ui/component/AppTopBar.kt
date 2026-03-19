@@ -1,15 +1,14 @@
 package com.example.brife.ui.component
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
@@ -19,15 +18,26 @@ import com.example.brife.R
 fun AppTopBar(
     title: String? = null,           // 제목 (아카이브 등에서 사용)
     showLogo: Boolean = true,        // 로고 표시 여부 (홈에서 사용)
-    showSettings: Boolean = true,    // 설정 아이콘 표시 여부 (홈, 탐색 등에서 사용)
-    showSearch: Boolean = false,      // 검색창 표시 여부 (탐색에서 사용)
+    showSettings: Boolean = true,    // 설정 아이콘 표시 여부 (홈에서 사용)
+    showSearch: Boolean = false,     // 검색창 표시 여부 (탐색에서 사용)
     onSettingClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    centerTitle: Boolean = false     // 기본값 추가 (에러 해결 1)
 ) {
     TopAppBar(
         title = {
-            if (title != null) {
-                AppText(text = title, style = MaterialTheme.typography.titleLarge)
+            // 내부의 중복된 val centerTitle 선언 삭제 (에러 해결 2)
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = if (centerTitle) Alignment.Center else Alignment.CenterStart
+            ) {
+                if (title != null) {
+                    AppText(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        textAlign = if (centerTitle) TextAlign.Center else TextAlign.Start
+                    )
+                }
             }
         },
         navigationIcon = {
@@ -37,17 +47,18 @@ fun AppTopBar(
                     contentDescription = "Brife Logo",
                     modifier = Modifier.size(width = 60.dp, height = 20.dp)
                 )
+            } else if (centerTitle) {
+                // 중앙 정렬 시 좌측 공간을 확보하여 균형을 맞춤
+                Spacer(modifier = Modifier.width(48.dp))
             }
         },
         actions = {
-            // 탐색 화면일 경우 여기에 검색 아이콘이나 창을 추가 가능
             if (showSearch) {
                 IconButton(onClick = { /* 검색 로직 */ }) {
                     Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "Search")
                 }
             }
 
-            // 설정 아이콘 표시 여부에 따라 제어
             if (showSettings) {
                 IconButton(onClick = onSettingClick) {
                     Icon(
@@ -55,6 +66,9 @@ fun AppTopBar(
                         contentDescription = "Settings"
                     )
                 }
+            } else if (centerTitle) {
+                // 중앙 정렬 시 우측 공간을 확보하여 균형을 맞춤
+                Spacer(modifier = Modifier.width(48.dp))
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -64,8 +78,39 @@ fun AppTopBar(
     )
 }
 
-@Preview(showBackground = true)
+// --- Preview 영역 ---
+
+@Preview(showBackground = true, name = "1. 홈 화면 (로고 + 설정)")
 @Composable
-fun AppTopBarPreview() {
-    AppTopBar()
+fun HomeTopBarPreview() {
+    AppTopBar() // 이제 에러 없이 호출 가능
+}
+
+@Preview(showBackground = true, name = "2. 탐색 화면 (검색 + 설정)")
+@Composable
+fun ExploreTopBarPreview() {
+    // 쉼표 오류 수정 (에러 해결 3)
+    AppTopBar(showLogo = false, showSearch = true)
+}
+
+@Preview(showBackground = true, name = "3. 아카이브 화면 (중앙 텍스트)")
+@Composable
+fun ArchiveTopBarPreview() {
+    AppTopBar(
+        title = "아카이브",
+        showLogo = false,
+        showSettings = false,
+        centerTitle = true
+    )
+}
+
+@Preview(showBackground = true, name = "4. 프로필 화면 (텍스트)")
+@Composable
+fun ProfileTopBarPreview() {
+    AppTopBar(
+        title = "프로필",
+        showLogo = false,
+        showSettings = false,
+        centerTitle = false
+    )
 }

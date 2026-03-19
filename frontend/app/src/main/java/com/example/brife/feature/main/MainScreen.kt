@@ -35,10 +35,15 @@ fun MainScreen(
             containerColor = Color.Transparent, // 하위 화면의 배경색/이미지가 보이도록 투명 유지
             topBar = {
                 when (currentRoute) {
-                    NavRoutes.HOME -> AppTopBar(showLogo = true, showSettings = true)
-                    NavRoutes.EXPLORE -> AppTopBar(showLogo = false, showSearch = true, showSettings = true)
-                    NavRoutes.ARCHIVE -> AppTopBar(title = "아카이브", showLogo = false, showSettings = false)
-                    NavRoutes.PROFILE -> AppTopBar(showLogo = true, showSettings = false)
+                    NavRoutes.HOME -> AppTopBar()
+                    NavRoutes.EXPLORE -> AppTopBar(showLogo = false, showSearch = true,)
+                    NavRoutes.ARCHIVE -> AppTopBar(
+                        title = "아카이브",
+                        showLogo = false,
+                        showSettings = false,
+                        centerTitle = true
+                    )
+                    NavRoutes.PROFILE -> AppTopBar(showSettings = false,)
                 }
             },
             bottomBar = {
