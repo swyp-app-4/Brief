@@ -9,6 +9,9 @@ import com.example.brife.feature.main.MainScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
 import com.example.brife.feature.onboarding.OnboardingInterestScreen
 import com.example.brife.feature.onboarding.SplashScreen
+import com.example.brife.feature.archive.ArchiveDetailScreen
+import com.example.brife.navigation.NavRoutes
+
 
 @Composable
 fun AppNavGraph() {
@@ -79,6 +82,17 @@ fun AppNavGraph() {
                     // 상위 navController(AppNavGraph꺼)를 사용하여 이동
                     navController.navigate(NavRoutes.LOGIN)
                 }
+            )
+        }
+
+        // AppNavGraph.kt 내 NavHost 부분에 추가
+        composable(
+            route = "${NavRoutes.ARCHIVE_DETAIL}/{folderName}"
+        ) { backStackEntry ->
+            val folderName = backStackEntry.arguments?.getString("folderName") ?: ""
+            ArchiveDetailScreen(
+                folderName = folderName,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }
