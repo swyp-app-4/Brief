@@ -9,6 +9,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +27,7 @@ import com.example.brife.ui.component.AppText
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.ComponentDefault
 import com.example.brife.ui.theme.PrimaryNormal
-
+import com.example.brife.feature.archive.component.CreateFolderBottomSheet
 @Composable
 fun ArchiveScreen(
 
@@ -31,6 +35,8 @@ fun ArchiveScreen(
 ) {
 
     val folderCount = 1
+    var showBottomSheet by remember { mutableStateOf(false) }
+
 
     Column(
         modifier = modifier
@@ -64,7 +70,7 @@ fun ArchiveScreen(
             // 왼쪽: 폴더 추가 버튼
             ArchiveFolderCard(
                 modifier = Modifier.weight(1f),
-                onClick = { /* TODO: 폴더 추가 로직 */ }
+                onClick = { showBottomSheet = true }
             ) {
                 // 가운데 아이콘 배치
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -81,9 +87,11 @@ fun ArchiveScreen(
                 modifier = Modifier.weight(1f),
                 onClick = { /* TODO: 즐겨찾기 이동 로직 */ }
             ) {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
                     // 중앙 상단에는 텍스트 (선택 사항, 필요 없으면 제거 가능)
                     AppText(
                         text = "즐겨찾기",
@@ -102,8 +110,18 @@ fun ArchiveScreen(
                 }
             }
         }
+        if (showBottomSheet) {
+            CreateFolderBottomSheet(
+                onDismissRequest = { showBottomSheet = false },
+                onSave = { name ->
+                    //TODO: 실제 폴더 저장 로직 수행 (API 호출 )
+                    showBottomSheet = false
+                }
+            )
+        }
+
     }
-}
+                }
 
 /**
  * InterestCard 스타일을 계승한 아카이브 전용 폴더 카드

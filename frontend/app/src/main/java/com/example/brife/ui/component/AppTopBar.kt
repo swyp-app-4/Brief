@@ -108,8 +108,7 @@ fun ArchiveTopBarPreview() {
 @Composable
 fun ProfileTopBarPreview() {
     AppTopBar(
-        title = "프로필",
-        showLogo = false,
+        showLogo = true,
         showSettings = false,
         centerTitle = false
     )
