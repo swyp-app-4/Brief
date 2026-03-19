@@ -5,8 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.brife.feature.auth.LoginRoute
-import com.example.brife.feature.auth.LoginScreen
-import com.example.brife.feature.home.HomeScreen
+import com.example.brife.feature.main.MainScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
 import com.example.brife.feature.onboarding.OnboardingInterestScreen
 import com.example.brife.feature.onboarding.SplashScreen
@@ -40,23 +39,23 @@ fun AppNavGraph() {
         composable(NavRoutes.ONBOARDING_INTEREST) {
             OnboardingInterestScreen(
                 onNextClick = {
-                    navController.navigate(NavRoutes.HOME)
+                    navController.navigate(NavRoutes.MAIN)
                 }
             )
         }
 
-        composable(NavRoutes.HOME) {
-            HomeScreen(
-                onLoginClick = {
-                    navController.navigate(NavRoutes.LOGIN)
-                }
-            )
-        }
+//        composable(NavRoutes.HOME) {
+//            HomeScreen(
+//                onLoginClick = {
+//                    navController.navigate(NavRoutes.LOGIN)
+//                }
+//            )
+//        }
 
         composable(NavRoutes.LOGIN) {
             LoginRoute(
                 onNavigateToHome = {
-                    navController.navigate(NavRoutes.HOME) {
+                    navController.navigate(NavRoutes.MAIN) {
                         popUpTo(NavRoutes.LOGIN) { inclusive = true }
                     }
                 },
@@ -64,6 +63,21 @@ fun AppNavGraph() {
                     navController.navigate(NavRoutes.ONBOARDING_INTEREST) {
                         popUpTo(NavRoutes.LOGIN) { inclusive = true }
                     }
+                }
+            )
+        }
+
+        // 하단 바가 있는 전체 메인 화면
+        composable(NavRoutes.MAIN) {
+            MainScreen(
+                onLogout = { // 필요 시 로그아웃 로직
+                    navController.navigate(NavRoutes.LOGIN) {
+                        popUpTo(NavRoutes.MAIN) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    // 상위 navController(AppNavGraph꺼)를 사용하여 이동
+                    navController.navigate(NavRoutes.LOGIN)
                 }
             )
         }
