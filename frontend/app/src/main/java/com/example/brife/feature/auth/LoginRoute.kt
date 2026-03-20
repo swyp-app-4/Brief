@@ -88,28 +88,23 @@ private fun loginWithKakao(
                         Log.e("KakaoLogin", "카카오계정 로그인 실패", accountError)
                         onResult(null)
                     } else {
+                        Log.d("KakaoLogin", "카카오계정 로그인 성공: ${accountToken?.accessToken}")
                         onResult(accountToken?.accessToken)
                     }
                 }
             } else {
+                Log.d("KakaoLogin", "카카오톡 로그인 성공: ${token?.accessToken}")
                 onResult(token?.accessToken)
             }
         }
     } else {
-//        UserApiClient.instance.loginWithKakaoAccount(context) { token, error ->
-//            if (error != null) {
-//                Log.e("KakaoLogin", "카카오계정 로그인 실패", error)
-//                onResult(null)
-//            } else {
-//                onResult(token?.accessToken)
-//            }
-//        }
-
         UserApiClient.instance.loginWithKakaoAccount(context) { token, error ->
             if (error != null) {
                 Log.e("KakaoLogin", "카카오계정 로그인 실패", error)
-            } else if (token != null) {
-                Log.d("KakaoLogin", "로그인 성공: ${token.accessToken}")
+                onResult(null)
+            } else {
+                Log.d("KakaoLogin", "카카오계정 로그인 성공: ${token?.accessToken}")
+                onResult(token?.accessToken)
             }
         }
     }

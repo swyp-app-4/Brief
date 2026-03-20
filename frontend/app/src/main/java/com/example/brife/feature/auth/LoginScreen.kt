@@ -81,7 +81,11 @@ fun LoginScreen(
                 backgroundColor = Color(0xFFFEE500),
                 contentColor = Color(0xFF191919),
                 iconRes = R.drawable.ic_kakao,
-                onClick = onKakaoClick
+                onClick = {
+                    if (!uiState.isLoading) {
+                        onKakaoClick()
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
