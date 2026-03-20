@@ -24,7 +24,7 @@ fun AppNavGraph() {
         composable(NavRoutes.SPLASH) {
             SplashScreen(
                 onFinish = {
-                    navController.navigate(NavRoutes.ONBOARDING_GUIDE) {
+                    navController.navigate(NavRoutes.LOGIN) {
                         popUpTo(NavRoutes.SPLASH) { inclusive = true }
                     }
                 }
@@ -63,7 +63,7 @@ fun AppNavGraph() {
                     }
                 },
                 onNavigateToOnboarding = {
-                    navController.navigate(NavRoutes.ONBOARDING_INTEREST) {
+                    navController.navigate(NavRoutes.ONBOARDING_GUIDE) {
                         popUpTo(NavRoutes.LOGIN) { inclusive = true }
                     }
                 }
