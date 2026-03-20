@@ -10,9 +10,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.AuthRepository
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.NaverIdLoginSDK
 import com.navercorp.nid.oauth.OAuthLoginCallback
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.CustomCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import androidx.compose.runtime.rememberCoroutineScope
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginRoute(
@@ -26,6 +35,8 @@ fun LoginRoute(
     )
 
     val uiState by viewModel.uiState.collectAsState()
+
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(uiState.isLoginSuccess) {
         if (uiState.isLoginSuccess) {
@@ -65,7 +76,15 @@ fun LoginRoute(
             loginWithNaver(context, viewModel)
         },
         onGoogleClick = {
-            viewModel.loginWithGoogle("google_sdk_id_token")
+            scope.launch {
+                loginWithGoogle(context) { idToken ->
+                    if (idToken != null) {
+                        viewModel.loginWithGoogle(idToken)
+                    } else {
+                        Log.e("GoogleLogin", "Google idToken 획득 실패")
+                    }
+                }
+            }
         },
         onDismissTerms = {
             viewModel.dismissTermsBottomSheet()
@@ -136,4 +155,51 @@ private fun loginWithNaver(
     }
 
     NaverIdLoginSDK.authenticate(context, oauthLoginCallback)
+}
+
+private suspend fun loginWithGoogle(
+    context: Context,
+    onResult: (String?) -> Unit
+) {
+    try {
+        val credentialManager = CredentialManager.create(context)
+
+        val googleOption = GetSignInWithGoogleOption.Builder(
+            serverClientId = "411738653063-g7kr2kkci6ogarrj8ptkq00r7u9ch756.apps.googleusercontent.com"
+        ).build()
+
+        val request = GetCredentialRequest.Builder()
+            .addCredentialOption(googleOption)
+            .build()
+
+        val result: GetCredentialResponse = credentialManager.getCredential(
+            request = request,
+            context = context
+        )
+
+        val credential = result.credential
+
+        if (
+            credential is CustomCredential &&
+            credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+        ) {
+            try {
+                val googleIdTokenCredential =
+                    GoogleIdTokenCredential.createFrom(credential.data)
+
+                val idToken = googleIdTokenCredential.idToken
+                Log.d("GoogleLogin", "idToken: $idToken")
+                onResult(idToken)
+            } catch (e: GoogleIdTokenParsingException) {
+                Log.e("GoogleLogin", "Google ID Token 파싱 실패", e)
+                onResult(null)
+            }
+        } else {
+            Log.e("GoogleLogin", "지원하지 않는 credential 타입")
+            onResult(null)
+        }
+    } catch (e: Exception) {
+        Log.e("GoogleLogin", "구글 로그인 실패", e)
+        onResult(null)
+    }
 }

@@ -64,4 +64,8 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.kakao.sdk:v2-user:2.20.6")
     implementation("com.navercorp.nid:oauth:5.9.1")
+
+    implementation("androidx.credentials:credentials:1.6.0-rc02")
+    implementation("androidx.credentials:credentials-play-services-auth:1.6.0-rc02")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.2.0")
 }
