@@ -11,6 +11,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.AuthRepository
 import com.kakao.sdk.user.UserApiClient
+import com.navercorp.nid.NaverIdLoginSDK
+import com.navercorp.nid.oauth.OAuthLoginCallback
 
 @Composable
 fun LoginRoute(
@@ -60,7 +62,7 @@ fun LoginRoute(
             }
         },
         onNaverClick = {
-            viewModel.loginWithNaver("naver_sdk_access_token")
+            loginWithNaver(context, viewModel)
         },
         onGoogleClick = {
             viewModel.loginWithGoogle("google_sdk_id_token")
@@ -108,4 +110,30 @@ private fun loginWithKakao(
             }
         }
     }
+}
+
+private fun loginWithNaver(
+    context: Context,
+    viewModel: LoginViewModel
+) {
+    val oauthLoginCallback = object : OAuthLoginCallback {
+        override fun onSuccess() {
+            val accessToken = NaverIdLoginSDK.getAccessToken()
+            Log.d("NaverLogin", "accessToken: $accessToken")
+
+            if (accessToken != null) {
+                viewModel.loginWithNaver(accessToken)
+            }
+        }
+
+        override fun onFailure(httpStatus: Int, message: String) {
+            Log.e("NaverLogin", "fail: $message")
+        }
+
+        override fun onError(errorCode: Int, message: String) {
+            Log.e("NaverLogin", "error: $message")
+        }
+    }
+
+    NaverIdLoginSDK.authenticate(context, oauthLoginCallback)
 }

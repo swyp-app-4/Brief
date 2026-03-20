@@ -63,4 +63,5 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.kakao.sdk:v2-user:2.20.6")
+    implementation("com.navercorp.nid:oauth:5.9.1")
 }
