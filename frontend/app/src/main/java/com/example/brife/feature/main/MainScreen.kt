@@ -94,7 +94,12 @@ fun MainScreen(
                     ExploreScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
                 }
                 composable(NavRoutes.ARCHIVE) {
-                    ArchiveScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
+                    ArchiveScreen(
+                        modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
+                        onNavigateToDetail = { folderName ->
+                            navController.navigate("${NavRoutes.ARCHIVE_DETAIL}/$folderName")
+                        }
+                    )
                 }
                 composable(NavRoutes.PROFILE) {
                     ProfileScreen(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
