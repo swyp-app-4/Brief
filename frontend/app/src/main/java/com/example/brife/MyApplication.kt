@@ -14,7 +14,7 @@ class MyApplication : Application() {
         NaverIdLoginSDK.initialize(
             this,
             "URRJA3uPTyDqH8g1Ynh3",
-            "dTH_YvE_4T",
+            "LoWMz9JBzR",
             "Brife"
         )
     }

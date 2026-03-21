@@ -165,7 +165,7 @@ private suspend fun loginWithGoogle(
         val credentialManager = CredentialManager.create(context)
 
         val googleOption = GetSignInWithGoogleOption.Builder(
-            serverClientId = "411738653063-g7kr2kkci6ogarrj8ptkq00r7u9ch756.apps.googleusercontent.com"
+            serverClientId = "411738653063-rv0rum9cu9ppsc0it3g37s3nbfdm9pap.apps.googleusercontent.com"
         ).build()
 
         val request = GetCredentialRequest.Builder()
