@@ -38,18 +38,31 @@ public class ArchiveService {
     // 새 폴더 만들기
     @Transactional
     public ArchiveResponse createFolder(Long userId, ArchiveCreateRequest request) {
+        String folderName = request.getFolderName();
+
         // 즐겨찾기 이름으로 폴더 생성 방지
-        if (request.getFolderName().equals("즐겨찾기")) {
+        if (folderName.equals("즐겨찾기")) {
             throw new IllegalArgumentException("즐겨찾기는 사용할 수 없는 폴더명입니다.");
         }
+
+        // 특수문자 방지
+        if (!folderName.matches("^[a-zA-Z0-9가-힣\\s]+$")) {
+            throw new IllegalArgumentException("특수문자는 폴더 이름에 사용할 수 없습니다.");
+        }
+
+        // 20자 초과 방지
+        if (folderName.length() > 20) {
+            throw new IllegalArgumentException("폴더 이름은 최대 20자까지 입력할 수 있습니다.");
+        }
+
         // 같은 이름 폴더 중복 방지
-        if (archiveRepository.existsByUserIdAndFolderName(userId, request.getFolderName())) {
-            throw new IllegalArgumentException("이미 존재하는 폴더명입니다.");
+        if (archiveRepository.existsByUserIdAndFolderName(userId, folderName)) {
+            throw new IllegalArgumentException("이미 사용 중인 폴더 이름입니다.");
         }
 
         Archive archive = Archive.builder()
                 .userId(userId)
-                .folderName(request.getFolderName())
+                .folderName(folderName)
                 .isFavorite(false)
                 .build();
 
@@ -59,6 +72,8 @@ public class ArchiveService {
     // 폴더 이름 수정
     @Transactional
     public ArchiveResponse updateFolderName(Long userId, Long archiveId, ArchiveCreateRequest request) {
+        String folderName = request.getFolderName();
+
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
 
@@ -67,7 +82,22 @@ public class ArchiveService {
             throw new IllegalArgumentException("본인의 폴더만 수정할 수 있습니다.");
         }
 
-        archive.updateFolderName(request.getFolderName());
+        // 특수문자 방지
+        if (!folderName.matches("^[a-zA-Z0-9가-힣\\s]+$")) {
+            throw new IllegalArgumentException("특수문자는 폴더 이름에 사용할 수 없습니다.");
+        }
+
+        // 20자 초과 방지
+        if (folderName.length() > 20) {
+            throw new IllegalArgumentException("폴더 이름은 최대 20자까지 입력할 수 있습니다.");
+        }
+
+        // 같은 이름 폴더 중복 방지
+        if (archiveRepository.existsByUserIdAndFolderName(userId, folderName)) {
+            throw new IllegalArgumentException("이미 사용 중인 폴더 이름입니다.");
+        }
+
+        archive.updateFolderName(folderName);
         return new ArchiveResponse(archive);
     }
 
@@ -162,6 +192,11 @@ public class ArchiveService {
             throw new IllegalArgumentException("본인의 폴더만 수정할 수 있습니다.");
         }
 
+        // 즐겨찾기 폴더는 카드 삭제 불가
+        if (archive.isFavorite()) {
+            throw new IllegalArgumentException("즐겨찾기 폴더에서는 카드를 삭제할 수 없습니다.");
+        }
+
         ArchiveItem item = archiveItemRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("저장된 뉴스를 찾을 수 없습니다."));
 
@@ -176,6 +211,11 @@ public class ArchiveService {
 
         if (!archive.getUserId().equals(userId)) {
             throw new IllegalArgumentException("본인의 폴더만 수정할 수 있습니다.");
+        }
+
+        // 즐겨찾기 폴더는 카드 삭제 불가
+        if (archive.isFavorite()) {
+            throw new IllegalArgumentException("즐겨찾기 폴더에서는 카드를 삭제할 수 없습니다.");
         }
 
         archiveItemRepository.deleteAll(archive.getItems());
