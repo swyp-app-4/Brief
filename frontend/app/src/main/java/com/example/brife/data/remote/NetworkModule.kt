@@ -2,6 +2,7 @@ package com.example.brife.data.remote
 
 import com.example.brife.data.remote.api.AuthApiService
 import com.example.brife.data.remote.api.OnboardingApiService
+import com.navercorp.nid.oauth.NidOAuthPreferencesManager.accessToken
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -21,7 +22,7 @@ object NetworkModule {
     // TODO: 로그인/토큰 저장 기능 추가 후 Authorization 헤더 연결
     private val authInterceptor = Interceptor { chain ->
         val request = chain.request().newBuilder()
-//             .addHeader("Authorization", "Bearer $accessToken")
+             .addHeader("Authorization", "Bearer $accessToken")
             .build()
         chain.proceed(request)
     }
