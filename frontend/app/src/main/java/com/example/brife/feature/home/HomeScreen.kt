@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
 import com.example.brife.R
-import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,36 +43,56 @@ fun HomeScreen(
                 category = "경제",
                 title = "기준금리 동결 속 소비 회복 기대감 확대",
                 notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
-                summary = "한국은행의 기준금리 동결 이후 시장은 당분간 안정세를 유지할 것으로 전망되고 있다.",
-                insight = "금리 흐름은 대출, 소비, 투자 심리에 직접 영향을 미치기 때문에 개인 자산관리와 소비 전략에도 연결해서 볼 필요가 있다."
+                summaryPoints = listOf(
+                    "한국은행이 기준금리를 동결하며 시장 안정 기대가 커지고 있다.",
+                    "소비와 투자 심리 회복 여부가 향후 핵심 변수로 작용한다.",
+                    "가계 부담 완화 여부가 경기 회복 속도를 좌우할 전망이다."
+                ),
+                insight = "금리 흐름은 대출, 소비, 투자 심리에 직접적인 영향을 미친다. 따라서 이번 이슈는 단순 금융 뉴스가 아니라 개인의 소비 전략과 자산관리에도 연결해서 해석할 필요가 있다."
             ),
             HomeNewsCardItem(
                 category = "IT",
                 title = "생성형 AI 서비스 경쟁 본격화",
                 notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
-                summary = "국내외 주요 기업들이 생성형 AI 기능을 자사 플랫폼에 빠르게 통합하고 있다.",
-                insight = "단순 기능 추가를 넘어 사용자 체류 시간, 생산성, 플랫폼 락인 전략까지 연결되는 흐름으로 해석할 수 있다."
+                summaryPoints = listOf(
+                    "글로벌 IT 기업들이 생성형 AI 기능을 서비스에 빠르게 도입 중이다.",
+                    "AI 기능이 플랫폼 경쟁력의 핵심 요소로 자리잡고 있다.",
+                    "사용자 경험 개선과 생산성 향상이 주요 경쟁 포인트다."
+                ),
+                insight = "생성형 AI는 단순 기능 추가를 넘어 플랫폼 락인 전략과 직결된다. 앞으로는 어떤 서비스가 더 자연스럽게 AI를 녹여내느냐가 경쟁력을 결정할 가능성이 높다."
             ),
             HomeNewsCardItem(
                 category = "사회",
-                title = "청년 주거 지원 정책 체감도 점검 필요",
+                title = "청년 주거 지원 정책 체감도 격차 심화",
                 notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
-                summary = "청년 대상 주거 지원 정책은 확대되고 있지만 실제 체감도는 지역과 조건에 따라 차이가 크다.",
-                insight = "정책 발표 자체보다 접근성, 신청 절차, 실질 혜택 범위를 함께 봐야 사용자가 체감할 수 있는 정보가 된다."
+                summaryPoints = listOf(
+                    "청년 주거 지원 정책은 확대되고 있지만 체감도는 낮은 편이다.",
+                    "지역과 소득 조건에 따라 정책 접근성이 크게 차이난다.",
+                    "실제 혜택보다 신청 과정의 복잡성이 문제로 지적된다."
+                ),
+                insight = "정책의 효과는 단순 공급이 아니라 접근성과 체감도에서 결정된다. 따라서 정책 내용을 볼 때는 혜택뿐 아니라 신청 조건과 절차까지 함께 고려해야 한다."
             ),
             HomeNewsCardItem(
                 category = "과학",
-                title = "우주 산업 민간 투자 확대 흐름 지속",
+                title = "민간 중심 우주 산업 투자 확대 지속",
                 notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
-                summary = "민간 우주 산업에 대한 투자 확대와 기술 경쟁이 동시에 이어지고 있다.",
-                insight = "장기적으로는 위성 통신, 국방, 물류, 데이터 산업까지 파급될 수 있어 단순 연구 이슈를 넘어 산업 구조 변화로 볼 수 있다."
+                summaryPoints = listOf(
+                    "민간 기업의 우주 산업 투자 규모가 지속적으로 증가하고 있다.",
+                    "위성, 발사체, 데이터 산업까지 영역이 확대되는 추세다.",
+                    "국가 주도에서 민간 중심 구조로 변화가 진행 중이다."
+                ),
+                insight = "우주 산업은 단순 기술 경쟁을 넘어 통신, 국방, 물류 등 다양한 산업과 연결된다. 장기적으로는 새로운 산업 생태계를 형성할 가능성이 크다."
             ),
             HomeNewsCardItem(
                 category = "문화",
-                title = "짧은 영상 중심의 뉴스 소비 패턴 강화",
+                title = "숏폼 중심 뉴스 소비 패턴 강화",
                 notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
-                summary = "짧은 영상과 카드형 콘텐츠를 통해 뉴스를 소비하는 흐름이 더욱 강해지고 있다.",
-                insight = "콘텐츠 형식이 바뀌면 전달 방식뿐 아니라 정보 신뢰도, 해석 방식, 사용자의 집중 시간도 함께 달라진다."
+                summaryPoints = listOf(
+                    "짧은 영상과 카드형 콘텐츠를 통한 뉴스 소비가 증가하고 있다.",
+                    "사용자들은 빠르고 간결한 정보 전달을 선호하는 경향을 보인다.",
+                    "기존 긴 기사 중심의 소비 방식은 점차 줄어드는 추세다."
+                ),
+                insight = "콘텐츠 형식이 바뀌면 정보 해석 방식도 함께 변화한다. 따라서 뉴스 소비에서는 단순 전달뿐 아니라 신뢰도와 맥락 유지가 중요한 요소로 작용한다."
             )
         )
     }
@@ -108,7 +127,7 @@ fun HomeScreen(
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(450.dp),
+                    .height(540.dp),
                 contentPadding = PaddingValues(horizontal = 35.dp),
                 pageSpacing = 0.dp
             ) { page ->
@@ -117,7 +136,8 @@ fun HomeScreen(
 
                 Card(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
+                        .fillMaxHeight()
                         .zIndex(1f - absOffset.coerceIn(0f, 1f))
                         .graphicsLayer {
                             val scale = lerp(
@@ -138,17 +158,13 @@ fun HomeScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        HomeNewsCardContent(
-                            item = cardItems[page],
-                            onShareClick = { /* 공유 로직 */ }
-                        )
-                    }
+                    HomeNewsCardContent(
+                        item = cardItems[page],
+                        modifier = Modifier.fillMaxWidth(),
+                        onShareClick = {},
+                        onDetailClick = {}
+                    )
                 }
-            }
 
             Spacer(modifier = Modifier.height(24.dp))
 

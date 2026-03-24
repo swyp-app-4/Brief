@@ -2,7 +2,6 @@
 
 package com.example.brife.feature.archive
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.feature.home.HomeNewsCardContent
 import com.example.brife.feature.home.HomeNewsCardItem
-import com.example.brife.ui.component.AppTopBar // 기존에 만들어둔 탑바가 있다면 활용
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +68,7 @@ fun ArchiveDetailScreen(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    HomeNewsCardContent(item = item)
+//                    HomeNewsCardContent(item = item)
                 }
             }
         }

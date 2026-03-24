@@ -17,6 +17,7 @@ import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.CtaDisabled
 import androidx.compose.foundation.background
+import com.example.brife.ui.theme.BrifeTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,12 +105,18 @@ fun HomeToLoginBottomSheet(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeToLoginBottomSheetPreview() {
-    HomeToLoginBottomSheet(
-        sheetState = rememberModalBottomSheetState(),
-        onDismissRequest = {},
-        onLoginClick = {}
-    )
+    BrifeTheme {
+        val sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+
+        HomeToLoginBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = {},
+            onLoginClick = {}
+        )
+    }
 }
