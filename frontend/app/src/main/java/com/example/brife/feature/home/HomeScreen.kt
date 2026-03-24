@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
 import com.example.brife.R
+import com.example.brife.feature.main.MainScreen
+import com.example.brife.ui.theme.BrifeTheme
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,7 +120,8 @@ fun HomeScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(top = topPadding), // 이 부분을 추가해야 상단바 아이콘과 겹치지 않습니다.
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.weight(1f))
@@ -131,7 +134,8 @@ fun HomeScreen(
                 contentPadding = PaddingValues(horizontal = 35.dp),
                 pageSpacing = 0.dp
             ) { page ->
-                val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                val pageOffset =
+                    (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
                 val absOffset = pageOffset.absoluteValue
 
                 Card(
@@ -166,37 +170,76 @@ fun HomeScreen(
                     )
                 }
 
-            Spacer(modifier = Modifier.height(24.dp))
+//                Spacer(modifier = Modifier.height(24.dp))
 
-            // 페이지 인디케이터
-            Row(
-                modifier = Modifier.padding(bottom = 12.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                repeat(cardItems.size) { index ->
-                    val color = if (pagerState.currentPage == index) Color.White else Color.White.copy(alpha = 0.5f)
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(color)
-                    )
+                // 페이지 인디케이터
+                Row(
+                    modifier = Modifier.padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(cardItems.size) { index ->
+                        val color =
+                            if (pagerState.currentPage == index) Color.White else Color.White.copy(
+                                alpha = 0.5f
+                            )
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(color)
+                        )
+                    }
                 }
+//                Spacer(modifier = Modifier.weight(0.1f))
             }
-            Spacer(modifier = Modifier.weight(0.1f))
-        }
 
+        }
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+// --- 프리뷰 영역 ---
+
+@Preview(
+    showBackground = true,
+    device = "spec:width=1080px,height=2340px,dpi=440",
+    name = "1. 홈 화면 (메인 레이아웃 적용)"
+)
 @Composable
-fun HomeScreenPreview() {
-    HomeScreen(
-        isLoggedIn = false,
-        onLoginRequired = {},
-        onLoginClick = {}
-    )
+fun HomeScreenInMainPreview() {
+    BrifeTheme {
+        // MainScreen을 호출하여 상단바가 투명하게 배경 위에 겹치는지 확인합니다.
+        // (MainScreen에서 currentRoute가 HOME일 때 투명하게 설정했으므로 여기서 확인 가능)
+        MainScreen(
+            onLogout = {},
+            onNavigateToLogin = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "2. 홈 화면 단독 (로그인 상태)")
+@Composable
+fun HomeScreenLoggedInPreview() {
+    BrifeTheme {
+        HomeScreen(
+            isLoggedIn = true,
+            onLoginRequired = {},
+            onLoginClick = {},
+            topPadding = 60.dp // 상단바 높이만큼 가상 여백
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "3. 홈 화면 단독 (비로그인 상태)")
+@Composable
+fun HomeScreenLoggedOutPreview() {
+    BrifeTheme {
+        HomeScreen(
+            isLoggedIn = false,
+            onLoginRequired = {},
+            onLoginClick = {},
+            topPadding = 60.dp
+        )
+    }
 }

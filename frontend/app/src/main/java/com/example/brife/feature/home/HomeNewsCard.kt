@@ -83,7 +83,7 @@ fun HomeNewsCardContent(
 
         Text(
             text = item.title,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             color = Color.Black,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
@@ -213,41 +213,9 @@ private fun SummaryInsightBox(
         }
     }
 }
-@Composable
-private fun SectionBlock(
-    title: String,
-    content: String,
-    iconResId: Int,
-    modifier: Modifier = Modifier
-        .fillMaxHeight()
-) {
-    Column(modifier = modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painter = painterResource(id = iconResId),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge,
-                color = Color.Black
-            )
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = content,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 5,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
+
 
 @Composable
 private fun SummarySection(
@@ -290,7 +258,7 @@ private fun SummarySection(
                 Text(
                     text = point,
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -301,6 +269,47 @@ private fun SummarySection(
         }
     }
 }
+
+
+
+
+@Composable
+private fun SectionBlock(
+    title: String,
+    content: String,
+    iconResId: Int,
+    modifier: Modifier = Modifier
+        .fillMaxHeight()
+) {
+    Column(modifier = modifier) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painter = painterResource(id = iconResId),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                color = Color.Black
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = content,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 5,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+
 
 @Preview(
     name = "Home News Card",
