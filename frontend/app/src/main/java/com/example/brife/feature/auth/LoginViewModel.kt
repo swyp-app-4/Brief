@@ -92,8 +92,8 @@ class LoginViewModel(
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 isNewUser = true,
-                showTermsBottomSheet = true,
-                pendingAccessToken = accessToken
+                pendingAccessToken = accessToken,
+                needTermsAgreement = true
             )
         } else {
             _uiState.value = _uiState.value.copy(
@@ -117,7 +117,7 @@ class LoginViewModel(
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        showTermsBottomSheet = false,
+                        needTermsAgreement = false,
                         isTermsSuccess = true
                     )
                 }
@@ -130,9 +130,10 @@ class LoginViewModel(
         }
     }
 
-    fun dismissTermsBottomSheet() {
+    fun consumeTermsNavigation() {
         _uiState.value = _uiState.value.copy(
-            showTermsBottomSheet = false
+            needTermsAgreement = false
         )
     }
 }
+

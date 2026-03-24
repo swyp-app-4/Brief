@@ -1,12 +1,17 @@
 package com.example.brife.navigation
 
 object NavRoutes {
+
+    const val AUTH = "auth"
     const val SPLASH = "splash"
+
     const val ONBOARDING_GUIDE = "onboarding_guide"
     const val ONBOARDING_INTEREST = "onboarding_interest"
 
     const val ONBOARDING_SUB_INTEREST = "onboarding_sub_interest"
+
     const val LOGIN = "login"
+    const val LOGIN_TERMS = "login_terms"
 
     // 메인 영역 (하단 바가 있는 영역)
     const val MAIN = "main"
@@ -16,6 +21,5 @@ object NavRoutes {
     const val EXPLORE = "explore"
     const val ARCHIVE = "archive"
     const val ARCHIVE_DETAIL = "archive_detail"   // 추가: 폴더 상세 화면 (폴더 이름을 인자로 받을 수 있도록 설정 가능)
-
     const val PROFILE = "profile"
 }

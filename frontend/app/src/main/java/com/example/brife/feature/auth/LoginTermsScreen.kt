@@ -7,15 +7,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,34 +36,38 @@ import androidx.compose.ui.unit.dp
 import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.R
 import com.example.brife.ui.component.AppText
+import com.example.brife.ui.theme.BgDefault
 import com.example.brife.ui.theme.ComponentDefault
 import com.example.brife.ui.theme.InterestSelected
 import com.example.brife.ui.theme.PrimaryNormal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginTermsBottomSheet(
-    onDismiss: () -> Unit,
-    onNext: () -> Unit
+fun LoginTermsScreen(
+    isLoading: Boolean,
+    onNext: () -> Unit,
+    onBack: () -> Unit = {},
+    onServiceDetailClick: () -> Unit = {},
+    onPrivacyDetailClick: () -> Unit = {},
+    onAgeDetailClick: () -> Unit = {},
 ) {
     var serviceAgree by remember { mutableStateOf(false) }
     var privacyAgree by remember { mutableStateOf(false) }
+    var ageAgree by remember {mutableStateOf(false)}
 
-    val allAgree = serviceAgree && privacyAgree
-    val isEnabled = allAgree
+    val allAgree = serviceAgree && privacyAgree && ageAgree
 
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        dragHandle = null,
-        sheetState = sheetState
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = BgDefault
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
+                .fillMaxSize()
+                .background(BgDefault)
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
             AppText(
                 text = "시작 전에 약관을\n확인해 주세요",
@@ -68,45 +77,38 @@ fun LoginTermsBottomSheet(
             Spacer(modifier = Modifier.height(24.dp))
 
             TermsRow(
-                text = "전체 동의",
-                checked = allAgree,
-                highlightBox = true,
-                onCheckedChange = { checked ->
-                    serviceAgree = checked
-                    privacyAgree = checked
-                }
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            TermsRow(
                 text = "서비스 이용약관 필수 동의",
                 checked = serviceAgree,
-                onCheckedChange = { checked ->
-                    serviceAgree = checked
-                }
+                onCheckedChange = { serviceAgree = it },
+                onDetailClick = onServiceDetailClick
             )
 
             Spacer(modifier = Modifier.height(18.dp))
 
             TermsRow(
-                text = "개인정보 처리 방침 필수 동의",
+                text = "개인정보 처리방침 필수 동의",
                 checked = privacyAgree,
-                onCheckedChange = { checked ->
-                    privacyAgree = checked
-                }
+                onCheckedChange = { privacyAgree = it },
+                onDetailClick = onPrivacyDetailClick
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
+            TermsRow(
+                text = "만 14세 이상 확인",
+                checked = ageAgree,
+                onCheckedChange = { ageAgree = it },
+                onDetailClick = onAgeDetailClick
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             PrimaryButton(
-                text = "다음",
+                text = if (isLoading) "처리 중..." else "다음",
                 onClick = onNext,
-                enabled = isEnabled,
+                enabled = allAgree && !isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
-
         }
     }
 }

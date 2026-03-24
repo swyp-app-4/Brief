@@ -1,11 +1,16 @@
 package com.example.brife.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.example.brife.data.local.OnboardingLocalStorage
+import com.example.brife.data.remote.NetworkModule
+import com.example.brife.data.repository.AuthRepository
 import com.example.brife.feature.auth.LoginRoute
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
@@ -13,6 +18,9 @@ import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
 import com.example.brife.feature.onboarding.SplashScreen
 import com.example.brife.feature.archive.ArchiveDetailScreen
+import com.example.brife.feature.auth.LoginTermsRoute
+import com.example.brife.feature.auth.LoginViewModel
+import com.example.brife.feature.auth.LoginViewModelFactory
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.navigation.NavRoutes
 
@@ -85,22 +93,57 @@ fun AppNavGraph() {
             )
         }
 
-//        composable(NavRoutes.HOME) {
-//            HomeScreen(
-//                onLoginClick = {
-//                    navController.navigate(NavRoutes.LOGIN)
-//                }
-//            )
-//        }
-
-        composable(NavRoutes.LOGIN) {
-            LoginRoute(
-                onNavigateToHome = {
-                    navController.navigate(NavRoutes.MAIN) {
-                        popUpTo(NavRoutes.LOGIN) { inclusive = true }
-                    }
+        navigation(
+            route = NavRoutes.AUTH,
+            startDestination = NavRoutes.LOGIN
+        ) {
+            composable(NavRoutes.LOGIN) { backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(NavRoutes.AUTH)
                 }
-            )
+
+                val repository = AuthRepository(NetworkModule.authApiService)
+                val loginViewModel: LoginViewModel = viewModel(
+                    viewModelStoreOwner = parentEntry,
+                    factory = LoginViewModelFactory(repository)
+                )
+
+                LoginRoute(
+                    viewModel = loginViewModel,
+                    onNavigateToHome = {
+                        navController.navigate(NavRoutes.MAIN) {
+                            popUpTo(NavRoutes.AUTH) { inclusive = true }
+                        }
+                    },
+                    onNavigateToTerms = {
+                        navController.navigate(NavRoutes.LOGIN_TERMS)
+                    }
+                )
+            }
+
+            composable(NavRoutes.LOGIN_TERMS) { backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(NavRoutes.AUTH)
+                }
+
+                val repository = AuthRepository(NetworkModule.authApiService)
+                val loginViewModel: LoginViewModel = viewModel(
+                    viewModelStoreOwner = parentEntry,
+                    factory = LoginViewModelFactory(repository)
+                )
+
+                LoginTermsRoute(
+                    viewModel = loginViewModel,
+                    onNavigateToOnboarding = {
+                        navController.navigate(NavRoutes.ONBOARDING_GUIDE) {
+                            popUpTo(NavRoutes.AUTH) { inclusive = true }
+                        }
+                    },
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
 
         // 하단 바가 있는 전체 메인 화면

@@ -118,12 +118,6 @@ fun LoginScreen(
                 )
             }
 
-            if (uiState.showTermsBottomSheet) {
-                LoginTermsBottomSheet(
-                    onDismiss = onDismissTerms,
-                    onNext = onAgreeTerms
-                )
-            }
         }
     }
 }

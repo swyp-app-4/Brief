@@ -25,18 +25,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginRoute(
+    viewModel: LoginViewModel,
     onNavigateToHome: () -> Unit,
+    onNavigateToTerms: () -> Unit
 ) {
     val context = LocalContext.current
-    val repository = AuthRepository(NetworkModule.authApiService)
-    val viewModel: LoginViewModel = viewModel(
-        factory = LoginViewModelFactory(repository)
-    )
-
     val uiState by viewModel.uiState.collectAsState()
-
     val scope = rememberCoroutineScope()
-
 
     LaunchedEffect(uiState.isLoginSuccess) {
         if (uiState.isLoginSuccess) {
@@ -44,9 +39,10 @@ fun LoginRoute(
         }
     }
 
-    LaunchedEffect(uiState.isTermsSuccess) {
-        if (uiState.isTermsSuccess) {
-            onNavigateToHome()
+    LaunchedEffect(uiState.needTermsAgreement) {
+        if (uiState.needTermsAgreement) {
+            onNavigateToTerms()
+            viewModel.consumeTermsNavigation()
         }
     }
 
@@ -74,12 +70,6 @@ fun LoginRoute(
                     }
                 }
             }
-        },
-        onDismissTerms = {
-            viewModel.dismissTermsBottomSheet()
-        },
-        onAgreeTerms = {
-            viewModel.agreeTerms()
         }
     )
 }
