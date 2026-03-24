@@ -60,11 +60,8 @@ fun NewsLongScreen(
     item: HomeNewsCardItem,
     onBackClick: () -> Unit,
     onShareClick: () -> Unit = {},
-    onBookmarkClick: (Boolean) -> Unit = {},
-    isBookmarkedInitial: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    var isBookmarked by remember { mutableStateOf(isBookmarkedInitial) }
     var isExpanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
@@ -127,8 +124,7 @@ fun NewsLongScreen(
             isBookmarked = folderItems.any { it.isSelected },
             onBackClick = onBackClick,
             onBookmarkClick = {
-                isBookmarked = !isBookmarked
-                onBookmarkClick(isBookmarked)
+                showBookmarkSheet = true
             },
             onShareClick = onShareClick
         )
@@ -468,8 +464,7 @@ fun NewsLongScreenPreview() {
         NewsLongScreen(
             item = longsampleHomeNews.first(),
             onBackClick = {},
-            onShareClick = {},
-            onBookmarkClick = {}
+            onShareClick = {}
         )
     }
 }
