@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +36,8 @@ import com.example.brife.data.model.SubCategoryResponse
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.ComponentDefault
+import com.example.brife.ui.theme.CtaActive
+import com.example.brife.ui.theme.CtaDisabled
 import com.example.brife.ui.theme.InterestSelected
 import com.example.brife.ui.theme.PrimaryNormal
 
@@ -40,6 +45,7 @@ import com.example.brife.ui.theme.PrimaryNormal
 fun OnboardingSubInterestScreen(
     uiState: OnboardingSubInterestUiState,
     onSubCategoryClick: (Long) -> Unit = {},
+    onSkipClick: () -> Unit = {},
     onSubmitClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -66,7 +72,8 @@ fun OnboardingSubInterestScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
 
         when {
             uiState.isLoading -> {
@@ -112,11 +119,46 @@ fun OnboardingSubInterestScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        PrimaryButton(
-            text = if (uiState.isSubmitting) "저장 중..." else "다음",
-            onClick = onSubmitClick,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(
+                onClick = onSkipClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CtaDisabled,
+                    contentColor = Color.White
+                )
+            ) {
+                AppText(
+                    text = "건너뛰기",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White
+                )
+            }
+
+            Button(
+                onClick = onSubmitClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CtaActive,
+                    contentColor = Color.White
+                )
+            ) {
+                AppText(
+                    text = if (uiState.isSubmitting) "저장 중..." else "다음",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White
+                )
+            }
+        }
     }
 }
 
@@ -229,7 +271,10 @@ fun OnboardingSubInterestScreenPreview() {
                     )
                 )
             ),
-            selectedSubCategoryIds = listOf(2L, 12L)
-        )
+            selectedSubCategoryIds = listOf(2L, 12L),
+            isSubmitting = false
+        ),
+        onSkipClick = {},
+        onSubmitClick = {}
     )
 }

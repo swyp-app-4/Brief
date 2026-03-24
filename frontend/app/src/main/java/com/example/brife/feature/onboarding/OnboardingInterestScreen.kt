@@ -54,7 +54,7 @@ fun OnboardingInterestScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(60.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         when {
             uiState.isLoading -> {
