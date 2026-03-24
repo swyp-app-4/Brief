@@ -1,9 +1,11 @@
 package com.example.brife.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.feature.auth.LoginRoute
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
@@ -18,6 +20,9 @@ import com.example.brife.navigation.NavRoutes
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
+
+//    val context = LocalContext.current
+//    val hasCompletedOnboarding = OnboardingLocalStorage(context).hasCompletedOnboarding()
 
     NavHost(
         navController = navController,

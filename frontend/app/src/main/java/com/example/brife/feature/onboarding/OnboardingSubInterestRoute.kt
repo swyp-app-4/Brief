@@ -4,7 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.OnboardingRepository
 
@@ -13,7 +15,11 @@ fun OnboardingSubInterestRoute(
     selectedParentCategoryIds: List<Long>,
     onNextClick: () -> Unit = {}
 ) {
-    val repository = OnboardingRepository(NetworkModule.onboardingApiService)
+    val context = LocalContext.current   //목데이터용
+    val repository = OnboardingRepository(
+        api = NetworkModule.onboardingApiService,
+        localStorage = OnboardingLocalStorage(context)    //목데이터용
+    )
 
     val viewModel: OnboardingSubInterestViewModel = viewModel(
         factory = OnboardingSubInterestViewModelFactory(
