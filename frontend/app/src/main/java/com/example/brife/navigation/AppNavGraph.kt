@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.example.brife.data.local.OnboardingLocalStorage
+import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.AuthRepository
 import com.example.brife.feature.auth.LoginRoute
@@ -21,6 +22,7 @@ import com.example.brife.feature.archive.ArchiveDetailScreen
 import com.example.brife.feature.auth.LoginTermsRoute
 import com.example.brife.feature.auth.LoginViewModel
 import com.example.brife.feature.auth.LoginViewModelFactory
+import com.example.brife.feature.home.NewsLongScreen
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.navigation.NavRoutes
 
@@ -147,19 +149,39 @@ fun AppNavGraph() {
         }
 
         // 하단 바가 있는 전체 메인 화면
+        // 하단 바가 있는 전체 메인 화면
         composable(NavRoutes.MAIN) {
             MainScreen(
-                onLogout = { // 필요 시 로그아웃 로직
+                onLogout = {
                     navController.navigate(NavRoutes.LOGIN) {
                         popUpTo(NavRoutes.MAIN) { inclusive = true }
                     }
                 },
                 onNavigateToLogin = {
-                    // 상위 navController(AppNavGraph꺼)를 사용하여 이동
                     navController.navigate(NavRoutes.LOGIN)
+                },
+                onNavigateToNewsLong = { index ->
+                    navController.navigate("${NavRoutes.NEWS_LONG}/$index")
                 }
             )
         }
+
+
+        composable(
+            route = "${NavRoutes.NEWS_LONG}/{newsIndex}"
+        ) { backStackEntry ->
+            val newsIndex = backStackEntry.arguments
+                ?.getString("newsIndex")
+                ?.toIntOrNull() ?: 0
+
+            val item = longsampleHomeNews.getOrNull(newsIndex) ?: longsampleHomeNews.first()
+
+            NewsLongScreen(
+                item = item,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
 
         // AppNavGraph.kt 내 NavHost 부분에 추가
         composable(

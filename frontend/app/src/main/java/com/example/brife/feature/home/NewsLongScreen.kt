@@ -2,72 +2,282 @@ package com.example.brife.feature.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
+import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.ui.component.AppText
+import com.example.brife.ui.component.CategoryChip
+import com.example.brife.ui.component.PrimaryButton
+import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.PrimaryNormal
 import com.example.brife.ui.theme.TextCaption
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 @Composable
 fun NewsLongScreen(
     item: HomeNewsCardItem,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onShareClick: () -> Unit = {},
+    onBookmarkClick: (Boolean) -> Unit = {},
+    isBookmarkedInitial: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
+    var isBookmarked by remember { mutableStateOf(isBookmarkedInitial) }
+    var isExpanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
+    Box(
+        modifier = modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
+            .background(Color.White)
+    ) {
+        if (isExpanded) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .navigationBarsPadding()
+            ) {
+                NewsLongContent(
+                    item = item,
+                    isExpanded = true
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .navigationBarsPadding()
+            ) {
+                NewsLongContent(
+                    item = item,
+                    isExpanded = false
+                )
+            }
+        }
+
+        NewsLongTopBar(
+            isBookmarked = isBookmarked,
+            onBackClick = onBackClick,
+            onBookmarkClick = {
+                isBookmarked = !isBookmarked
+                onBookmarkClick(isBookmarked)
+            },
+            onShareClick = onShareClick
+        )
+
+        if (!isExpanded) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .navigationBarsPadding()
+            ) {
+                PrimaryButton(
+                    text = "관련 내용 보기",
+                    enabled = true,
+                    onClick = { isExpanded = true }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NewsLongContent(
+    item: HomeNewsCardItem,
+    isExpanded: Boolean
+) {
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
         Image(
             painter = painterResource(id = R.drawable.homescreen_bg),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(240.dp),
+                .height(260.dp),
             contentScale = ContentScale.Crop
         )
 
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset(y = (-20).dp)
+                .clip(
+                    RoundedCornerShape(
+                        topStart = 24.dp,
+                        topEnd = 24.dp
+                    )
+                )
+                .background(Color.White)
+                .padding(horizontal = 24.dp, vertical = 24.dp)
+        ) {
+            CategoryChip(
+                text = item.category,
+                modifier = Modifier.align(Alignment.Start)
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             AppText(
                 text = item.title,
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color.Black
+                color = Color.Black,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             AppText(
-                text = item.notice,
-                style = MaterialTheme.typography.labelSmall,
+                text = "${item.updatedAt} · ${item.companyName}",
+                style = MaterialTheme.typography.bodySmall,
                 color = TextCaption
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            AppText(
-                text = "핵심 요약",
-                style = MaterialTheme.typography.titleMedium,
-                color = PrimaryNormal
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .border(
+                        width = 1.dp,
+                        color = Color(0xFFE7EBF0),
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .background(Color.White)
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
+            ) {
+                AppText(
+                    text = "본 요약은 ${item.companyName}의 보도 자료를\n바탕으로 AI가 재구성했습니다.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextCaption
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            SummaryCard(
+                summaryPoints = item.summaryPoints
             )
+
+            if (isExpanded) {
+                Spacer(modifier = Modifier.height(28.dp))
+
+                AppText(
+                    text = "관련 기사 요약",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Black
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                item.relatedArticles.forEachIndexed { index, article ->
+                    RelatedArticleItem(
+                        title = article.title,
+                        content = article.content
+                    )
+
+                    if (index != item.relatedArticles.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 20.dp),
+                            color = Color(0xFFE9EDF2)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+            } else {
+                Spacer(modifier = Modifier.height(90.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SummaryCard(
+    summaryPoints: List<String>
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFF8F9FA))
+            .padding(20.dp)
+    ) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_longform_pencil),
+                    contentDescription = null,
+                    tint = Color.Unspecified
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                AppText(
+                    text = "세줄 간편요약",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Color.Black
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            item.summaryPoints.forEach { point ->
-                Row(modifier = Modifier.padding(vertical = 6.dp)) {
-                    AppText(text = "•", color = PrimaryNormal)
+            summaryPoints.take(3).forEach { point ->
+                Row(
+                    modifier = Modifier.padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    AppText(
+                        text = "•",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = PrimaryNormal
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     AppText(
                         text = point,
@@ -76,32 +286,95 @@ fun NewsLongScreen(
                     )
                 }
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(32.dp))
+@Composable
+private fun RelatedArticleItem(
+    title: String,
+    content: String
+) {
+    Column {
+        AppText(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            color = Color.Black
+        )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF8F9FA))
-                    .padding(20.dp)
-            ) {
-                Column {
-                    AppText(
-                        text = "💡 브리프 인사이트",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    AppText(
-                        text = item.insight,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
-                    )
-                }
+        Spacer(modifier = Modifier.height(10.dp))
+
+        AppText(
+            text = content,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color(0xFF5F6368)
+        )
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NewsLongTopBar(
+    isBookmarked: Boolean,
+    onBackClick: () -> Unit,
+    onBookmarkClick: () -> Unit,
+    onShareClick: () -> Unit
+) {
+    TopAppBar(
+        modifier = Modifier.statusBarsPadding(),
+        title = {},
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_back),
+                    contentDescription = "뒤로가기",
+                    tint = Color.Unspecified
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = onBookmarkClick) {
+                Icon(
+                    painter = painterResource(
+                        id = if (isBookmarked) {
+                            R.drawable.ic_longform_bookmark_active
+                        } else {
+                            R.drawable.ic_longform_bookmark_inactive
+                        }
+                    ),
+                    contentDescription = "즐겨찾기",
+                    tint = Color.Unspecified
+                )
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
-        }
+            IconButton(onClick = onShareClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_upload),
+                    contentDescription = "공유",
+                    tint = Color.Unspecified
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent
+        ),
+        windowInsets = WindowInsets(0, 0, 0, 0)
+    )
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    name = "News Long Screen"
+)
+@Composable
+fun NewsLongScreenPreview() {
+    BrifeTheme {
+        NewsLongScreen(
+            item = longsampleHomeNews.first(),
+            onBackClick = {},
+            onShareClick = {},
+            onBookmarkClick = {}
+        )
     }
 }

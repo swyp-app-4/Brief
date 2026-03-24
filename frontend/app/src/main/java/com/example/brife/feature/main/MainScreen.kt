@@ -14,7 +14,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.brife.data.local.sampleHomeNews
+import com.example.brife.data.local.longsampleHomeNews
+import com.example.brife.data.local.shortsampleHomeNews
 import com.example.brife.feature.archive.ArchiveScreen
 import com.example.brife.feature.explore.ExploreScreen
 import com.example.brife.feature.home.HomeScreen
@@ -127,7 +128,7 @@ fun MainScreen(
                     },
                     onLoginClick = onNavigateToLogin,
                     onDetailClick = { item ->
-                        val index = sampleHomeNews.indexOf(item)
+                        val index = shortsampleHomeNews.indexOf(item)
                         if (index != -1) {
                             navController.navigate("${NavRoutes.NEWS_LONG}/$index")
                         }
@@ -162,7 +163,7 @@ fun MainScreen(
                 arguments = listOf(navArgument("newsIndex") { type = NavType.IntType })
             ) { backStackEntry ->
                 val newsIndex = backStackEntry.arguments?.getInt("newsIndex") ?: 0
-                val item = sampleHomeNews.getOrNull(newsIndex) ?: sampleHomeNews.first()
+                val item = longsampleHomeNews.getOrNull(newsIndex) ?: longsampleHomeNews.first()
 
                 NewsLongScreen(
                     item = item,

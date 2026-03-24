@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
 import com.example.brife.R
-import com.example.brife.data.local.sampleHomeNews
+import com.example.brife.data.local.shortsampleHomeNews
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.ui.theme.BrifeTheme
 import kotlin.math.absoluteValue
@@ -41,7 +41,7 @@ fun HomeScreen(
 //    var selectedIndex by remember { mutableIntStateOf(0) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
-    val cardItems = remember { sampleHomeNews }
+    val cardItems = remember { shortsampleHomeNews }
     val pagerState = rememberPagerState(pageCount = { cardItems.size })
 
     LaunchedEffect(pagerState.currentPage, isLoggedIn) {

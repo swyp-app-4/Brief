@@ -37,14 +37,9 @@ import com.example.brife.R
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.Gray600
 import com.example.brife.ui.theme.Positive
+import com.example.brife.ui.component.CategoryChip
 
-data class HomeNewsCardItem(
-    val category: String,
-    val title: String,
-    val notice: String,
-    val summaryPoints: List<String>,
-    val insight: String
-)
+
 
 @Composable
 fun HomeNewsCardContent(
@@ -125,26 +120,7 @@ fun HomeNewsCardContent(
 }
 
 
-@Composable
-private fun CategoryChip(
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(Gray600)
-            .padding(horizontal = 10.dp, vertical = 5.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = Color.White,
-            maxLines = 1
-        )
-    }
-}
+
 
 @Composable
 private fun SummaryInsightBox(

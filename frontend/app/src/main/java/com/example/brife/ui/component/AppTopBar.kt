@@ -22,7 +22,7 @@ fun AppTopBar(
     showSearch: Boolean = false,     // 검색창 표시 여부 (탐색에서 사용)
     onSettingClick: () -> Unit = {},
     modifier: Modifier = Modifier,
-    centerTitle: Boolean = false     // 기본값 추가 (에러 해결 1)
+    centerTitle: Boolean = false,     // 기본값 추가 (에러 해결 1)
 ) {
     TopAppBar(
         title = {
