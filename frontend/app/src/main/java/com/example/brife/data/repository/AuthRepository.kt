@@ -1,8 +1,6 @@
 package com.example.brife.data.repository
 
 import com.example.brife.data.model.GoogleLoginRequest
-import com.example.brife.data.model.LoginResponse
-import com.example.brife.data.model.LogoutRequest
 import com.example.brife.data.model.ReissueRequest
 import com.example.brife.data.model.ReissueResponse
 import com.example.brife.data.model.SocialAccessTokenRequest
