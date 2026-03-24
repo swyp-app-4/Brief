@@ -18,6 +18,7 @@ object NavRoutes {
 
     // 하단 바 탭들 (MainScreen 내부에서 사용)
     const val HOME = "home"
+    const val NEWS_LONG = "news_long"
     const val EXPLORE = "explore"
     const val ARCHIVE = "archive"
     const val ARCHIVE_DETAIL = "archive_detail"   // 추가: 폴더 상세 화면 (폴더 이름을 인자로 받을 수 있도록 설정 가능)

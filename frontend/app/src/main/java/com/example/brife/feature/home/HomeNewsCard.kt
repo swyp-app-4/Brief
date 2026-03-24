@@ -57,7 +57,7 @@ fun HomeNewsCardContent(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(horizontal = 20.dp, vertical = 20.dp)
+            .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -79,7 +79,7 @@ fun HomeNewsCardContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = item.title,
@@ -197,7 +197,7 @@ private fun SummaryInsightBox(
             ) {
                 Text(
                     text = "자세히 보기",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelSmall,
                     color = Positive
                 )
 
@@ -259,7 +259,11 @@ private fun SummarySection(
                     text = point,
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    // --- 추가된 속성 ---
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                    // ------------------
                 )
             }
 
