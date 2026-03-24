@@ -51,6 +51,9 @@ import com.example.brife.ui.theme.PrimaryNormal
 import com.example.brife.ui.theme.TextCaption
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.text.style.TextAlign
+import com.example.brife.data.local.BookmarkFolderUiModel
+import com.example.brife.feature.archive.component.CreateFolderBottomSheet
+
 
 @Composable
 fun NewsLongScreen(
@@ -64,6 +67,29 @@ fun NewsLongScreen(
     var isBookmarked by remember { mutableStateOf(isBookmarkedInitial) }
     var isExpanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+
+    var showBookmarkSheet by remember { mutableStateOf(false) }
+    var showCreateFolderSheet by remember { mutableStateOf(false) }
+
+
+    var folderItems by remember {
+        mutableStateOf(
+            listOf(
+                BookmarkFolderUiModel(
+                    id = 1L,
+                    name = "즐겨찾기",
+                    newsCount = 12,
+                    isSelected = true
+                ),
+                BookmarkFolderUiModel(
+                    id = 2L,
+                    name = "전쟁",
+                    newsCount = 3,
+                    isSelected = false
+                )
+            )
+        )
+    }
 
     Box(
         modifier = modifier
@@ -98,7 +124,7 @@ fun NewsLongScreen(
         }
 
         NewsLongTopBar(
-            isBookmarked = isBookmarked,
+            isBookmarked = folderItems.any { it.isSelected },
             onBackClick = onBackClick,
             onBookmarkClick = {
                 isBookmarked = !isBookmarked
@@ -122,6 +148,71 @@ fun NewsLongScreen(
                     onClick = { isExpanded = true }
                 )
             }
+        }
+
+        if (showBookmarkSheet) {
+            NewsBookmarkBottomSheet(
+                folders = folderItems,
+                onDismissRequest = { showBookmarkSheet = false },
+                onMyFolderClick = {
+                    showBookmarkSheet = false
+                    // TODO: 내 폴더 화면 이동
+                },
+                onAddFolderClick = {
+                    showBookmarkSheet = false
+                    showCreateFolderSheet = true
+                },
+                //다중선택
+                onFolderBookmarkClick = { clickedFolder ->
+                    folderItems = folderItems.map { folder ->
+                        if (folder.id == clickedFolder.id) {
+                            folder.copy(isSelected = !folder.isSelected)
+                        } else {
+                            folder
+                        }
+                    }
+                }
+//단일선택
+//                onFolderBookmarkClick = { clickedFolder ->
+//                    folderItems = folderItems.map { folder ->
+//                        folder.copy(isSelected = folder.id == clickedFolder.id)
+//                    }
+//                }
+
+            )
+        }
+
+        if (showCreateFolderSheet) {
+            CreateFolderBottomSheet(
+                onDismissRequest = { showCreateFolderSheet = false },
+
+                //여러 폴더 동시 저장
+                onSave = { newFolderName ->
+                    folderItems = folderItems + BookmarkFolderUiModel(
+                        id = (folderItems.maxOfOrNull { it.id } ?: 0L) + 1L,
+                        name = newFolderName,
+                        newsCount = 1,
+                        isSelected = true
+                    )
+                    showCreateFolderSheet = false
+                },
+
+                //하나의 폴더에만 저장
+//                onSave = { newFolderName ->
+//                    folderItems = folderItems.map { it.copy(isSelected = false) } +
+//                            BookmarkFolderUiModel(
+//                                id = (folderItems.maxOfOrNull { it.id } ?: 0L) + 1L,
+//                                name = newFolderName,
+//                                newsCount = 1,
+//                                isSelected = true
+//                            )
+//                    showCreateFolderSheet = false
+//                },
+
+
+                currentFolderCount = folderItems.size,
+                existingFolders = folderItems.map { it.name }
+            )
         }
     }
 }
