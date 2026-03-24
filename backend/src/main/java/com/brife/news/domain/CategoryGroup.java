@@ -1,20 +1,20 @@
 package com.brife.news.domain;
 
-public enum CategoryGroup {
-    POLITICS("시사 정치"),
-    ECONOMY("경제 제테크"),
-    IT("IT 테크"),
-    CULTURE("문화 예술"),
-    ENTERTAINMENT("엔터 스포츠"),
-    LIFESTYLE("라이프 스타일");
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-    private final String displayName;
+@Entity
+@Table(name = "category_group")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class CategoryGroup {
 
-    CategoryGroup(String displayName) {
-        this.displayName = displayName;
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+    @Column(nullable = false, length = 255, unique = true)
+    private String name;
 }

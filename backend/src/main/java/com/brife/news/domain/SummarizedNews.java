@@ -30,11 +30,6 @@ public class SummarizedNews {
             foreignKey = @ForeignKey(name = "fk_sn_category"))
     private Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id",
-            foreignKey = @ForeignKey(name = "fk_sn_topic"))
-    private Topic topic;
-
     @Column(nullable = false, length = 200)
     private String title;
 
@@ -72,11 +67,10 @@ public class SummarizedNews {
     private LocalDateTime createdAt;
 
     @Builder
-    public SummarizedNews(Category category, Topic topic, String title,
+    public SummarizedNews(Category category, String title,
                           String summary, String body,
                           int sourceCount, String thumbnailUrl, LocalDate publishedDate) {
         this.category = category;
-        this.topic = topic;
         this.title = title;
         this.summary = summary;
         this.body = body;

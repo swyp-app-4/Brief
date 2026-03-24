@@ -28,11 +28,6 @@ public class RawNews {
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id",
-            foreignKey = @ForeignKey(name = "fk_rn_topic"))
-    private Topic topic;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "summarized_news_id",
             foreignKey = @ForeignKey(name = "fk_rn_summarized"))
     private SummarizedNews summarizedNews;
@@ -54,10 +49,9 @@ public class RawNews {
     private LocalDateTime createdAt;
 
     @Builder
-    public RawNews(Category category, Topic topic,
-                   String title, String sourceUrl, String naverUrl, LocalDateTime pubDate) {
+    public RawNews(Category category, String title,
+                   String sourceUrl, String naverUrl, LocalDateTime pubDate) {
         this.category = category;
-        this.topic = topic;
         this.title = title;
         this.sourceUrl = sourceUrl;
         this.naverUrl = naverUrl;
