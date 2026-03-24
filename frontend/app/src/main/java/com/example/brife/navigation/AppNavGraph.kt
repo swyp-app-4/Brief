@@ -10,6 +10,7 @@ import com.example.brife.feature.onboarding.OnboardingGuideScreen
 import com.example.brife.feature.onboarding.OnboardingInterestScreen
 import com.example.brife.feature.onboarding.SplashScreen
 import com.example.brife.feature.archive.ArchiveDetailScreen
+import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.navigation.NavRoutes
 
 
@@ -40,7 +41,7 @@ fun AppNavGraph() {
         }
 
         composable(NavRoutes.ONBOARDING_INTEREST) {
-            OnboardingInterestScreen(
+            OnboardingInterestRoute(
                 onNextClick = {
                     navController.navigate(NavRoutes.MAIN)
                 }

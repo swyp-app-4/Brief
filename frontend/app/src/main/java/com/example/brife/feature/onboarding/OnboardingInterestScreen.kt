@@ -14,46 +14,30 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.brife.R
-import com.example.brife.data.remote.NetworkModule
-import com.example.brife.data.repository.OnboardingRepository
+import com.example.brife.data.model.CategoryResponse
 import com.example.brife.ui.component.AppText
-import com.example.brife.ui.component.InterestCard
+import com.example.brife.ui.component.OnboardingInterestRowCard
 import com.example.brife.ui.component.PrimaryButton
 
 @Composable
 fun OnboardingInterestScreen(
-    modifier: Modifier = Modifier,
-    onNextClick: () -> Unit = {}
+    uiState: OnboardingUiState,
+    onCategoryClick: (Long) -> Unit = {},
+    onSubmitClick: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
-    val repository = OnboardingRepository(NetworkModule.onboardingApiService)
-    val viewModel: OnboardingViewModel = viewModel(
-        factory = OnboardingViewModelFactory(repository)
-    )
-
-    val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            onNextClick()
-        }
-    }
-
-
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(60.dp))
+
         AppText(
             text = "어떤 주제가\n궁금하시나요?",
             style = MaterialTheme.typography.titleLarge,
@@ -71,6 +55,7 @@ fun OnboardingInterestScreen(
         )
 
         Spacer(modifier = Modifier.height(60.dp))
+
         when {
             uiState.isLoading -> {
                 Text(
@@ -84,7 +69,7 @@ fun OnboardingInterestScreen(
 
             else -> {
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
+                    columns = GridCells.Fixed(1),
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
@@ -93,18 +78,11 @@ fun OnboardingInterestScreen(
                     contentPadding = PaddingValues(vertical = 4.dp)
                 ) {
                     items(uiState.categories) { category ->
-                        InterestCard(
+                        OnboardingInterestRowCard(
                             text = category.groupName,
                             iconRes = getInterestIconRes(category.groupName),
                             selected = uiState.selectedCategoryIds.contains(category.id),
-                            onClick = {
-                                if (
-                                    uiState.selectedCategoryIds.size < 3 ||
-                                    uiState.selectedCategoryIds.contains(category.id)
-                                ) {
-                                    viewModel.toggleCategory(category.id)
-                                }
-                            }
+                            onClick = { onCategoryClick(category.id) }
                         )
                     }
                 }
@@ -121,13 +99,11 @@ fun OnboardingInterestScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-
+        Spacer(modifier = Modifier.height(10.dp))
 
         PrimaryButton(
             text = if (uiState.isSubmitting) "저장 중..." else "다음",
-            onClick = { viewModel.submitInterests() },
+            onClick = onSubmitClick,
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -149,6 +125,19 @@ private fun getInterestIconRes(groupName: String): Int {
 @Composable
 fun OnboardingInterestScreenPreview() {
     MaterialTheme {
-        OnboardingInterestScreen()
+        OnboardingInterestScreen(
+            uiState = OnboardingUiState(
+                isLoading = false,
+                categories = listOf(
+                    CategoryResponse(1L, "시사 정치"),
+                    CategoryResponse(2L, "경제 재테크"),
+                    CategoryResponse(3L, "IT 테크"),
+                    CategoryResponse(4L, "문화 예술"),
+                    CategoryResponse(5L, "엔터 스포츠"),
+                    CategoryResponse(6L, "라이프 성장")
+                ),
+                selectedCategoryIds = listOf(1L, 3L)
+            )
+        )
     }
 }
