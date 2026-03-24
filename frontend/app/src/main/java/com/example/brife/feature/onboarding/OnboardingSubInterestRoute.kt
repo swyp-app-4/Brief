@@ -9,34 +9,34 @@ import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.OnboardingRepository
 
 @Composable
-fun OnboardingInterestRoute(
-    onNextClick: (List<Long>) -> Unit = {}
+fun OnboardingSubInterestRoute(
+    selectedParentCategoryIds: List<Long>,
+    onNextClick: () -> Unit = {}
 ) {
     val repository = OnboardingRepository(NetworkModule.onboardingApiService)
-    val viewModel: OnboardingViewModel = viewModel(
-        factory = OnboardingViewModelFactory(repository)
+
+    val viewModel: OnboardingSubInterestViewModel = viewModel(
+        factory = OnboardingSubInterestViewModelFactory(
+            repository = repository,
+            selectedParentCategoryIds = selectedParentCategoryIds
+        )
     )
 
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            onNextClick(uiState.selectedCategoryIds)
+            onNextClick()
         }
     }
 
-    OnboardingInterestScreen(
+    OnboardingSubInterestScreen(
         uiState = uiState,
-        onCategoryClick = { categoryId ->
-            if (
-                uiState.selectedCategoryIds.size < 3 ||
-                uiState.selectedCategoryIds.contains(categoryId)
-            ) {
-                viewModel.toggleCategory(categoryId)
-            }
+        onSubCategoryClick = { subCategoryId ->
+            viewModel.toggleSubCategory(subCategoryId)
         },
         onSubmitClick = {
-            viewModel.submitInterests()
+            viewModel.submitSubInterests()
         }
     )
 }

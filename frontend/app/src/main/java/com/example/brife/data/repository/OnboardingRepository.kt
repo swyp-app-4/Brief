@@ -4,6 +4,7 @@ import com.example.brife.data.model.CategoryResponse
 import com.example.brife.data.model.InterestRequest
 import com.example.brife.data.remote.api.OnboardingApiService
 import android.util.Log
+import com.example.brife.data.model.SubCategoryResponse
 
 class OnboardingRepository(
     private val api: OnboardingApiService
@@ -45,6 +46,18 @@ class OnboardingRepository(
         } catch (e: Exception) {
             Log.e("OnboardingRepo", "saveInterests exception", e)
             Result.failure(e)
+        }
+    }
+
+    suspend fun getSubCategories(): Result<List<SubCategoryResponse>> {
+        return runCatching {
+            api.getSubCategories()
+        }
+    }
+
+    suspend fun saveSubInterests(subCategoryIds: List<Long>): Result<Unit> {
+        return runCatching {
+            api.saveSubInterests(subCategoryIds)
         }
     }
 }

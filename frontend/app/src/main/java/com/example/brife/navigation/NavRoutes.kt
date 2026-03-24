@@ -4,6 +4,8 @@ object NavRoutes {
     const val SPLASH = "splash"
     const val ONBOARDING_GUIDE = "onboarding_guide"
     const val ONBOARDING_INTEREST = "onboarding_interest"
+
+    const val ONBOARDING_SUB_INTEREST = "onboarding_sub_interest"
     const val LOGIN = "login"
 
     // 메인 영역 (하단 바가 있는 영역)

@@ -26,7 +26,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginRoute(
     onNavigateToHome: () -> Unit,
-    onNavigateToOnboarding: () -> Unit
 ) {
     val context = LocalContext.current
     val repository = AuthRepository(NetworkModule.authApiService)
@@ -38,26 +37,16 @@ fun LoginRoute(
 
     val scope = rememberCoroutineScope()
 
+
     LaunchedEffect(uiState.isLoginSuccess) {
         if (uiState.isLoginSuccess) {
             onNavigateToHome()
         }
     }
 
-    LaunchedEffect(uiState.showTermsBottomSheet, uiState.isLoading) {
-        if (
-            !uiState.showTermsBottomSheet &&
-            !uiState.isLoading &&
-            uiState.isNewUser &&
-            uiState.pendingAccessToken != null
-        ) {
-            onNavigateToOnboarding()
-        }
-    }
-
     LaunchedEffect(uiState.isTermsSuccess) {
         if (uiState.isTermsSuccess) {
-            onNavigateToOnboarding()
+            onNavigateToHome()
         }
     }
 

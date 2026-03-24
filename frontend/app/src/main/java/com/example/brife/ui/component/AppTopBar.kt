@@ -93,11 +93,11 @@ fun ExploreTopBarPreview() {
     AppTopBar(showLogo = false, showSearch = true)
 }
 
-@Preview(showBackground = true, name = "3. 아카이브 화면 (중앙 텍스트)")
+@Preview(showBackground = true, name = "3. 아카이브 화면 (중앙 텍스트 + 아이콘)")
 @Composable
 fun ArchiveTopBarPreview() {
     AppTopBar(
-        title = "아카이브",
+        title = "보관함",
         showLogo = false,
         showSettings = false,
         centerTitle = true

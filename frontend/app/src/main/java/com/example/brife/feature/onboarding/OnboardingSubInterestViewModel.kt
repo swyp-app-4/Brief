@@ -1,0 +1,98 @@
+package com.example.brife.feature.onboarding
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.brife.data.repository.OnboardingRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+class OnboardingSubInterestViewModel(
+    private val repository: OnboardingRepository,
+    private val selectedParentCategoryIds: List<Long>
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(OnboardingSubInterestUiState())
+    val uiState: StateFlow<OnboardingSubInterestUiState> = _uiState.asStateFlow()
+
+    init {
+        loadSubCategories()
+    }
+
+    private fun loadSubCategories() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                errorMessage = null
+            )
+
+            repository.getSubCategories()
+                .onSuccess { subCategories ->
+                    val filtered = subCategories.filter {
+                        selectedParentCategoryIds.contains(it.parentCategoryId)
+                    }
+
+                    val sections = filtered
+                        .groupBy { it.parentCategoryId }
+                        .map { (parentId, items) ->
+                            SubCategorySection(
+                                categoryId = parentId,
+                                categoryName = items.firstOrNull()?.parentCategoryName.orEmpty(),
+                                subCategories = items
+                            )
+                        }
+
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        sections = sections
+                    )
+                }
+                .onFailure { throwable ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = throwable.message
+                    )
+                }
+        }
+    }
+
+    fun toggleSubCategory(subCategoryId: Long) {
+        val current = _uiState.value.selectedSubCategoryIds.toMutableList()
+
+        if (current.contains(subCategoryId)) {
+            current.remove(subCategoryId)
+        } else {
+            current.add(subCategoryId)
+        }
+
+        _uiState.value = _uiState.value.copy(
+            selectedSubCategoryIds = current
+        )
+    }
+
+    fun submitSubInterests() {
+        val selectedIds = _uiState.value.selectedSubCategoryIds
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isSubmitting = true,
+                errorMessage = null
+            )
+
+            repository.saveSubInterests(selectedIds)
+                .onSuccess {
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        isSuccess = true
+                    )
+                }
+                .onFailure { throwable ->
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        errorMessage = throwable.message
+                    )
+                }
+        }
+    }
+}

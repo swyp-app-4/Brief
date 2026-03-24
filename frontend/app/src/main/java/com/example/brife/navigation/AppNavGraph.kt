@@ -7,7 +7,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.brife.feature.auth.LoginRoute
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
-import com.example.brife.feature.onboarding.OnboardingInterestScreen
+import com.example.brife.feature.onboarding.OnboardingInterestRoute
+import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
 import com.example.brife.feature.onboarding.SplashScreen
 import com.example.brife.feature.archive.ArchiveDetailScreen
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
@@ -25,9 +26,15 @@ fun AppNavGraph() {
         composable(NavRoutes.SPLASH) {
             SplashScreen(
                 onFinish = {
-                    navController.navigate(NavRoutes.LOGIN) {
-                        popUpTo(NavRoutes.SPLASH) { inclusive = true }
-                    }
+//                    if (hasCompletedOnboarding) {
+//                        navController.navigate(NavRoutes.MAIN) {
+//                            popUpTo(NavRoutes.SPLASH) { inclusive = true }
+//                        }
+//                    } else {
+                        navController.navigate(NavRoutes.ONBOARDING_GUIDE) {
+                            popUpTo(NavRoutes.SPLASH) { inclusive = true }
+                        }
+//                    }
                 }
             )
         }
@@ -42,8 +49,33 @@ fun AppNavGraph() {
 
         composable(NavRoutes.ONBOARDING_INTEREST) {
             OnboardingInterestRoute(
+                onNextClick = { selectedCategoryIds ->
+                    val selectedIds = selectedCategoryIds.joinToString(",")
+                    navController.navigate("${NavRoutes.ONBOARDING_SUB_INTEREST}/$selectedIds")
+                }
+            )
+        }
+
+
+        composable(
+            route = "${NavRoutes.ONBOARDING_SUB_INTEREST}/{selectedIds}"
+        ) { backStackEntry ->
+            val selectedIdsString =
+                backStackEntry.arguments?.getString("selectedIds").orEmpty()
+
+            val selectedParentCategoryIds =
+                if (selectedIdsString.isBlank()) {
+                    emptyList()
+                } else {
+                    selectedIdsString.split(",").mapNotNull { it.toLongOrNull() }
+                }
+
+            OnboardingSubInterestRoute(
+                selectedParentCategoryIds = selectedParentCategoryIds,
                 onNextClick = {
-                    navController.navigate(NavRoutes.MAIN)
+                    navController.navigate(NavRoutes.MAIN) {
+                        popUpTo(NavRoutes.ONBOARDING_GUIDE) { inclusive = true }
+                    }
                 }
             )
         }
@@ -60,11 +92,6 @@ fun AppNavGraph() {
             LoginRoute(
                 onNavigateToHome = {
                     navController.navigate(NavRoutes.MAIN) {
-                        popUpTo(NavRoutes.LOGIN) { inclusive = true }
-                    }
-                },
-                onNavigateToOnboarding = {
-                    navController.navigate(NavRoutes.ONBOARDING_GUIDE) {
                         popUpTo(NavRoutes.LOGIN) { inclusive = true }
                     }
                 }
