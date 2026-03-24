@@ -30,6 +30,8 @@ import kotlin.math.absoluteValue
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    isLoggedIn: Boolean,
+    onLoginRequired: () -> Unit,
     onLoginClick: () -> Unit = {},
     topPadding: Dp = 0.dp
 ) {
@@ -77,13 +79,11 @@ fun HomeScreen(
     }
 
     val pagerState = rememberPagerState(pageCount = { cardItems.size })
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
 
-    LaunchedEffect(Unit) {
-        delay(3000)
-        showBottomSheet = true
+    LaunchedEffect(pagerState.currentPage, isLoggedIn) {
+        if (!isLoggedIn && pagerState.currentPage >= 3) {
+            onLoginRequired()
+        }
     }
 
     // Scaffold, TopBar, BottomBar, Image 배경을 모두 제거했습니다.
@@ -98,7 +98,8 @@ fun HomeScreen(
         )
 
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.weight(1f))
@@ -171,21 +172,15 @@ fun HomeScreen(
             Spacer(modifier = Modifier.weight(0.1f))
         }
 
-        if (showBottomSheet) {
-            HomeToLoginBottomSheet(
-                sheetState = sheetState,
-                onDismissRequest = { showBottomSheet = false },
-                onLoginClick = {
-                    showBottomSheet = false
-                    onLoginClick()
-                }
-            )
-        }
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen(
+        isLoggedIn = false,
+        onLoginRequired = {},
+        onLoginClick = {}
+    )
 }
