@@ -50,6 +50,7 @@ import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.PrimaryNormal
 import com.example.brife.ui.theme.TextCaption
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun NewsLongScreen(
@@ -190,12 +191,15 @@ private fun NewsLongContent(
                         shape = RoundedCornerShape(14.dp)
                     )
                     .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                contentAlignment = Alignment.Center
+
             ) {
                 AppText(
                     text = "본 요약은 ${item.companyName}의 보도 자료를\n바탕으로 AI가 재구성했습니다.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextCaption
+                    color = TextCaption,
+                    textAlign = TextAlign.Center
                 )
             }
 
@@ -246,7 +250,7 @@ private fun SummaryCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFF8F9FA))
+            .background(Color(0xFFF5F9FF))
             .padding(20.dp)
     ) {
         Column {
