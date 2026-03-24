@@ -5,6 +5,8 @@ import com.example.brife.data.model.ReissueRequest
 import com.example.brife.data.model.ReissueResponse
 import com.example.brife.data.model.SocialAccessTokenRequest
 import com.example.brife.data.model.TermsRequest
+import com.example.brife.data.model.LoginResponse
+import com.example.brife.data.model.LogoutRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Header
