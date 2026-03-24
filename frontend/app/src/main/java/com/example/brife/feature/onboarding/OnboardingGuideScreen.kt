@@ -256,7 +256,7 @@ private fun OnboardingGuideContent(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.weight(1f))
 
                     PrimaryButton(
                         text = if (currentPage == totalPageCount - 1) "시작하기" else "다음",
