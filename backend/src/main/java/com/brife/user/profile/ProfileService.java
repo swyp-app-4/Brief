@@ -1,0 +1,83 @@
+package com.brife.user.profile;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.brife.category.domain.Category;
+import com.brife.category.service.CategoryRepository;
+import com.brife.user.domain.AppUser;
+import com.brife.user.domain.UserInterest;
+import com.brife.user.social.AppUserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ProfileService {
+
+    private final AppUserRepository appUserRepository;
+    private final UserInterestRepository userInterestRepository;
+    private final CategoryRepository categoryRepository;
+
+    public UserProfileResponse getProfile(Long userId){
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+
+        return new UserProfileResponse(user);
+    }
+
+    public UserProfileResponse updateProfile(Long userId, UserProfileUpdate request) {
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+
+        if(request.getNickname() != null) {
+            user.update(request.getNickname());
+        }
+
+        if(request.getProfileImageUrl() != null) {
+            user.updateProfileImage(request.getProfileImageUrl());
+        }
+
+        return new UserProfileResponse(appUserRepository.save(user));
+    }
+
+    @Transactional
+    public void saveInterests(Long userId, InterestRequest request) {
+        if (userInterestRepository.existsByUserId(userId)) {
+            throw new IllegalStateException("이미 관심사가 설정되어 있습니다. 재설정은 PUT을 사용하세요.");
+        }
+
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+
+        List<UserInterest> interests = buildInterests(user, request.getCategoryIds());
+        userInterestRepository.saveAll(interests);
+    }
+
+    @Transactional
+    public void resetInterests(Long userId, InterestRequest request) {
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+
+        userInterestRepository.deleteByUserId(userId);
+
+        List<UserInterest> interests = buildInterests(user, request.getCategoryIds());
+        userInterestRepository.saveAll(interests);
+    }
+
+    private List<UserInterest> buildInterests(AppUser user, List<Long> categoryIds) {
+        return categoryIds.stream()
+                .map(categoryId -> {
+                    Category category = categoryRepository.findById(categoryId)
+                            .orElseThrow(() -> new RuntimeException("카테고리 없음: " + categoryId));
+                    return UserInterest.builder()
+                            .user(user)
+                            .category(category)
+                            .build();
+                })
+                .toList();
+    }
+
+}
