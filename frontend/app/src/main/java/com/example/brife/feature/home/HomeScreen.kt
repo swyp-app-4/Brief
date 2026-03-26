@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
 import com.example.brife.R
-import com.example.brife.data.local.shortsampleHomeNews
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.ui.theme.BrifeTheme
 import kotlin.math.absoluteValue
@@ -32,6 +31,7 @@ import kotlin.math.absoluteValue
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    newsList: List<HomeNewsCardItem>,
     isLoggedIn: Boolean,
     onLoginRequired: () -> Unit,
     onLoginClick: () -> Unit = {},
@@ -41,8 +41,7 @@ fun HomeScreen(
 //    var selectedIndex by remember { mutableIntStateOf(0) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
-    val cardItems = remember { shortsampleHomeNews }
-    val pagerState = rememberPagerState(pageCount = { cardItems.size })
+    val pagerState = rememberPagerState(pageCount = { newsList.size })
 
     LaunchedEffect(pagerState.currentPage, isLoggedIn) {
         if (!isLoggedIn && pagerState.currentPage >= 3) {
@@ -106,11 +105,11 @@ fun HomeScreen(
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     HomeNewsCardContent(
-                        item = cardItems[page],
+                        item = newsList[page],
                         modifier = Modifier.fillMaxWidth(),
                         onShareClick = {},
                         onDetailClick = {
-                            onDetailClick(cardItems[page])
+                            onDetailClick(newsList[page])
                         }
                     )
                 }
@@ -121,7 +120,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    repeat(cardItems.size) { index ->
+                    repeat(newsList.size) { index ->
                         val color =
                             if (pagerState.currentPage == index) Color.White else Color.White.copy(
                                 alpha = 0.5f

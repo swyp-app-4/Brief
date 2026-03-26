@@ -122,6 +122,7 @@ fun MainScreen(
         ) {
             composable(NavRoutes.HOME) {
                 HomeScreen(
+                    newsList = shortsampleHomeNews,
                     isLoggedIn = isLoggedIn,
                     onLoginRequired = {
                         showLoginBottomSheet = true
