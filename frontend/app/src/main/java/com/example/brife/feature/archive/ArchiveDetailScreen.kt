@@ -85,7 +85,7 @@ fun ArchiveDetailScreen(
                 )
             )
         },
-        containerColor = Color.White // 연한 회색 배경
+        containerColor = Color.White
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier

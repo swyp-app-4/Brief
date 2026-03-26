@@ -19,6 +19,7 @@ import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.local.shortsampleHomeNews
 import com.example.brife.feature.archive.ArchiveScreen
+import com.example.brife.feature.archive.component.ArchiveMoreBottomSheet
 import com.example.brife.feature.explore.ExploreScreen
 import com.example.brife.feature.home.HomeScreen
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
@@ -56,6 +57,13 @@ fun MainScreen(
     val isLoggedIn = false
     var showLoginBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Archive 관련 상태
+    var archiveFolders by remember { mutableStateOf(listOf<String>()) }
+    var showArchiveMoreSheet by remember { mutableStateOf(false) }
+    var isArchiveDeleteMode by remember { mutableStateOf(false) }
+    var selectedFolderNames by remember { mutableStateOf(setOf<String>()) }
+    val archiveMoreSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var profileInterests by remember {
         mutableStateOf(
@@ -106,14 +114,16 @@ fun MainScreen(
                         title = "보관함",
                         showLogo = false,
                         showSettings = false,
-                        centerTitle = true
+                        centerTitle = true,
+                        showMore = true,
+                        onMoreClick = { showArchiveMoreSheet = true }
                     )
                 }
                 // PROFILE: topbar 없음 (요구사항)
             }
         },
         bottomBar = {
-            if (!isNewsLongRoute && !isInterestResetRoute) {
+            if (!isNewsLongRoute && !isInterestResetRoute && !isArchiveDeleteMode) {
                 AppNavigationBar(
                     selectedIndex = when (currentRoute) {
                         NavRoutes.HOME -> 0
@@ -174,8 +184,27 @@ fun MainScreen(
             composable(NavRoutes.ARCHIVE) {
                 ArchiveScreen(
                     modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
+                    folders = archiveFolders,
+                    onFolderAdd = { name -> archiveFolders = archiveFolders + name },
                     onNavigateToDetail = { folderName ->
                         navController.navigate("${NavRoutes.ARCHIVE_DETAIL}/$folderName")
+                    },
+                    isDeleteMode = isArchiveDeleteMode,
+                    selectedFolderNames = selectedFolderNames,
+                    onToggleFolderSelect = { name ->
+                        selectedFolderNames = if (name in selectedFolderNames)
+                            selectedFolderNames - name
+                        else
+                            selectedFolderNames + name
+                    },
+                    onCancelDelete = {
+                        isArchiveDeleteMode = false
+                        selectedFolderNames = emptySet()
+                    },
+                    onConfirmDelete = {
+                        archiveFolders = archiveFolders.filter { it !in selectedFolderNames }
+                        selectedFolderNames = emptySet()
+                        isArchiveDeleteMode = false
                     }
                 )
             }
@@ -231,6 +260,18 @@ fun MainScreen(
                     onBackClick = { navController.popBackStack() }
                 )
             }
+        }
+
+        if (showArchiveMoreSheet) {
+            ArchiveMoreBottomSheet(
+                sheetState = archiveMoreSheetState,
+                onDismissRequest = { showArchiveMoreSheet = false },
+                onRenameClick = { showArchiveMoreSheet = false }, // 1차: 미구현
+                onDeleteClick = {
+                    showArchiveMoreSheet = false
+                    isArchiveDeleteMode = true
+                }
+            )
         }
 
         if (showLoginBottomSheet) {

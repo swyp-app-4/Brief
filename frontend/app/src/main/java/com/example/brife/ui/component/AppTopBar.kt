@@ -20,9 +20,11 @@ fun AppTopBar(
     showLogo: Boolean = true,        // 로고 표시 여부 (홈에서 사용)
     showSettings: Boolean = true,    // 설정 아이콘 표시 여부 (홈에서 사용)
     showSearch: Boolean = false,     // 검색창 표시 여부 (탐색에서 사용)
+    showMore: Boolean = false,       // 더보기 아이콘 표시 여부 (보관함에서 사용)
     onSettingClick: () -> Unit = {},
+    onMoreClick: () -> Unit = {},
     modifier: Modifier = Modifier,
-    centerTitle: Boolean = false,     // 기본값 추가 (에러 해결 1)
+    centerTitle: Boolean = false,
 ) {
     TopAppBar(
         title = {
@@ -56,6 +58,16 @@ fun AppTopBar(
             if (showSearch) {
                 IconButton(onClick = { /* 검색 로직 */ }) {
                     Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "Search")
+                }
+            }
+
+            if (showMore) {
+                IconButton(onClick = onMoreClick) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_archive_more),
+                        contentDescription = "더보기",
+                        tint = Color.Unspecified
+                    )
                 }
             }
 
@@ -99,7 +111,7 @@ fun ArchiveTopBarPreview() {
     AppTopBar(
         title = "보관함",
         showLogo = false,
-        showSettings = false,
+        showMore = true,
         centerTitle = true
     )
 }
