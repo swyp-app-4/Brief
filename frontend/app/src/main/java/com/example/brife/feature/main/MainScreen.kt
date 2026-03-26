@@ -63,6 +63,7 @@ fun MainScreen(
     var showArchiveMoreSheet by remember { mutableStateOf(false) }
     var isArchiveDeleteMode by remember { mutableStateOf(false) }
     var selectedFolderNames by remember { mutableStateOf(setOf<String>()) }
+    var isArchiveRenameMode by remember { mutableStateOf(false) }
     val archiveMoreSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var profileInterests by remember {
@@ -205,7 +206,12 @@ fun MainScreen(
                         archiveFolders = archiveFolders.filter { it !in selectedFolderNames }
                         selectedFolderNames = emptySet()
                         isArchiveDeleteMode = false
-                    }
+                    },
+                    isRenameMode = isArchiveRenameMode,
+                    onFolderRename = { oldName, newName ->
+                        archiveFolders = archiveFolders.map { if (it == oldName) newName else it }
+                    },
+                    onCancelRename = { isArchiveRenameMode = false }
                 )
             }
 
@@ -266,7 +272,10 @@ fun MainScreen(
             ArchiveMoreBottomSheet(
                 sheetState = archiveMoreSheetState,
                 onDismissRequest = { showArchiveMoreSheet = false },
-                onRenameClick = { showArchiveMoreSheet = false }, // 1차: 미구현
+                onRenameClick = {
+                    showArchiveMoreSheet = false
+                    isArchiveRenameMode = true
+                },
                 onDeleteClick = {
                     showArchiveMoreSheet = false
                     isArchiveDeleteMode = true

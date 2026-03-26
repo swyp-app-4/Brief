@@ -51,9 +51,16 @@ fun ArchiveScreen(
     onToggleFolderSelect: (String) -> Unit = {},
     onCancelDelete: () -> Unit = {},
     onConfirmDelete: () -> Unit = {},
+    // 수정 모드
+    isRenameMode: Boolean = false,
+    onFolderRename: (oldName: String, newName: String) -> Unit = { _, _ -> },
+    onCancelRename: () -> Unit = {},
 ) {
     val folderCount = folders.size + 1 // 즐겨찾기 기본 포함
     var showCreateSheet by remember { mutableStateOf(false) }
+    // 수정 모드 로컬 상태
+    var showRenameSheet by remember { mutableStateOf(false) }
+    var renamingFolderName by remember { mutableStateOf("") }
 
     Box(modifier = modifier.fillMaxSize()) {
 
@@ -88,10 +95,10 @@ fun ArchiveScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // 폴더 추가 버튼 (삭제 모드에서는 비활성)
+                // 폴더 추가 버튼 (삭제/수정 모드에서는 비활성)
                 ArchiveFolderCard(
                     modifier = Modifier.weight(1f),
-                    onClick = { if (!isDeleteMode) showCreateSheet = true }
+                    onClick = { if (!isDeleteMode && !isRenameMode) showCreateSheet = true }
                 ) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Image(
@@ -102,10 +109,10 @@ fun ArchiveScreen(
                     }
                 }
 
-                // 즐겨찾기 폴더 — 삭제 불가, 삭제 모드에서 클릭 no-op
+                // 즐겨찾기 폴더 — 삭제·수정 불가, 해당 모드에서 클릭 no-op
                 ArchiveFolderCard(
                     modifier = Modifier.weight(1f),
-                    onClick = { if (!isDeleteMode) onNavigateToDetail("즐겨찾기") }
+                    onClick = { if (!isDeleteMode && !isRenameMode) onNavigateToDetail("즐겨찾기") }
                 ) {
                     Box(
                         modifier = Modifier
@@ -140,8 +147,14 @@ fun ArchiveScreen(
                             modifier = Modifier.weight(1f),
                             selected = isDeleteMode && folderName in selectedFolderNames,
                             onClick = {
-                                if (isDeleteMode) onToggleFolderSelect(folderName)
-                                else onNavigateToDetail(folderName)
+                                when {
+                                    isDeleteMode -> onToggleFolderSelect(folderName)
+                                    isRenameMode -> {
+                                        renamingFolderName = folderName
+                                        showRenameSheet = true
+                                    }
+                                    else -> onNavigateToDetail(folderName)
+                                }
                             }
                         ) {
                             Box(
@@ -234,6 +247,25 @@ fun ArchiveScreen(
                 existingFolders = folders + "즐겨찾기"
             )
         }
+
+        // 폴더명 수정 바텀시트
+        if (showRenameSheet) {
+            CreateFolderBottomSheet(
+                title = "폴더명 수정",
+                initialFolderName = renamingFolderName,
+                onDismissRequest = {
+                    showRenameSheet = false
+                    onCancelRename()
+                },
+                onSave = { newName ->
+                    onFolderRename(renamingFolderName, newName)
+                    showRenameSheet = false
+                    onCancelRename()
+                },
+                currentFolderCount = 0, // 수정 모드: 생성 제한 체크 불필요
+                existingFolders = (folders + "즐겨찾기").filter { it != renamingFolderName }
+            )
+        }
     }
 }
 
@@ -310,6 +342,36 @@ fun ArchiveFolderCard(
 //        )
 //    }
 //}
+// Preview 5. 수정 모드 진입 상태 (폴더 선택 대기)
+@Preview(showBackground = true, showSystemUi = true, name = "5. 수정 모드 - 선택 대기")
+@Composable
+fun ArchiveScreenRenameModePreview() {
+    BrifeTheme {
+        ArchiveScreen(
+            folders = listOf("경제 공부", "IT 트렌드"),
+            onFolderAdd = {},
+            onNavigateToDetail = {},
+            isRenameMode = true
+        )
+    }
+}
+
+// Preview 6. 수정 모드 - 폴더 선택됨 (수정 바텀시트 열리기 직전 상태)
+// 바텀시트 자체는 CreateFolderBottomSheet Preview 5에서 확인
+@Preview(showBackground = true, showSystemUi = true, name = "6. 수정 모드 - 폴더 선택됨")
+@Composable
+fun ArchiveScreenRenameSelectedPreview() {
+    BrifeTheme {
+        // isRenameMode=true 상태에서 폴더 탭 직전 화면 (바텀시트는 compose 로컬 상태라 직접 표시 불가)
+        ArchiveScreen(
+            folders = listOf("경제 공부", "IT 트렌드"),
+            onFolderAdd = {},
+            onNavigateToDetail = {},
+            isRenameMode = true
+        )
+    }
+}
+
 @Preview(showBackground = true, showSystemUi = true, name = "1. 기본 상태 (전체 레이아웃)")
 @Composable
 fun ArchiveScreenFullPreview() {

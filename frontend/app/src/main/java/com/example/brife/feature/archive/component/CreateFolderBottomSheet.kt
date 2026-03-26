@@ -22,12 +22,14 @@ import com.example.brife.ui.theme.TextTitle
 fun CreateFolderBottomSheet(
     onDismissRequest: () -> Unit,
     onSave: (String) -> Unit,
-    currentFolderCount: Int = 1, // 현재 폴더 개수 전달받음
-    existingFolders: List<String> = listOf("즐겨찾기") // 기존 폴더 리스트
+    currentFolderCount: Int = 1,
+    existingFolders: List<String> = listOf("즐겨찾기"),
+    title: String = "새 폴더 만들기",       // 수정 바텀시트 재사용 시 "폴더명 수정"으로 전달
+    initialFolderName: String = ""          // 수정 시 기존 폴더명을 초기값으로 전달
 ) {
     val sheetState = rememberModalBottomSheetState()
-    var folderName by remember { mutableStateOf("") }
-    var isDirty by remember { mutableStateOf(false) } // 사용자가 입력을 시도했는지 여부
+    var folderName by remember { mutableStateOf(initialFolderName) }
+    var isDirty by remember { mutableStateOf(false) }
 
     // --- 검증 로직 ---
     val hasSpecialChars = folderName.any { it == '/' || it == ';' || it == ':' }
@@ -61,7 +63,7 @@ fun CreateFolderBottomSheet(
         ) {
             // 1. 타이틀
             AppText(
-                text = "새 폴더 만들기",
+                text = title,
                 style = MaterialTheme.typography.titleLarge,
                 color = TextTitle
             )
@@ -157,6 +159,21 @@ fun CreateFolderBottomSheet(
                 }
             }
         }
+    }
+}
+
+// Preview 5. 폴더명 수정 바텀시트 (기존 폴더명 초기값)
+@Preview(showBackground = true, name = "5. 폴더명 수정 바텀시트")
+@Composable
+fun RenameFolderBottomSheetPreview() {
+    BrifeTheme {
+        CreateFolderBottomSheet(
+            onDismissRequest = {},
+            onSave = {},
+            title = "폴더명 수정",
+            initialFolderName = "경제 공부",
+            existingFolders = listOf("즐겨찾기", "IT 트렌드") // 수정 대상 본인 제외
+        )
     }
 }
 
