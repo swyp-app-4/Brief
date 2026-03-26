@@ -27,4 +27,7 @@ object NavRoutes {
     // 비로그인 프로필에서 관심사 재설정 플로우 (MainScreen 내부 NavHost 전용)
     const val ONBOARDING_INTEREST_RESET = "onboarding_interest_reset"
     const val ONBOARDING_SUB_INTEREST_RESET = "onboarding_sub_interest_reset"
+
+    // 설정 화면 (MainScreen 바깥 독립 라우트)
+    const val SETTING = "setting"
 }

@@ -39,7 +39,8 @@ import com.example.brife.feature.home.NewsLongScreen
 fun MainScreen(
     onLogout: () -> Unit,
     onNavigateToLogin: () -> Unit,
-    onNavigateToNewsLong: (String) -> Unit
+    onNavigateToNewsLong: (String) -> Unit,
+    onNavigateToSetting: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val onboardingStorage = remember { OnboardingLocalStorage(context) }
@@ -99,7 +100,7 @@ fun MainScreen(
         topBar = {
             when {
                 currentRoute == NavRoutes.HOME -> {
-                    AppTopBar()
+                    AppTopBar(onSettingClick = onNavigateToSetting)
                 }
                 isNewsLongRoute -> {
                     AppTopBar(

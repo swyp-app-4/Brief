@@ -20,6 +20,8 @@ import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
 import com.example.brife.feature.onboarding.SplashScreen
 import com.example.brife.feature.archive.ArchiveDetailScreen
 import com.example.brife.feature.auth.LoginTermsRoute
+import com.example.brife.feature.setting.SettingScreen
+import com.example.brife.feature.setting.SettingUiState
 import com.example.brife.feature.auth.LoginViewModel
 import com.example.brife.feature.auth.LoginViewModelFactory
 import com.example.brife.feature.home.NewsLongScreen
@@ -162,7 +164,17 @@ fun AppNavGraph() {
                 },
                 onNavigateToNewsLong = { index ->
                     navController.navigate("${NavRoutes.NEWS_LONG}/$index")
+                },
+                onNavigateToSetting = {
+                    navController.navigate(NavRoutes.SETTING)
                 }
+            )
+        }
+
+        composable(NavRoutes.SETTING) {
+            SettingScreen(
+                uiState = SettingUiState(loginMethod = "Google", appVersion = "1.0.0"),
+                onBackClick = { navController.popBackStack() }
             )
         }
 
