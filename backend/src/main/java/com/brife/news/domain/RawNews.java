@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Table(
     name = "raw_news",
     indexes = {
-        @Index(name = "idx_raw_news_topic",      columnList = "topic_id"),
         @Index(name = "idx_raw_news_summarized", columnList = "summarized_news_id")
     }
 )

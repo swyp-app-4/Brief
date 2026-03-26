@@ -11,6 +11,10 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  sql:
+    init:
+      mode: always
+
 # 네이버 뉴스 API
 external:
   naver:
