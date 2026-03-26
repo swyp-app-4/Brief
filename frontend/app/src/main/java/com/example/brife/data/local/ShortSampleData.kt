@@ -6,6 +6,7 @@ import com.example.brife.feature.home.NewsSourceArticle
 val shortsampleHomeNews = listOf(
     HomeNewsCardItem(
         category = "경제",
+        subCategory = "금리/통화정책",
         title = "기준금리 동결 속 소비 회복 기대감 확대",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(
@@ -17,6 +18,7 @@ val shortsampleHomeNews = listOf(
     ),
     HomeNewsCardItem(
         category = "IT",
+        subCategory = "AI/빅데이터",
         title = "생성형 AI 서비스 경쟁 본격화",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(
@@ -28,6 +30,7 @@ val shortsampleHomeNews = listOf(
     ),
     HomeNewsCardItem(
         category = "사회",
+        subCategory = "주거/부동산",
         title = "청년 주거 지원 정책 체감도 격차 심화",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(
@@ -39,6 +42,7 @@ val shortsampleHomeNews = listOf(
     ),
     HomeNewsCardItem(
         category = "과학",
+        subCategory = "우주/항공",
         title = "민간 중심 우주 산업 투자 확대 지속",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(
@@ -50,6 +54,7 @@ val shortsampleHomeNews = listOf(
     ),
     HomeNewsCardItem(
         category = "문화",
+        subCategory = "미디어/콘텐츠",
         title = "숏폼 중심 뉴스 소비 패턴 강화",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(
@@ -68,6 +73,7 @@ val shortsampleHomeNews = listOf(
 val longsampleHomeNews = listOf(
     HomeNewsCardItem(
         category = "경제",
+        subCategory = "금리/통화정책",
         title = "기준금리 동결 속 소비 회복 기대감 확대와 체감 경기 변화 가능성",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(
@@ -95,6 +101,7 @@ val longsampleHomeNews = listOf(
     ),
     HomeNewsCardItem(
         category = "IT",
+        subCategory = "AI/빅데이터",
         title = "생성형 AI 서비스 경쟁 본격화, 플랫폼 간 차별화가 핵심으로 부상",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(
@@ -122,6 +129,7 @@ val longsampleHomeNews = listOf(
     ),
     HomeNewsCardItem(
         category = "사회",
+        subCategory = "주거/부동산",
         title = "청년 주거 지원 정책 체감도 격차 심화, 지역별 접근성 문제 제기",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(
@@ -149,6 +157,7 @@ val longsampleHomeNews = listOf(
     ),
     HomeNewsCardItem(
         category = "과학",
+        subCategory = "우주/항공",
         title = "민간 중심 우주 산업 투자 확대 지속, 데이터 산업까지 확장",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(
@@ -176,6 +185,7 @@ val longsampleHomeNews = listOf(
     ),
     HomeNewsCardItem(
         category = "문화",
+        subCategory = "미디어/콘텐츠",
         title = "숏폼 중심 뉴스 소비 패턴 강화, 빠른 정보 전달 선호 뚜렷",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
         summaryPoints = listOf(

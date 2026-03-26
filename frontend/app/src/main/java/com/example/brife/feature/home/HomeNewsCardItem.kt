@@ -7,6 +7,7 @@ data class NewsSourceArticle(
 
 data class HomeNewsCardItem(
     val category: String,
+    val subCategory: String = "",
     val title: String,
     val notice: String,
     val summaryPoints: List<String>,

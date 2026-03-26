@@ -59,7 +59,15 @@ fun HomeNewsCardContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CategoryChip(text = item.category)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CategoryChip(text = item.category)
+                if (item.subCategory.isNotBlank()) {
+                    CategoryChip(text = item.subCategory)
+                }
+            }
 
             IconButton(
                 onClick = onShareClick,
@@ -323,6 +331,7 @@ private fun HomeNewsCardPreviewContent() {
         HomeNewsCardContent(
             item = HomeNewsCardItem(
                 category = "경제",
+                subCategory = "금리/통화정책",
                 title = "기준금리 동결 속 소비 회복 기대감 확대",
                 notice = "AI가 분석하여 핵심만 재구성한 요약본입니다.",
                 summaryPoints = listOf(

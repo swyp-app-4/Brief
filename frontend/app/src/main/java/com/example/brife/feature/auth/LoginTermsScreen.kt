@@ -16,7 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -51,11 +55,118 @@ fun LoginTermsScreen(
     initialPrivacyAgree: Boolean = false,
     initialAgeAgree: Boolean = false,
 ) {
-    var serviceAgree by remember { mutableStateOf(initialServiceAgree) }
-    var privacyAgree by remember { mutableStateOf(initialPrivacyAgree) }
-    var ageAgree by remember { mutableStateOf(initialAgeAgree) }
+    // 각 약관은 상세 페이지에서 동의 체크 + "다음" 버튼을 눌러야 confirmed 됨
+    var serviceDetailConfirmed by remember { mutableStateOf(initialServiceAgree) }
+    var privacyDetailConfirmed by remember { mutableStateOf(initialPrivacyAgree) }
 
-    val allAgree = serviceAgree && privacyAgree && ageAgree
+    var showServiceDetail by remember { mutableStateOf(false) }
+    var showPrivacyDetail by remember { mutableStateOf(false) }
+
+    // 두 상세 약관 동의를 모두 완료해야 "다음" 버튼 활성화
+    val allAgree = serviceDetailConfirmed && privacyDetailConfirmed
+
+    when {
+        showServiceDetail -> TermsDetailPage(
+            title = "서비스 이용약관",
+            onConfirm = {
+                serviceDetailConfirmed = true
+                showServiceDetail = false
+            },
+            onBack = { showServiceDetail = false }
+        )
+
+        showPrivacyDetail -> TermsDetailPage(
+            title = "개인정보 처리방침",
+            onConfirm = {
+                privacyDetailConfirmed = true
+                showPrivacyDetail = false
+            },
+            onBack = { showPrivacyDetail = false }
+        )
+
+        else -> Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = BgDefault
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(BgDefault)
+                    .statusBarsPadding()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp, vertical = 20.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(80.dp))
+
+                    AppText(
+                        text = "시작 전에 약관을\n확인해 주세요",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    // 전체 동의: 두 약관이 모두 상세 확인 완료된 경우에만 체크됨 (직접 토글 불가)
+                    TermsRow(
+                        text = "전체 동의",
+                        checked = allAgree,
+                        highlightBox = true,
+                        showArrow = false,
+                        onCheckedChange = { /* 상세 페이지 완료 시 자동 반영, 직접 토글 불가 */ }
+                    )
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // 서비스 이용약관: 클릭하면 상세 페이지로 이동
+                    TermsRow(
+                        text = "서비스 이용약관 필수 동의",
+                        checked = serviceDetailConfirmed,
+                        onCheckedChange = { showServiceDetail = true },
+                        onDetailClick = { showServiceDetail = true }
+                    )
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // 개인정보 처리방침: 클릭하면 상세 페이지로 이동
+                    TermsRow(
+                        text = "개인정보 처리방침 필수 동의",
+                        checked = privacyDetailConfirmed,
+                        onCheckedChange = { showPrivacyDetail = true },
+                        onDetailClick = { showPrivacyDetail = true }
+                    )
+
+                    // 만 14세 이상 확인 항목은 hidden 처리
+
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+
+                PrimaryButton(
+                    text = if (isLoading) "처리 중..." else "다음",
+                    onClick = onNext,
+                    enabled = allAgree && !isLoading,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                )
+            }
+        }
+    }
+}
+
+// 서비스 이용약관 / 개인정보 처리방침 상세 페이지
+// 동의 체크박스와 "다음" 버튼을 모두 눌러야 onConfirm 호출
+@Composable
+private fun TermsDetailPage(
+    title: String,
+    onConfirm: () -> Unit,
+    onBack: () -> Unit
+) {
+    var agreed by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -70,63 +181,66 @@ fun LoginTermsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 24.dp, vertical = 20.dp)
+                    .padding(horizontal = 24.dp)
             ) {
-                Spacer(modifier = Modifier.height(80.dp))
+                // 뒤로 가기 버튼
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_back),
+                        contentDescription = "뒤로",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 AppText(
-                    text = "시작 전에 약관을\n확인해 주세요",
+                    text = title,
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
+                // 약관 내용 (API 연결 전 placeholder)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    AppText(
+                        text = "$title 내용이 여기에 표시됩니다.\n\n" +
+                                "서비스 제공자 및 이용자의 권리, 의무, 책임사항, " +
+                                "서비스 이용조건 및 절차 등에 관한 기본적인 사항을 규정합니다.\n\n" +
+                                "본 약관에 동의하시면 서비스를 이용하실 수 있습니다.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 동의 체크 행 — 여기서 체크해야 "다음" 버튼 활성화
                 TermsRow(
-                    text = "전체 동의",
-                    checked = allAgree,
-                    highlightBox = true,
-                    onCheckedChange = { checked ->
-                        serviceAgree = checked
-                        privacyAgree = checked
-                        ageAgree = checked
-                    }
+                    text = "(필수) $title 동의",
+                    checked = agreed,
+                    showArrow = false,
+                    onCheckedChange = { agreed = it }
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
-
-                TermsRow(
-                    text = "서비스 이용약관 필수 동의",
-                    checked = serviceAgree,
-                    onCheckedChange = { serviceAgree = it },
-                    onDetailClick = onServiceDetailClick
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                TermsRow(
-                    text = "개인정보 처리방침 필수 동의",
-                    checked = privacyAgree,
-                    onCheckedChange = { privacyAgree = it },
-                    onDetailClick = onPrivacyDetailClick
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                TermsRow(
-                    text = "만 14세 이상 확인",
-                    checked = ageAgree,
-                    onCheckedChange = { ageAgree = it },
-                    onDetailClick = onAgeDetailClick
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(80.dp)) // PrimaryButton 공간 확보
             }
 
+            // "다음" 버튼: 동의 체크 시에만 활성화
             PrimaryButton(
-                text = if (isLoading) "처리 중..." else "다음",
-                onClick = onNext,
-                enabled = allAgree && !isLoading,
+                text = "다음",
+                onClick = onConfirm,
+                enabled = agreed,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
@@ -143,7 +257,8 @@ fun TermsRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onDetailClick: () -> Unit = {},
-    highlightBox: Boolean = false
+    highlightBox: Boolean = false,
+    showArrow: Boolean = true
 ) {
     val rowShape = RoundedCornerShape(20.dp)
 
@@ -198,13 +313,15 @@ fun TermsRow(
             modifier = Modifier.weight(1f)
         )
 
-        Image(
-            painter = painterResource(id = R.drawable.ic_next),
-            contentDescription = "상세 약관 보기",
-            modifier = Modifier
-                .size(20.dp)
-                .clickable { onDetailClick() }
-        )
+        if (showArrow) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_next),
+                contentDescription = "상세 약관 보기",
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable { onDetailClick() }
+            )
+        }
     }
 }
 
@@ -214,26 +331,7 @@ fun LoginTermsScreenPreview() {
     LoginTermsScreen(
         isLoading = false,
         onNext = {},
-        onBack = {},
-        onServiceDetailClick = {},
-        onPrivacyDetailClick = {},
-        onAgeDetailClick = {}
-    )
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun LoginTermsScreenLoadingPreview() {
-    LoginTermsScreen(
-        isLoading = true,
-        onNext = {},
-        onBack = {},
-        onServiceDetailClick = {},
-        onPrivacyDetailClick = {},
-        onAgeDetailClick = {},
-        initialServiceAgree = true,
-        initialPrivacyAgree = true,
-        initialAgeAgree = true
+        onBack = {}
     )
 }
 
@@ -244,11 +342,7 @@ fun LoginTermsScreenAllCheckedPreview() {
         isLoading = false,
         onNext = {},
         onBack = {},
-        onServiceDetailClick = {},
-        onPrivacyDetailClick = {},
-        onAgeDetailClick = {},
         initialServiceAgree = true,
-        initialPrivacyAgree = true,
-        initialAgeAgree = true
+        initialPrivacyAgree = true
     )
 }
