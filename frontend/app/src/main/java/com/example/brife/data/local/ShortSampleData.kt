@@ -5,7 +5,7 @@ import com.example.brife.feature.home.NewsSourceArticle
 
 val shortsampleHomeNews = listOf(
     HomeNewsCardItem(
-        category = "경제",
+        category = "경제 재테크",
         subCategory = "금리/통화정책",
         title = "기준금리 동결 속 소비 회복 기대감 확대",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
@@ -17,7 +17,7 @@ val shortsampleHomeNews = listOf(
         insight = "금리 흐름은 대출, 소비, 투자 심리에 직접적인 영향을 미친다. 따라서 이번 이슈는 단순 금융 뉴스가 아니라 개인의 소비 전략과 자산관리에도 연결해서 해석할 필요가 있다."
     ),
     HomeNewsCardItem(
-        category = "IT",
+        category = "IT 테크",
         subCategory = "AI/빅데이터",
         title = "생성형 AI 서비스 경쟁 본격화",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
@@ -29,7 +29,7 @@ val shortsampleHomeNews = listOf(
         insight = "생성형 AI는 단순 기능 추가를 넘어 플랫폼 락인 전략과 직결된다. 앞으로는 어떤 서비스가 더 자연스럽게 AI를 녹여내느냐가 경쟁력을 결정할 가능성이 높다."
     ),
     HomeNewsCardItem(
-        category = "사회",
+        category = "시사 정치",
         subCategory = "주거/부동산",
         title = "청년 주거 지원 정책 체감도 격차 심화",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
@@ -41,7 +41,7 @@ val shortsampleHomeNews = listOf(
         insight = "정책의 효과는 단순 공급이 아니라 접근성과 체감도에서 결정된다. 따라서 정책 내용을 볼 때는 혜택뿐 아니라 신청 조건과 절차까지 함께 고려해야 한다."
     ),
     HomeNewsCardItem(
-        category = "과학",
+        category = "라이프 성장",
         subCategory = "우주/항공",
         title = "민간 중심 우주 산업 투자 확대 지속",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
@@ -53,7 +53,7 @@ val shortsampleHomeNews = listOf(
         insight = "우주 산업은 단순 기술 경쟁을 넘어 통신, 국방, 물류 등 다양한 산업과 연결된다. 장기적으로는 새로운 산업 생태계를 형성할 가능성이 크다."
     ),
     HomeNewsCardItem(
-        category = "문화",
+        category = "문화 예술",
         subCategory = "미디어/콘텐츠",
         title = "숏폼 중심 뉴스 소비 패턴 강화",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
@@ -72,7 +72,7 @@ val shortsampleHomeNews = listOf(
 //.롱폼 용 데이터
 val longsampleHomeNews = listOf(
     HomeNewsCardItem(
-        category = "경제",
+        category = "경제 재테크",
         subCategory = "금리/통화정책",
         title = "기준금리 동결 속 소비 회복 기대감 확대와 체감 경기 변화 가능성",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
@@ -100,7 +100,7 @@ val longsampleHomeNews = listOf(
         )
     ),
     HomeNewsCardItem(
-        category = "IT",
+        category = "IT 테크",
         subCategory = "AI/빅데이터",
         title = "생성형 AI 서비스 경쟁 본격화, 플랫폼 간 차별화가 핵심으로 부상",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
@@ -128,7 +128,7 @@ val longsampleHomeNews = listOf(
         )
     ),
     HomeNewsCardItem(
-        category = "사회",
+        category = "시사 정치",
         subCategory = "주거/부동산",
         title = "청년 주거 지원 정책 체감도 격차 심화, 지역별 접근성 문제 제기",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
@@ -156,7 +156,7 @@ val longsampleHomeNews = listOf(
         )
     ),
     HomeNewsCardItem(
-        category = "과학",
+        category = "라이프 성장",
         subCategory = "우주/항공",
         title = "민간 중심 우주 산업 투자 확대 지속, 데이터 산업까지 확장",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",
@@ -184,7 +184,7 @@ val longsampleHomeNews = listOf(
         )
     ),
     HomeNewsCardItem(
-        category = "문화",
+        category = "문화 예술",
         subCategory = "미디어/콘텐츠",
         title = "숏폼 중심 뉴스 소비 패턴 강화, 빠른 정보 전달 선호 뚜렷",
         notice = "AI가 분석하여 핵심만 재구성한 요약본입니다",

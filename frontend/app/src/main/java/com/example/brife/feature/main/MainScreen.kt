@@ -63,6 +63,18 @@ fun MainScreen(
         )
     }
 
+    // 저장된 대분류 관심사 기준으로 매칭 뉴스 우선, 나머지 후순위 정렬 후 Top5
+    val homeNewsList = remember(profileInterests) {
+        val interestNames = profileInterests.map { it.name }.toSet()
+        if (interestNames.isEmpty()) {
+            shortsampleHomeNews.take(5)
+        } else {
+            val matching = shortsampleHomeNews.filter { it.category in interestNames }
+            val nonMatching = shortsampleHomeNews.filter { it.category !in interestNames }
+            (matching + nonMatching).take(5)
+        }
+    }
+
     fun navigateTo(route: String) {
         navController.navigate(route) {
             popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -137,7 +149,7 @@ fun MainScreen(
         ) {
             composable(NavRoutes.HOME) {
                 HomeScreen(
-                    newsList = shortsampleHomeNews,
+                    newsList = homeNewsList,
                     isLoggedIn = isLoggedIn,
                     onLoginRequired = {
                         showLoginBottomSheet = true
