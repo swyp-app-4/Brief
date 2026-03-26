@@ -277,7 +277,11 @@ fun MainScreen(
 
                 NewsLongScreen(
                     item = item,
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    onNavigateToArchive = {
+                        navController.popBackStack()
+                        navigateTo(NavRoutes.ARCHIVE)
+                    }
                 )
             }
         }

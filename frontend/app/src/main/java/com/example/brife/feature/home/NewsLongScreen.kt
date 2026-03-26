@@ -60,6 +60,7 @@ fun NewsLongScreen(
     item: HomeNewsCardItem,
     onBackClick: () -> Unit,
     onShareClick: () -> Unit = {},
+    onNavigateToArchive: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -68,25 +69,18 @@ fun NewsLongScreen(
     var showBookmarkSheet by remember { mutableStateOf(false) }
     var showCreateFolderSheet by remember { mutableStateOf(false) }
 
-
+    // 확정된 북마크 상태 (저장 버튼 클릭 시에만 반영)
     var folderItems by remember {
         mutableStateOf(
             listOf(
-                BookmarkFolderUiModel(
-                    id = 1L,
-                    name = "즐겨찾기",
-                    newsCount = 12,
-                    isSelected = true
-                ),
-                BookmarkFolderUiModel(
-                    id = 2L,
-                    name = "전쟁",
-                    newsCount = 3,
-                    isSelected = false
-                )
+                BookmarkFolderUiModel(id = 1L, name = "즐겨찾기", newsCount = 12, isSelected = false),
+                BookmarkFolderUiModel(id = 2L, name = "전쟁", newsCount = 3, isSelected = false)
             )
         )
     }
+
+    // 바텀시트 내 임시 선택 상태 — 취소 시 folderItems에 반영되지 않음
+    var tempFolders by remember { mutableStateOf(folderItems) }
 
     Box(
         modifier = modifier
@@ -124,6 +118,7 @@ fun NewsLongScreen(
             isBookmarked = folderItems.any { it.isSelected },
             onBackClick = onBackClick,
             onBookmarkClick = {
+                tempFolders = folderItems  // 시트 열 때 확정 상태를 임시 상태로 동기화
                 showBookmarkSheet = true
             },
             onShareClick = onShareClick
@@ -148,64 +143,46 @@ fun NewsLongScreen(
 
         if (showBookmarkSheet) {
             NewsBookmarkBottomSheet(
-                folders = folderItems,
-                onDismissRequest = { showBookmarkSheet = false },
+                folders = tempFolders,
+                onDismissRequest = { showBookmarkSheet = false },  // 취소 — tempFolders 버려짐
                 onMyFolderClick = {
                     showBookmarkSheet = false
-                    // TODO: 내 폴더 화면 이동
+                    onNavigateToArchive()
                 },
                 onAddFolderClick = {
-                    showBookmarkSheet = false
+                    // BookmarkSheet를 닫지 않고 CreateFolderSheet를 위에 띄움
                     showCreateFolderSheet = true
                 },
-                //다중선택
                 onFolderBookmarkClick = { clickedFolder ->
-                    folderItems = folderItems.map { folder ->
-                        if (folder.id == clickedFolder.id) {
-                            folder.copy(isSelected = !folder.isSelected)
-                        } else {
-                            folder
-                        }
+                    // 임시 상태만 변경 — 저장 전까지 folderItems에 반영되지 않음
+                    tempFolders = tempFolders.map { folder ->
+                        if (folder.id == clickedFolder.id) folder.copy(isSelected = !folder.isSelected)
+                        else folder
                     }
+                },
+                onSaveClick = {
+                    // 저장 확정 — tempFolders를 folderItems에 반영
+                    folderItems = tempFolders
+                    showBookmarkSheet = false
                 }
-//단일선택
-//                onFolderBookmarkClick = { clickedFolder ->
-//                    folderItems = folderItems.map { folder ->
-//                        folder.copy(isSelected = folder.id == clickedFolder.id)
-//                    }
-//                }
-
             )
         }
 
         if (showCreateFolderSheet) {
             CreateFolderBottomSheet(
                 onDismissRequest = { showCreateFolderSheet = false },
-
-                //여러 폴더 동시 저장
                 onSave = { newFolderName ->
-                    folderItems = folderItems + BookmarkFolderUiModel(
+                    val newFolder = BookmarkFolderUiModel(
                         id = (folderItems.maxOfOrNull { it.id } ?: 0L) + 1L,
                         name = newFolderName,
                         newsCount = 1,
                         isSelected = true
                     )
+                    // 확정 목록과 임시 목록 모두에 즉시 반영
+                    folderItems = folderItems + newFolder
+                    tempFolders = tempFolders + newFolder
                     showCreateFolderSheet = false
                 },
-
-                //하나의 폴더에만 저장
-//                onSave = { newFolderName ->
-//                    folderItems = folderItems.map { it.copy(isSelected = false) } +
-//                            BookmarkFolderUiModel(
-//                                id = (folderItems.maxOfOrNull { it.id } ?: 0L) + 1L,
-//                                name = newFolderName,
-//                                newsCount = 1,
-//                                isSelected = true
-//                            )
-//                    showCreateFolderSheet = false
-//                },
-
-
                 currentFolderCount = folderItems.size,
                 existingFolders = folderItems.map { it.name }
             )

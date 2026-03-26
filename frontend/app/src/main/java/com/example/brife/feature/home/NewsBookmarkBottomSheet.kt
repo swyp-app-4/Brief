@@ -1,18 +1,25 @@
 package com.example.brife.feature.home
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -25,16 +32,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.data.local.BookmarkFolderUiModel
+import com.example.brife.feature.archive.component.CreateFolderBottomSheet
 import com.example.brife.ui.component.AppText
-import com.example.brife.ui.theme.PrimaryNormal
-import com.example.brife.ui.theme.TextBody
-import com.example.brife.ui.theme.TextTitle
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.brife.ui.theme.BrifeTheme
+import com.example.brife.ui.theme.CtaDisabled
+import com.example.brife.ui.theme.PrimaryNormal
 import com.example.brife.ui.theme.TextSubtitle
+import com.example.brife.ui.theme.TextTitle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +51,8 @@ fun NewsBookmarkBottomSheet(
     onDismissRequest: () -> Unit,
     onMyFolderClick: () -> Unit,
     onAddFolderClick: () -> Unit,
-    onFolderBookmarkClick: (BookmarkFolderUiModel) -> Unit
+    onFolderBookmarkClick: (BookmarkFolderUiModel) -> Unit,
+    onSaveClick: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -62,6 +71,7 @@ fun NewsBookmarkBottomSheet(
                 .navigationBarsPadding()
                 .padding(top = 8.dp, bottom = 20.dp)
         ) {
+            // 내 폴더
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -75,10 +85,7 @@ fun NewsBookmarkBottomSheet(
                     style = MaterialTheme.typography.titleMedium,
                     color = TextTitle
                 )
-
                 Spacer(modifier = Modifier.width(4.dp))
-
-
                 Icon(
                     painter = painterResource(id = R.drawable.ic_longform_arrow_right),
                     contentDescription = "내 폴더로 이동",
@@ -86,6 +93,7 @@ fun NewsBookmarkBottomSheet(
                 )
             }
 
+            // 새로운 폴더 추가
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -99,7 +107,6 @@ fun NewsBookmarkBottomSheet(
                     tint = Color.Unspecified,
                     modifier = Modifier.size(20.dp)
                 )
-
                 AppText(
                     text = "새로운 폴더 추가",
                     modifier = Modifier.padding(start = 10.dp),
@@ -113,16 +120,63 @@ fun NewsBookmarkBottomSheet(
                 color = Color(0xFFE9EDF2)
             )
 
-            folders.forEachIndexed { index, folder ->
-                FolderBookmarkRow(
-                    folder = folder,
-                    onBookmarkClick = { onFolderBookmarkClick(folder) }
-                )
+            // 폴더 목록 — 스크롤 가능, 높이 제한
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 280.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                folders.forEachIndexed { index, folder ->
+                    FolderBookmarkRow(
+                        folder = folder,
+                        onBookmarkClick = { onFolderBookmarkClick(folder) }
+                    )
+                    if (index != folders.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                            color = Color(0xFFE9EDF2)
+                        )
+                    }
+                }
+            }
 
-                if (index != folders.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                        color = Color(0xFFE9EDF2)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 취소 / 저장 버튼 — CreateFolderBottomSheet와 동일한 스타일
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onDismissRequest,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    AppText(
+                        text = "취소",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+                Button(
+                    onClick = onSaveClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryNormal),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    AppText(
+                        text = "저장",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleSmall
                     )
                 }
             }
@@ -170,80 +224,97 @@ private fun FolderBookmarkRow(
     }
 }
 
+// ────────────────────────────────────────────
+// Preview 4종
+// ────────────────────────────────────────────
 
+private val previewFoldersSingle = listOf(
+    BookmarkFolderUiModel(id = 1L, name = "즐겨찾기", newsCount = 0, isSelected = false)
+)
 
+private val previewFoldersMultiple = listOf(
+    BookmarkFolderUiModel(id = 1L, name = "즐겨찾기", newsCount = 12, isSelected = false),
+    BookmarkFolderUiModel(id = 2L, name = "전쟁", newsCount = 3, isSelected = false),
+    BookmarkFolderUiModel(id = 3L, name = "경제 공부", newsCount = 7, isSelected = false),
+    BookmarkFolderUiModel(id = 4L, name = "IT 트렌드", newsCount = 2, isSelected = false),
+    BookmarkFolderUiModel(id = 5L, name = "사회 이슈", newsCount = 0, isSelected = false),
+)
 
+private val previewFoldersSelected = listOf(
+    BookmarkFolderUiModel(id = 1L, name = "즐겨찾기", newsCount = 12, isSelected = true),
+    BookmarkFolderUiModel(id = 2L, name = "전쟁", newsCount = 3, isSelected = false),
+    BookmarkFolderUiModel(id = 3L, name = "경제 공부", newsCount = 7, isSelected = true),
+)
 
-@Preview(showBackground = true, name = "FolderBookmarkRow - Selected")
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, showSystemUi = true, name = "1. 기본 상태")
 @Composable
-private fun FolderBookmarkRowSelectedPreview() {
+private fun NewsBookmarkBottomSheetBasicPreview() {
     BrifeTheme {
-        Box(
-            modifier = Modifier.background(Color.White)
-        ) {
-            FolderBookmarkRow(
-                folder = BookmarkFolderUiModel(
-                    id = 1L,
-                    name = "즐겨찾기",
-                    newsCount = 0,
-                    isSelected = true
-                ),
-                onBookmarkClick = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "FolderBookmarkRow - Count")
-@Composable
-private fun FolderBookmarkRowCountPreview() {
-    BrifeTheme {
-        Box(
-            modifier = Modifier.background(Color.White)
-        ) {
-            FolderBookmarkRow(
-                folder = BookmarkFolderUiModel(
-                    id = 2L,
-                    name = "전쟁",
-                    newsCount = 12,
-                    isSelected = false
-                ),
-                onBookmarkClick = {}
-            )
-        }
+        NewsBookmarkBottomSheet(
+            folders = previewFoldersSingle,
+            onDismissRequest = {},
+            onMyFolderClick = {},
+            onAddFolderClick = {},
+            onFolderBookmarkClick = {},
+            onSaveClick = {}
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true, name = "NewsBookmarkBottomSheet")
+@Preview(showBackground = true, showSystemUi = true, name = "2. 폴더 여러 개 상태")
 @Composable
-private fun NewsBookmarkBottomSheetPreview() {
+private fun NewsBookmarkBottomSheetMultiplePreview() {
     BrifeTheme {
         NewsBookmarkBottomSheet(
-            folders = listOf(
-                BookmarkFolderUiModel(
-                    id = 1L,
-                    name = "즐겨찾기",
-                    newsCount = 0,
-                    isSelected = true
-                ),
-                BookmarkFolderUiModel(
-                    id = 2L,
-                    name = "전쟁",
-                    newsCount = 3,
-                    isSelected = false
-                ),
-                BookmarkFolderUiModel(
-                    id = 3L,
-                    name = "경제",
-                    newsCount = 7,
-                    isSelected = false
-                )
-            ),
+            folders = previewFoldersMultiple,
             onDismissRequest = {},
             onMyFolderClick = {},
             onAddFolderClick = {},
-            onFolderBookmarkClick = {}
+            onFolderBookmarkClick = {},
+            onSaveClick = {}
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, showSystemUi = true, name = "3. 폴더 선택된 상태")
+@Composable
+private fun NewsBookmarkBottomSheetSelectedPreview() {
+    BrifeTheme {
+        NewsBookmarkBottomSheet(
+            folders = previewFoldersSelected,
+            onDismissRequest = {},
+            onMyFolderClick = {},
+            onAddFolderClick = {},
+            onFolderBookmarkClick = {},
+            onSaveClick = {}
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, showSystemUi = true, name = "4. 새 폴더 추가 바텀시트 열린 상태")
+@Composable
+private fun NewsBookmarkWithCreateFolderPreview() {
+    BrifeTheme {
+        // BookmarkSheet 위에 CreateFolderSheet가 올라온 상태를 보여주는 Preview
+        Box {
+            NewsBookmarkBottomSheet(
+                folders = previewFoldersSingle,
+                onDismissRequest = {},
+                onMyFolderClick = {},
+                onAddFolderClick = {},
+                onFolderBookmarkClick = {},
+                onSaveClick = {}
+            )
+            CreateFolderBottomSheet(
+                onDismissRequest = {},
+                onSave = {},
+                currentFolderCount = 1,
+                existingFolders = listOf("즐겨찾기")
+            )
+        }
     }
 }
