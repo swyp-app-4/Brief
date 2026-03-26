@@ -80,9 +80,7 @@ fun MainScreen(
                         centerTitle = true
                     )
                 }
-                currentRoute == NavRoutes.PROFILE -> {
-                    AppTopBar(showSettings = false)
-                }
+                // PROFILE: topbar 없음 (요구사항)
             }
         },
         bottomBar = {
