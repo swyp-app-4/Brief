@@ -43,6 +43,7 @@ fun SettingScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .statusBarsPadding()
                     .height(56.dp)
                     .background(Color.White)
                     .padding(horizontal = 4.dp),
