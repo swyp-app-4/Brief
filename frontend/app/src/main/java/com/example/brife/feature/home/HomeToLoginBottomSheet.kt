@@ -55,17 +55,17 @@ fun HomeToLoginBottomSheet(
             ) {
 
                 // ✅ 핵심: 위 공간만 추가 (기존 레이아웃 유지)
-                Spacer(modifier = Modifier.height(100.dp))
+                Spacer(modifier = Modifier.height(120.dp))
 
                 // 텍스트 (위치 그대로 유지됨)
                 AppText(
                     text = "지금 로그인하고 \n나만의 맞춤 뉴스 받아보기!",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(5.dp))
+                Spacer(modifier = Modifier.height(25.dp))
 
                 PrimaryButton(
                     text = "로그인",
