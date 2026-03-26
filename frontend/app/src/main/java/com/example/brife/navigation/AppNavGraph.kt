@@ -22,6 +22,7 @@ import com.example.brife.feature.archive.ArchiveDetailScreen
 import com.example.brife.feature.auth.LoginTermsRoute
 import com.example.brife.feature.setting.SettingScreen
 import com.example.brife.feature.setting.SettingUiState
+import com.example.brife.feature.setting.WidgetInstallGuideScreen
 import com.example.brife.feature.auth.LoginViewModel
 import com.example.brife.feature.auth.LoginViewModelFactory
 import com.example.brife.feature.home.NewsLongScreen
@@ -174,6 +175,13 @@ fun AppNavGraph() {
         composable(NavRoutes.SETTING) {
             SettingScreen(
                 uiState = SettingUiState(loginMethod = "Google", appVersion = "1.0.0"),
+                onBackClick = { navController.popBackStack() },
+                onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) }
+            )
+        }
+
+        composable(NavRoutes.WIDGET_INSTALL_GUIDE) {
+            WidgetInstallGuideScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

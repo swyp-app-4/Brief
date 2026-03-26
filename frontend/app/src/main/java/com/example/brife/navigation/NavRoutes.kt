@@ -30,4 +30,5 @@ object NavRoutes {
 
     // 설정 화면 (MainScreen 바깥 독립 라우트)
     const val SETTING = "setting"
+    const val WIDGET_INSTALL_GUIDE = "widget_install_guide"
 }
