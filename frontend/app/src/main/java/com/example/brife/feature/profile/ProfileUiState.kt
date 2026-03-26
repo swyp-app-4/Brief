@@ -26,6 +26,17 @@ val mockGuestProfileState = ProfileUiState(
     )
 )
 
+// 카테고리 ID → ProfileCategoryItem 정적 매핑 (온보딩 mock 데이터 기준)
+fun categoryItemFromId(id: Long): ProfileCategoryItem? = when (id) {
+    1L -> ProfileCategoryItem(1L, "시사 정치", R.drawable.news_politics)
+    2L -> ProfileCategoryItem(2L, "경제 재테크", R.drawable.economy)
+    3L -> ProfileCategoryItem(3L, "IT 테크", R.drawable.ittech)
+    4L -> ProfileCategoryItem(4L, "문화 예술", R.drawable.cultureart)
+    5L -> ProfileCategoryItem(5L, "엔터 스포츠", R.drawable.entsports)
+    6L -> ProfileCategoryItem(6L, "라이프 성장", R.drawable.lifegrowth)
+    else -> null
+}
+
 // 로그인 mock — 관심사 2개
 val mockLoggedInProfileState = ProfileUiState(
     isLoggedIn = true,

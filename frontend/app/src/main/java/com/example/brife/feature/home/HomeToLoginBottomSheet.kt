@@ -24,7 +24,8 @@ import com.example.brife.ui.theme.BrifeTheme
 fun HomeToLoginBottomSheet(
     sheetState: SheetState,
     onDismissRequest: () -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    onBrowseClick: () -> Unit = {}
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -75,7 +76,7 @@ fun HomeToLoginBottomSheet(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = onDismissRequest,
+                    onClick = onBrowseClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),

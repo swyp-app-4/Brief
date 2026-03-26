@@ -39,6 +39,7 @@ import com.example.brife.R
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.BgDefault
+import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.ComponentDefault
 import com.example.brife.ui.theme.InterestSelected
 import com.example.brife.ui.theme.PrimaryNormal
@@ -164,9 +165,10 @@ fun LoginTermsScreen(
 private fun TermsDetailPage(
     title: String,
     onConfirm: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    initialAgreed: Boolean = false
 ) {
-    var agreed by remember { mutableStateOf(false) }
+    var agreed by remember { mutableStateOf(initialAgreed) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -322,6 +324,34 @@ fun TermsRow(
                     .clickable { onDetailClick() }
             )
         }
+    }
+}
+
+// 약관 상세 페이지 — 미동의 상태 (다음 버튼 비활성)
+@Preview(showBackground = true, showSystemUi = true, name = "약관 상세 - 미동의")
+@Composable
+fun TermsDetailPageUncheckedPreview() {
+    BrifeTheme {
+        TermsDetailPage(
+            title = "서비스 이용약관",
+            initialAgreed = false,
+            onConfirm = {},
+            onBack = {}
+        )
+    }
+}
+
+// 약관 상세 페이지 — 동의 체크된 상태 (다음 버튼 활성)
+@Preview(showBackground = true, showSystemUi = true, name = "약관 상세 - 동의 완료")
+@Composable
+fun TermsDetailPageCheckedPreview() {
+    BrifeTheme {
+        TermsDetailPage(
+            title = "서비스 이용약관",
+            initialAgreed = true,
+            onConfirm = {},
+            onBack = {}
+        )
     }
 }
 

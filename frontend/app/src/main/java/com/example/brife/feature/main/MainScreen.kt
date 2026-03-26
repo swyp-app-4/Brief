@@ -8,18 +8,24 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.local.shortsampleHomeNews
 import com.example.brife.feature.archive.ArchiveScreen
 import com.example.brife.feature.explore.ExploreScreen
 import com.example.brife.feature.home.HomeScreen
+import com.example.brife.feature.onboarding.OnboardingInterestRoute
+import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
 import com.example.brife.feature.profile.ProfileScreen
+import com.example.brife.feature.profile.ProfileUiState
+import com.example.brife.feature.profile.categoryItemFromId
 import com.example.brife.navigation.NavRoutes
 import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
@@ -33,11 +39,16 @@ fun MainScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToNewsLong: (String) -> Unit
 ) {
+    val context = LocalContext.current
+    val onboardingStorage = remember { OnboardingLocalStorage(context) }
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: NavRoutes.HOME
 
     val isNewsLongRoute = currentRoute?.startsWith("${NavRoutes.NEWS_LONG}/") == true
+    val isInterestResetRoute = currentRoute == NavRoutes.ONBOARDING_INTEREST_RESET ||
+            currentRoute?.startsWith("${NavRoutes.ONBOARDING_SUB_INTEREST_RESET}/") == true
 
     val backgroundColor =
         if (currentRoute == NavRoutes.HOME) Color.Transparent else Color.White
@@ -45,6 +56,12 @@ fun MainScreen(
     val isLoggedIn = false
     var showLoginBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var profileInterests by remember {
+        mutableStateOf(
+            onboardingStorage.getSelectedCategoryIds().mapNotNull { categoryItemFromId(it) }
+        )
+    }
 
     fun navigateTo(route: String) {
         navController.navigate(route) {
@@ -74,7 +91,7 @@ fun MainScreen(
                 }
                 currentRoute == NavRoutes.ARCHIVE -> {
                     AppTopBar(
-                        title = "아카이브",
+                        title = "보관함",
                         showLogo = false,
                         showSettings = false,
                         centerTitle = true
@@ -84,7 +101,7 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            if (!isNewsLongRoute) {
+            if (!isNewsLongRoute && !isInterestResetRoute) {
                 AppNavigationBar(
                     selectedIndex = when (currentRoute) {
                         NavRoutes.HOME -> 0
@@ -153,7 +170,40 @@ fun MainScreen(
 
             composable(NavRoutes.PROFILE) {
                 ProfileScreen(
-                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
+                    uiState = ProfileUiState(
+                        isLoggedIn = false,
+                        interests = profileInterests
+                    ),
+                    onResetInterestClick = {
+                        navController.navigate(NavRoutes.ONBOARDING_INTEREST_RESET)
+                    }
+                )
+            }
+
+            composable(NavRoutes.ONBOARDING_INTEREST_RESET) {
+                OnboardingInterestRoute(
+                    onNextClick = { selectedIds ->
+                        navController.navigate(
+                            "${NavRoutes.ONBOARDING_SUB_INTEREST_RESET}/${selectedIds.joinToString(",")}"
+                        )
+                    }
+                )
+            }
+
+            composable(
+                route = "${NavRoutes.ONBOARDING_SUB_INTEREST_RESET}/{idsArg}",
+                arguments = listOf(navArgument("idsArg") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val idsArg = backStackEntry.arguments?.getString("idsArg") ?: ""
+                val selectedIds = idsArg.split(",").mapNotNull { it.toLongOrNull() }
+                OnboardingSubInterestRoute(
+                    selectedParentCategoryIds = selectedIds,
+                    onNextClick = {
+                        profileInterests = onboardingStorage.getSelectedCategoryIds()
+                            .mapNotNull { categoryItemFromId(it) }
+                        navController.popBackStack(NavRoutes.PROFILE, false)
+                    }
                 )
             }
 
@@ -178,6 +228,10 @@ fun MainScreen(
                 onLoginClick = {
                     showLoginBottomSheet = false
                     onNavigateToLogin()
+                },
+                onBrowseClick = {
+                    showLoginBottomSheet = false
+                    navigateTo(NavRoutes.PROFILE)
                 }
             )
         }
