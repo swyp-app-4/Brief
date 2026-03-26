@@ -14,6 +14,7 @@ val shortsampleHomeNews = listOf(
             "소비와 투자 심리 회복 여부가 향후 핵심 변수로 작용한다.",
             "가계 부담 완화 여부가 경기 회복 속도를 좌우할 전망이다."
         ),
+        articleCount = 5,
         insight = "금리 흐름은 대출, 소비, 투자 심리에 직접적인 영향을 미친다. 따라서 이번 이슈는 단순 금융 뉴스가 아니라 개인의 소비 전략과 자산관리에도 연결해서 해석할 필요가 있다."
     ),
     HomeNewsCardItem(
@@ -26,6 +27,7 @@ val shortsampleHomeNews = listOf(
             "AI 기능이 플랫폼 경쟁력의 핵심 요소로 자리잡고 있다.",
             "사용자 경험 개선과 생산성 향상이 주요 경쟁 포인트다."
         ),
+        articleCount = 10,
         insight = "생성형 AI는 단순 기능 추가를 넘어 플랫폼 락인 전략과 직결된다. 앞으로는 어떤 서비스가 더 자연스럽게 AI를 녹여내느냐가 경쟁력을 결정할 가능성이 높다."
     ),
     HomeNewsCardItem(
@@ -38,6 +40,7 @@ val shortsampleHomeNews = listOf(
             "지역과 소득 조건에 따라 정책 접근성이 크게 차이난다.",
             "실제 혜택보다 신청 과정의 복잡성이 문제로 지적된다."
         ),
+        articleCount = 3,
         insight = "정책의 효과는 단순 공급이 아니라 접근성과 체감도에서 결정된다. 따라서 정책 내용을 볼 때는 혜택뿐 아니라 신청 조건과 절차까지 함께 고려해야 한다."
     ),
     HomeNewsCardItem(
@@ -50,6 +53,7 @@ val shortsampleHomeNews = listOf(
             "위성, 발사체, 데이터 산업까지 영역이 확대되는 추세다.",
             "국가 주도에서 민간 중심 구조로 변화가 진행 중이다."
         ),
+        articleCount = 8,
         insight = "우주 산업은 단순 기술 경쟁을 넘어 통신, 국방, 물류 등 다양한 산업과 연결된다. 장기적으로는 새로운 산업 생태계를 형성할 가능성이 크다."
     ),
     HomeNewsCardItem(
@@ -62,6 +66,7 @@ val shortsampleHomeNews = listOf(
             "사용자들은 빠르고 간결한 정보 전달을 선호하는 경향을 보인다.",
             "기존 긴 기사 중심의 소비 방식은 점차 줄어드는 추세다."
         ),
+        articleCount = 6,
         insight = "콘텐츠 형식이 바뀌면 정보 해석 방식도 함께 변화한다. 따라서 뉴스 소비에서는 단순 전달뿐 아니라 신뢰도와 맥락 유지가 중요한 요소로 작용한다."
     )
 )
@@ -84,6 +89,7 @@ val longsampleHomeNews = listOf(
         insight = "금리 흐름은 대출, 소비, 투자 심리에 직접적인 영향을 미친다. 따라서 이번 이슈는 단순 금융 뉴스가 아니라 개인의 소비 전략과 자산관리에도 연결해서 해석할 필요가 있다.",
         companyName = "중앙일보",
         updatedAt = "2026년 03.25. 수요일 오전",
+        articleCount = 5,
         relatedArticles = listOf(
             NewsSourceArticle(
                 title = "한국은행, 기준금리 동결 기조 유지",
@@ -112,6 +118,7 @@ val longsampleHomeNews = listOf(
         insight = "생성형 AI는 단순 기능 추가를 넘어 플랫폼 락인 전략과 직결된다. 앞으로는 어떤 서비스가 더 자연스럽게 AI를 녹여내느냐가 경쟁력을 결정할 가능성이 높다.",
         companyName = "한겨레",
         updatedAt = "2026년 03.25. 수요일 오후",
+        articleCount = 10,
         relatedArticles = listOf(
             NewsSourceArticle(
                 title = "빅테크 기업, AI 기능 확대 경쟁",
@@ -140,6 +147,7 @@ val longsampleHomeNews = listOf(
         insight = "정책의 효과는 단순 공급이 아니라 접근성과 체감도에서 결정된다. 따라서 정책 내용을 볼 때는 혜택뿐 아니라 신청 조건과 절차까지 함께 고려해야 한다.",
         companyName = "경향신문",
         updatedAt = "2026년 03.25. 수요일 오전",
+        articleCount = 3,
         relatedArticles = listOf(
             NewsSourceArticle(
                 title = "청년층, 지원 정책 있지만 체감 낮아",
@@ -168,6 +176,7 @@ val longsampleHomeNews = listOf(
         insight = "우주 산업은 단순 기술 경쟁을 넘어 통신, 국방, 물류 등 다양한 산업과 연결된다. 장기적으로는 새로운 산업 생태계를 형성할 가능성이 크다.",
         companyName = "조선일보",
         updatedAt = "2026년 03.25. 수요일 오후",
+        articleCount = 8,
         relatedArticles = listOf(
             NewsSourceArticle(
                 title = "민간 우주 산업 투자 증가세",
@@ -196,6 +205,7 @@ val longsampleHomeNews = listOf(
         insight = "콘텐츠 형식이 바뀌면 정보 해석 방식도 함께 변화한다. 따라서 뉴스 소비에서는 단순 전달뿐 아니라 신뢰도와 맥락 유지가 중요한 요소로 작용한다.",
         companyName = "동아일보",
         updatedAt = "2026년 03.25. 수요일 오전",
+        articleCount = 6,
         relatedArticles = listOf(
             NewsSourceArticle(
                 title = "숏폼 뉴스 소비 확대",

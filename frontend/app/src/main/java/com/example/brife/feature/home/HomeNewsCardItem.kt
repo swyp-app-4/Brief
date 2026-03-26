@@ -13,6 +13,7 @@ data class HomeNewsCardItem(
     val summaryPoints: List<String>,
     val insight: String,
     val companyName: String = "",
+    val articleCount: Int,
     val updatedAt: String = "",
     val relatedArticles: List<NewsSourceArticle> = emptyList()
 )

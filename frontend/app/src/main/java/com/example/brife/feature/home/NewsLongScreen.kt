@@ -220,10 +220,14 @@ private fun NewsLongContent(
                 .background(Color.White)
                 .padding(horizontal = 24.dp, vertical = 24.dp)
         ) {
-            CategoryChip(
-                text = item.category,
-                modifier = Modifier.align(Alignment.Start)
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CategoryChip(text = item.category)
+                if (item.subCategory.isNotBlank()) {
+                    CategoryChip(text = item.subCategory)
+                }
+            }
 
             Spacer(modifier = Modifier.height(14.dp))
 
@@ -260,7 +264,7 @@ private fun NewsLongContent(
 
             ) {
                 AppText(
-                    text = "본 요약은 10개 언론사의 보도를\n교차 검증하여 AI가 재구성한 내용입니다.",
+                    text = "본 요약은 ${item.articleCount}개 언론사의 보도를\n교차 검증하여 AI가 재구성한 내용입니다.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextCaption,
                     textAlign = TextAlign.Center
