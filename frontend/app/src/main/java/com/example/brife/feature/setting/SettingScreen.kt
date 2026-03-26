@@ -69,8 +69,8 @@ fun SettingScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
-                .padding(top = 8.dp, bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(top = 32.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // 앱 설정
             SettingSection(title = "앱 설정") {
@@ -113,14 +113,14 @@ private fun SettingSection(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 18.dp)
         ) {
             // 섹션 제목 — 박스 내부 첫 줄
             AppText(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 color = TextBody,
-                modifier = Modifier.padding(vertical = 14.dp)
+                modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)
             )
             content()
         }
@@ -133,7 +133,7 @@ private fun SettingNavItem(label: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .height(48.dp)
             .clickable { onClick() },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -158,7 +158,7 @@ private fun SettingInfoItem(label: String, trailingText: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp),
+            .height(48.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -181,7 +181,7 @@ private fun SettingTextItem(label: String, onClick: () -> Unit, color: Color) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .height(48.dp)
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
