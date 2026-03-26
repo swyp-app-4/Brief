@@ -24,16 +24,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
+import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.theme.BorderDefault
 import com.example.brife.ui.theme.BrifeTheme
@@ -57,13 +60,13 @@ fun ProfileScreen(
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(100.dp))
 
         // 프로필 아바타 — 상단 중앙 고정
         Image(
             painter = painterResource(id = R.drawable.img_profile_avatar),
             contentDescription = "프로필 아바타",
-            modifier = Modifier.size(80.dp)
+            modifier = Modifier.size(130.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -97,8 +100,8 @@ private fun GuestContent(
 ) {
     AppText(
         text = "로그인을 해주세요",
-        style = MaterialTheme.typography.bodyLarge,
-        color = TextSubtitle,
+        style = MaterialTheme.typography.titleMedium,
+        color = Black,
         textAlign = TextAlign.Center
     )
 
@@ -108,8 +111,8 @@ private fun GuestContent(
     Button(
         onClick = onLoginClick,
         modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp),
+            .height(40.dp)
+            .width(80.dp),
         shape = RoundedCornerShape(30.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
@@ -120,8 +123,8 @@ private fun GuestContent(
     ) {
         AppText(
             text = "로그인",
-            style = MaterialTheme.typography.labelLarge,
-            color = PrimaryNormal
+            style = MaterialTheme.typography.labelSmall,
+            color = TextBody
         )
     }
 
@@ -145,8 +148,8 @@ private fun LoggedInContent(
 ) {
     AppText(
         text = uiState.userName,
-        style = MaterialTheme.typography.titleSmall,
-        color = TextTitle,
+        style = MaterialTheme.typography.titleMedium,
+        color = Black,
         textAlign = TextAlign.Center
     )
 
@@ -199,7 +202,7 @@ private fun InterestBox(interests: List<ProfileCategoryItem>) {
                 Image(
                     painter = painterResource(id = item.iconRes),
                     contentDescription = item.name,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(14.dp)
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 AppText(
@@ -216,6 +219,7 @@ private fun InterestBox(interests: List<ProfileCategoryItem>) {
                     modifier = Modifier
                         .width(1.dp)
                         .fillMaxHeight()
+                        .padding(vertical = 12.dp) // 👈 핵심
                         .background(BorderDefault)
                 )
             }
@@ -306,11 +310,11 @@ private fun ResetInterestBox(onClick: () -> Unit) {
     ) {
         AppText(
             text = "관심사 재설정",
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.labelMedium,
             color = TextSubtitle
         )
         Image(
-            painter = painterResource(id = R.drawable.ic_arrow_right),
+            painter = painterResource(id = R.drawable.ic_next),
             contentDescription = "관심사 재설정 이동",
             modifier = Modifier.size(20.dp)
         )
@@ -344,3 +348,5 @@ fun ProfileScreenLoggedInPreview() {
         ProfileScreen(uiState = mockLoggedInProfileState)
     }
 }
+
+
