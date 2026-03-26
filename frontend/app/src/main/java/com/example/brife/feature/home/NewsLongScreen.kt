@@ -195,11 +195,16 @@ private fun NewsLongContent(
     item: HomeNewsCardItem,
     isExpanded: Boolean
 ) {
+    // recomposition 시 이미지가 바뀌지 않도록 최초 1회만 선택
+    val imageRes = remember(item.category) {
+        LongFormImageProvider.getRandomImageRes(item.category)
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         Image(
-            painter = painterResource(id = R.drawable.homescreen_bg),
+            painter = painterResource(id = imageRes),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()

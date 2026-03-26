@@ -339,8 +339,11 @@ private fun HomeNewsCardPreviewContent() {
                     "소비와 투자 심리 회복 여부가 향후 핵심 변수로 꼽힌다.",
                     "가계와 기업 모두 금리 변화보다 경기 흐름을 더 주목하고 있다."
                 ),
+                articleCount= 3,
                 insight = "금리 흐름은 대출, 소비, 투자 심리에 직접 영향을 미친다. 따라서 이번 뉴스는 단순 금융 이슈가 아니라 개인의 소비 계획과 자산관리 전략에도 연결해서 볼 필요가 있다."
             ),
+
+
             modifier = Modifier.fillMaxWidth(),
             onShareClick = {},
             onDetailClick = {}
