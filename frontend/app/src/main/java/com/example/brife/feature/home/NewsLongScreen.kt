@@ -261,7 +261,7 @@ private fun NewsLongContent(
             Spacer(modifier = Modifier.height(10.dp))
 
             AppText(
-                text = "${item.updatedAt} · ${item.companyName}",
+                text = "${item.updatedAt} ",
                 style = MaterialTheme.typography.bodySmall,
                 color = TextCaption
             )
@@ -278,12 +278,12 @@ private fun NewsLongContent(
                         shape = RoundedCornerShape(14.dp)
                     )
                     .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
 
             ) {
                 AppText(
-                    text = "본 요약은 ${item.companyName}의 보도 자료를\n바탕으로 AI가 재구성했습니다.",
+                    text = "본 요약은 10개 언론사의 보도를\n교차 검증하여 AI가 재구성한 내용입니다.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextCaption,
                     textAlign = TextAlign.Center

@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,6 +34,8 @@ import com.example.brife.ui.theme.TextBody
 import com.example.brife.ui.theme.TextTitle
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.brife.ui.theme.BrifeTheme
+import com.example.brife.ui.theme.TextSubtitle
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewsBookmarkBottomSheet(
@@ -63,7 +67,7 @@ fun NewsBookmarkBottomSheet(
                     .fillMaxWidth()
                     .clickable { onMyFolderClick() }
                     .padding(horizontal = 20.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppText(
@@ -71,6 +75,9 @@ fun NewsBookmarkBottomSheet(
                     style = MaterialTheme.typography.titleMedium,
                     color = TextTitle
                 )
+
+                Spacer(modifier = Modifier.width(4.dp))
+
 
                 Icon(
                     painter = painterResource(id = R.drawable.ic_longform_arrow_right),
@@ -101,7 +108,10 @@ fun NewsBookmarkBottomSheet(
                 )
             }
 
-            HorizontalDivider(color = Color(0xFFE9EDF2))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                color = Color(0xFFE9EDF2)
+            )
 
             folders.forEachIndexed { index, folder ->
                 FolderBookmarkRow(
@@ -111,7 +121,7 @@ fun NewsBookmarkBottomSheet(
 
                 if (index != folders.lastIndex) {
                     HorizontalDivider(
-                        modifier = Modifier.padding(start = 20.dp),
+                        modifier = Modifier.padding(horizontal = 20.dp),
                         color = Color(0xFFE9EDF2)
                     )
                 }
@@ -128,7 +138,7 @@ private fun FolderBookmarkRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 18.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -141,7 +151,7 @@ private fun FolderBookmarkRow(
         AppText(
             text = folderLabel,
             style = MaterialTheme.typography.bodyLarge,
-            color = TextBody
+            color = TextSubtitle
         )
 
         IconButton(onClick = onBookmarkClick) {
