@@ -18,6 +18,7 @@ import androidx.navigation.navArgument
 import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.local.shortsampleHomeNews
+import com.example.brife.feature.archive.ArchiveDetailScreen
 import com.example.brife.feature.archive.ArchiveScreen
 import com.example.brife.feature.archive.component.ArchiveMoreBottomSheet
 import com.example.brife.feature.explore.ExploreScreen
@@ -50,6 +51,7 @@ fun MainScreen(
     val isNewsLongRoute = currentRoute?.startsWith("${NavRoutes.NEWS_LONG}/") == true
     val isInterestResetRoute = currentRoute == NavRoutes.ONBOARDING_INTEREST_RESET ||
             currentRoute?.startsWith("${NavRoutes.ONBOARDING_SUB_INTEREST_RESET}/") == true
+    val isArchiveDetailRoute = currentRoute?.startsWith("${NavRoutes.ARCHIVE_DETAIL}/") == true
 
     val backgroundColor =
         if (currentRoute == NavRoutes.HOME) Color.Transparent else Color.White
@@ -124,7 +126,7 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            if (!isNewsLongRoute && !isInterestResetRoute && !isArchiveDeleteMode) {
+            if (!isNewsLongRoute && !isInterestResetRoute && !isArchiveDeleteMode && !isArchiveDetailRoute) {
                 AppNavigationBar(
                     selectedIndex = when (currentRoute) {
                         NavRoutes.HOME -> 0
@@ -225,6 +227,17 @@ fun MainScreen(
                     onResetInterestClick = {
                         navController.navigate(NavRoutes.ONBOARDING_INTEREST_RESET)
                     }
+                )
+            }
+
+            composable(
+                route = "${NavRoutes.ARCHIVE_DETAIL}/{folderName}",
+                arguments = listOf(navArgument("folderName") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val folderName = backStackEntry.arguments?.getString("folderName") ?: ""
+                ArchiveDetailScreen(
+                    folderName = folderName,
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 

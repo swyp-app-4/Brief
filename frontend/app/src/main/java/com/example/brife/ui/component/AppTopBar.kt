@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -18,9 +19,11 @@ import com.example.brife.R
 fun AppTopBar(
     title: String? = null,           // 제목 (아카이브 등에서 사용)
     showLogo: Boolean = true,        // 로고 표시 여부 (홈에서 사용)
+    showBack: Boolean = false,       // 뒤로가기 아이콘 표시 여부
     showSettings: Boolean = true,    // 설정 아이콘 표시 여부 (홈에서 사용)
     showSearch: Boolean = false,     // 검색창 표시 여부 (탐색에서 사용)
     showMore: Boolean = false,       // 더보기 아이콘 표시 여부 (보관함에서 사용)
+    onBackClick: () -> Unit = {},
     onSettingClick: () -> Unit = {},
     onMoreClick: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -28,7 +31,6 @@ fun AppTopBar(
 ) {
     TopAppBar(
         title = {
-            // 내부의 중복된 val centerTitle 선언 삭제 (에러 해결 2)
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = if (centerTitle) Alignment.Center else Alignment.CenterStart
@@ -43,15 +45,28 @@ fun AppTopBar(
             }
         },
         navigationIcon = {
-            if (showLogo) {
-                Image(
-                    painter = painterResource(id = R.drawable.brife_logo),
-                    contentDescription = "Brife Logo",
-                    modifier = Modifier.size(width = 60.dp, height = 20.dp)
-                )
-            } else if (centerTitle) {
-                // 중앙 정렬 시 좌측 공간을 확보하여 균형을 맞춤
-                Spacer(modifier = Modifier.width(48.dp))
+            when {
+                showBack -> {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_next),
+                            contentDescription = "뒤로가기",
+                            modifier = Modifier.rotate(180f),
+                            tint = Color.Unspecified
+                        )
+                    }
+                }
+                showLogo -> {
+                    Image(
+                        painter = painterResource(id = R.drawable.brife_logo),
+                        contentDescription = "Brife Logo",
+                        modifier = Modifier.size(width = 60.dp, height = 20.dp)
+                    )
+                }
+                centerTitle -> {
+                    // 중앙 정렬 시 좌측 공간을 확보하여 균형을 맞춤
+                    Spacer(modifier = Modifier.width(48.dp))
+                }
             }
         },
         actions = {
@@ -78,8 +93,8 @@ fun AppTopBar(
                         contentDescription = "Settings"
                     )
                 }
-            } else if (centerTitle) {
-                // 중앙 정렬 시 우측 공간을 확보하여 균형을 맞춤
+            } else if (centerTitle && !showMore) {
+                // 중앙 정렬이고 오른쪽 아이콘이 없을 때만 균형용 공간 확보
                 Spacer(modifier = Modifier.width(48.dp))
             }
         },
@@ -112,7 +127,9 @@ fun ArchiveTopBarPreview() {
         title = "보관함",
         showLogo = false,
         showMore = true,
+        showSettings = false,
         centerTitle = true
+
     )
 }
 
