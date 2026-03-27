@@ -20,7 +20,7 @@ public class ArticleExtractorService {
             "AppleWebKit/537.36 (KHTML, like Gecko) " +
             "Chrome/120.0.0.0 Safari/537.36";
 
-    // 언론사별 본문 선택자 (우선순위 순)
+
     private static final List<String> BODY_SELECTORS = List.of(
         "#dic_area",             // 네이버 뉴스 (구버전)
         ".newsct_article",       // 네이버 뉴스 (신버전)
@@ -36,7 +36,7 @@ public class ArticleExtractorService {
         "[role=article]"         // 접근성 표준
     );
 
-    // 본문 오염 요소 제거 선택자
+    // 본문 오염 요소
     private static final String NOISE_SELECTOR =
             "script, style, nav, header, footer, iframe, " +
             ".ad, .advertisement, .banner, " +

@@ -19,8 +19,8 @@ public class NewsResponseDto {
     private Long id;
     private String categoryName;
     private String title;
-    private String summary;              // 3줄 요약
-    private List<SectionDto> sections;   // 소제목별 본문 섹션 (2~3개)
+    private String summary;
+    private List<SectionDto> sections;
     private String thumbnailUrl;
     private int sourceCount;
     private int viewCount;

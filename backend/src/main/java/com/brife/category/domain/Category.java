@@ -24,4 +24,8 @@ public class Category {
 
     @Column(unique = true)
     private String query;
+
+    public String getEffectiveQuery() {
+        return query != null ? query : name;
+    }
 }
