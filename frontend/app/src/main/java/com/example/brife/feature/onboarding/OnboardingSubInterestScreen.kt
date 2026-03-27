@@ -23,6 +23,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -87,6 +89,9 @@ fun OnboardingSubInterestScreen(
             }
 
             else -> {
+                // 대분류별 독립적인 펼침 상태 (categoryId 기준)
+                val expandedMap = remember { mutableStateMapOf<Long, Boolean>() }
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -100,7 +105,12 @@ fun OnboardingSubInterestScreen(
                             iconRes = getInterestIconRes(section.categoryName),
                             subCategories = section.subCategories,
                             selectedIds = uiState.selectedSubCategoryIds,
-                            onChipClick = onSubCategoryClick
+                            onChipClick = onSubCategoryClick,
+                            expanded = expandedMap[section.categoryId] == true,
+                            onExpandToggle = {
+                                expandedMap[section.categoryId] =
+                                    !(expandedMap[section.categoryId] ?: false)
+                            }
                         )
                     }
                 }
@@ -168,8 +178,19 @@ private fun SubCategorySectionView(
     iconRes: Int,
     subCategories: List<SubCategoryResponse>,
     selectedIds: List<Long>,
-    onChipClick: (Long) -> Unit
+    onChipClick: (Long) -> Unit,
+    expanded: Boolean,
+    onExpandToggle: () -> Unit
 ) {
+    // 4개 미만이면 항상 전체 표시 (접기/펼치기 불필요)
+    val needsCollapse = subCategories.size > 3
+    val visibleItems = when {
+        !needsCollapse -> subCategories
+        expanded -> subCategories
+        else -> subCategories.take(3)
+    }
+    val hiddenCount = subCategories.size - 3  // collapsed 상태에서 숨겨진 개수
+
     Column(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -196,11 +217,27 @@ private fun SubCategorySectionView(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            subCategories.forEach { subCategory ->
+            visibleItems.forEach { subCategory ->
                 SubCategoryChip(
                     text = subCategory.name,
                     selected = selectedIds.contains(subCategory.id),
                     onClick = { onChipClick(subCategory.id) }
+                )
+            }
+
+            // +N 버튼 (접힘 상태에서만 표시)
+            if (needsCollapse && !expanded) {
+                MoreChip(
+                    text = "+$hiddenCount",
+                    onClick = onExpandToggle
+                )
+            }
+
+            // 접기 버튼 (펼침 상태에서만 표시)
+            if (needsCollapse && expanded) {
+                MoreChip(
+                    text = "접기",
+                    onClick = onExpandToggle
                 )
             }
         }
@@ -232,6 +269,29 @@ private fun SubCategoryChip(
     }
 }
 
+// +N / 접기 버튼 — SubCategoryChip과 동일한 크기, 비선택 스타일
+@Composable
+private fun MoreChip(
+    text: String,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(20.dp),
+        color = ComponentDefault,
+        border = BorderStroke(width = 0.dp, color = Color.Transparent)
+    ) {
+        AppText(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = PrimaryNormal,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+        )
+    }
+}
+
 private fun getInterestIconRes(groupName: String): Int {
     return when (groupName) {
         "시사 정치", "시사/정치", "시사•정치" -> R.drawable.news_politics
@@ -244,7 +304,7 @@ private fun getInterestIconRes(groupName: String): Int {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, showSystemUi = true, name = "소분류 선택 - 접힘 상태")
 @Composable
 fun OnboardingSubInterestScreenPreview() {
     OnboardingSubInterestScreen(
@@ -257,7 +317,9 @@ fun OnboardingSubInterestScreenPreview() {
                         SubCategoryResponse(1L, "청와대", 1L, "시사 정치"),
                         SubCategoryResponse(2L, "국회/정당", 1L, "시사 정치"),
                         SubCategoryResponse(3L, "북한", 1L, "시사 정치"),
-                        SubCategoryResponse(4L, "행정", 1L, "시사 정치")
+                        SubCategoryResponse(4L, "행정", 1L, "시사 정치"),
+                        SubCategoryResponse(5L, "외교/국방", 1L, "시사 정치"),
+                        SubCategoryResponse(6L, "사회", 1L, "시사 정치")
                     )
                 ),
                 SubCategorySection(
@@ -267,7 +329,8 @@ fun OnboardingSubInterestScreenPreview() {
                         SubCategoryResponse(11L, "금융", 2L, "경제 재테크"),
                         SubCategoryResponse(12L, "증권", 2L, "경제 재테크"),
                         SubCategoryResponse(13L, "산업/재계", 2L, "경제 재테크"),
-                        SubCategoryResponse(14L, "부동산", 2L, "경제 재테크")
+                        SubCategoryResponse(14L, "부동산", 2L, "경제 재테크"),
+                        SubCategoryResponse(15L, "글로벌 경제", 2L, "경제 재테크")
                     )
                 )
             ),
