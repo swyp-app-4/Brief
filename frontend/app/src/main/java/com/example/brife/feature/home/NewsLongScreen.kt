@@ -53,6 +53,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.text.style.TextAlign
 import com.example.brife.data.local.BookmarkFolderUiModel
 import com.example.brife.feature.archive.component.CreateFolderBottomSheet
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.ui.platform.LocalDensity
 
 
 @Composable
@@ -67,6 +70,16 @@ fun NewsLongScreen(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+
+    // 이미지 높이(260dp) - white 영역 오프셋(20dp) = 240dp가 white 시작 지점
+    // TopBar 높이 약 56dp를 제외한 180dp 지점부터 white 영역이 TopBar에 닿음
+    val density = LocalDensity.current
+    val topBarColorThreshold = remember(density) { with(density) { 180.dp.toPx() } }
+    val isTopBarWhite by remember { derivedStateOf { scrollState.value > topBarColorThreshold } }
+    val topBarColor by animateColorAsState(
+        targetValue = if (isTopBarWhite) Color.White else Color.Transparent,
+        label = "newsLongTopBarColor"
+    )
 
     var showBookmarkSheet by remember { mutableStateOf(false) }
     var showCreateFolderSheet by remember { mutableStateOf(false) }
@@ -117,6 +130,7 @@ fun NewsLongScreen(
         }
 
         NewsLongTopBar(
+            containerColor = topBarColor,
             isBookmarked = folderItems.any { it.isSelected },
             onBackClick = onBackClick,
             onBookmarkClick = {
@@ -397,6 +411,7 @@ private fun RelatedArticleItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NewsLongTopBar(
+    containerColor: Color,
     isBookmarked: Boolean,
     onBackClick: () -> Unit,
     onBookmarkClick: () -> Unit,
@@ -438,8 +453,8 @@ private fun NewsLongTopBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent,
-            scrolledContainerColor = Color.Transparent
+            containerColor = containerColor,
+            scrolledContainerColor = containerColor
         ),
         windowInsets = WindowInsets(0, 0, 0, 0)
     )
