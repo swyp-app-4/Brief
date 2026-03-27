@@ -103,8 +103,8 @@ fun HomeScreen(
                         .zIndex(1f - absOffset.coerceIn(0f, 1f))
                         .graphicsLayer {
                             val scale = lerp(
-                                start = 0.9f,
-                                stop = 1f,
+                                start = 0.89f,
+                                stop = 0.99f,
                                 fraction = 1f - absOffset.coerceIn(0f, 1f)
                             )
                             scaleX = scale
@@ -178,7 +178,7 @@ private fun HomeIllustrationArea(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 70.dp)
-                .height(70.dp)
+                .height(85.dp)
         )
         // 가운데 — category 기반 이미지
         Image(
@@ -186,7 +186,7 @@ private fun HomeIllustrationArea(
             contentDescription = null,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .height(140.dp)
+                .height(130.dp)
         )
     }
 }
