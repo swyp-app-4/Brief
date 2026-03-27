@@ -65,7 +65,7 @@ private val onboardingPages = listOf(
     OnboardingGuidePage(
         title = "홈에서 뉴스를\n바로 확인",
         description = "궁금한 뉴스만 위젯으로\n빠르게 확인할 수 있어요.",
-        imageRes = R.drawable.ill_onboarding_screen_03,
+        imageRes = R.drawable.ill_onboarding_screen_03_new,
         characterRes = R.drawable.img_onboarding_character_03
     )
 )
