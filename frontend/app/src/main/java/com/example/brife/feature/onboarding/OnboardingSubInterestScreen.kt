@@ -65,7 +65,7 @@ fun OnboardingSubInterestScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         AppText(
             text = "원하는 관심사를\n자유롭게 선택해주세요",
@@ -74,7 +74,7 @@ fun OnboardingSubInterestScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
 
         when {

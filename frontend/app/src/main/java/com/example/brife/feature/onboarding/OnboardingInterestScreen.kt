@@ -45,7 +45,7 @@ fun OnboardingInterestScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         AppText(
             text = "원하는 관심사를\n최대 3개까지 선택해주세요",
@@ -54,7 +54,7 @@ fun OnboardingInterestScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         when {
             uiState.isLoading -> {
@@ -74,7 +74,7 @@ fun OnboardingInterestScreen(
                         .fillMaxWidth()
                         .weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(vertical = 4.dp)
                 ) {
                     items(uiState.categories) { category ->
