@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.ui.component.AppText
+import com.example.brife.feature.home.LongFormImageProvider
 import com.example.brife.ui.component.AppTopBar
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.CtaDisabled
@@ -54,21 +55,21 @@ fun ArchiveDetailScreen(
             summary = "기준금리 동결 속 소비 회복 기대감 확대에 따른 시장 변화 분석",
             time = "1시간 전",
             company = "경제신문",
-            imageUrl = R.drawable.homescreen_bg
+            imageUrl = LongFormImageProvider.getStableImageRes("경제 · 재테크", 0)
         ),
         ArchiveNewsItem(
             title = "IT",
             summary = "생성형 AI의 진화, 이제는 개인 맞춤형 비서 시대로 접어든다",
             time = "3시간 전",
             company = "테크리뷰",
-            imageUrl = R.drawable.homescreen_bg
+            imageUrl = LongFormImageProvider.getStableImageRes("IT · 테크", 0)
         ),
         ArchiveNewsItem(
             title = "사회",
             summary = "도심 속 녹지 공간 확대 사업, 시민들의 삶의 질 만족도 높여",
             time = "5시간 전",
             company = "브리프뉴스",
-            imageUrl = R.drawable.homescreen_bg
+            imageUrl = LongFormImageProvider.getStableImageRes("시사 · 정치", 0)
         )
     )
 

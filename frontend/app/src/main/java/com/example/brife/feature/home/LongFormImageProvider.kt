@@ -47,4 +47,10 @@ object LongFormImageProvider {
     fun getRandomImageRes(category: String): Int {
         return categoryImageMap[category]?.random() ?: R.drawable.homescreen_bg
     }
+
+    /** index 기반으로 카테고리 이미지를 결정론적으로 반환. 같은 category+index면 항상 동일한 이미지 */
+    fun getStableImageRes(category: String, index: Int): Int {
+        val images = categoryImageMap[category] ?: return R.drawable.homescreen_bg
+        return images[kotlin.math.abs(index) % images.size]
+    }
 }
