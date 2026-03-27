@@ -53,7 +53,7 @@ private val onboardingPages = listOf(
     OnboardingGuidePage(
         title = "바쁜 아침에도\n뉴스는 가볍게",
         description = "내가 고른 관심사를\n매일 아침 뉴스카드로 보여드려요.",
-        imageRes = R.drawable.ill_onboarding_screen_012,
+        imageRes = R.drawable.ill_onboarding_screen_01_new,
         characterRes = R.drawable.img_onboarding_character_01
     ),
     OnboardingGuidePage(
