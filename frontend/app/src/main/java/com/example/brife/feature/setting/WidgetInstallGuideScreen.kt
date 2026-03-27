@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.AppTopBar2
+import com.example.brife.feature.widget.WidgetPinHelper
 import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.TextBody
@@ -129,7 +130,7 @@ fun WidgetInstallGuideScreen(
             onCancelClick = { showInstallSheet = false },
             onAddClick = {
                 showInstallSheet = false
-                requestPinWidget(context)
+                WidgetPinHelper.requestPinWidget(context)
             }
         )
     }

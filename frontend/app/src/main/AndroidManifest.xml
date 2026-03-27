@@ -44,6 +44,22 @@
 
 
 
+        <service
+            android:name=".feature.widget.BrifeWidgetService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <receiver
+            android:name=".feature.widget.BrifeWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/brife_widget_info" />
+        </receiver>
+
     </application>
 
 </manifest>

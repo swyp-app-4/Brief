@@ -1,8 +1,5 @@
 package com.example.brife.feature.setting
 
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -128,17 +125,6 @@ internal fun WidgetInstallBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
-    }
-}
-
-// 위젯 핀 설치 요청 헬퍼 함수
-// TODO: widgetProviderClass를 실제 AppWidgetProvider 클래스로 교체 필요
-fun requestPinWidget(context: Context) {
-    val appWidgetManager = AppWidgetManager.getInstance(context)
-    if (appWidgetManager.isRequestPinAppWidgetSupported) {
-        // TODO: com.example.brife.widget.BrifeWidgetProvider 클래스 생성 후 교체
-        // val provider = ComponentName(context, BrifeWidgetProvider::class.java)
-        // appWidgetManager.requestPinAppWidget(provider, null, null)
     }
 }
 
