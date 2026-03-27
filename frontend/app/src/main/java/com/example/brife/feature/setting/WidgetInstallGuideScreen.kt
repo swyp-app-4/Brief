@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.ui.component.AppText
+import com.example.brife.ui.component.AppTopBar2
 import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.TextBody
@@ -35,30 +36,10 @@ fun WidgetInstallGuideScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // 커스텀 TopBar (SettingScreen과 동일한 구조)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .height(56.dp)
-                .background(Color.White)
-                .padding(horizontal = 4.dp)
-                .align(Alignment.TopStart),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = "뒤로가기",
-                    tint = Color.Unspecified
-                )
-            }
-            AppText(
-                text = "위젯 설정",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                color = TextTitle
-            )
-        }
+        AppTopBar2(
+            title = "위젯 설정",
+            onBackClick = onBackClick
+        )
 
         // 본문: 일러스트 + 설명 텍스트
         Column(

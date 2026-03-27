@@ -103,3 +103,15 @@ When suggesting implementation:
 - Prefer Korean explanations
 - If uncertain, say "불확실"
 - Do NOT guess missing code
+
+## Global Rules
+- NEVER perform git actions
+- Do NOT refactor the entire project
+- Do NOT modify unrelated files
+- Keep the current Screen / Route / ViewModel / Repository structure
+- Use the exact text provided by the user without rewriting or paraphrasing
+- Explain changes in Korean before modifying code
+
+## Preview Guideline
+- For UI screens or composables, add Preview when practical and useful
+- Previews should use mock state and should not depend on navigation or ViewModel directly

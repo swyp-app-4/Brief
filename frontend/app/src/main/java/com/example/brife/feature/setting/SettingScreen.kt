@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.ui.component.AppText
+import com.example.brife.ui.component.AppTopBar2
 import com.example.brife.ui.theme.*
 
 data class SettingUiState(
@@ -47,28 +48,10 @@ fun SettingScreen(
     Scaffold(
         containerColor = Color.White,
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .height(56.dp)
-                    .background(Color.White)
-                    .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_back),
-                        contentDescription = "뒤로가기",
-                        tint = Color.Unspecified
-                    )
-                }
-                AppText(
-                    text = "설정",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = TextTitle
-                )
-            }
+            AppTopBar2(
+                title = "설정",
+                onBackClick = onBackClick
+            )
         }
     ) { paddingValues ->
         Column(
