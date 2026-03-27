@@ -23,4 +23,12 @@ public interface ArchiveItemRepository extends JpaRepository<ArchiveItem, Long> 
 
     // 특정 폴더에 특정 뉴스 이미 저장됐는지 확인 (중복 저장 방지)
     boolean existsByArchiveIdAndContentId(Long archiveId, Long contentId);
+
+    // 최신순
+    List<ArchiveItem> findByArchiveIdOrderBySavedAtDesc(Long archiveId);
+
+    // 오래된순
+    List<ArchiveItem> findByArchiveIdOrderBySavedAtAsc(Long archiveId);
+
+// 이름순 (나중에 summarized_news 조인 필요 - 일단 보류)
 }

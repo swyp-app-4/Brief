@@ -56,8 +56,10 @@ public class ArchiveController {
 
     @Operation(summary = "폴더 안의 뉴스 목록 조회")
     @GetMapping("/{archiveId}/items")
-    public ResponseEntity<List<ArchiveItemResponse>> getItems(@PathVariable Long archiveId) {
-        return ResponseEntity.ok(archiveService.getItems(TEMP_USER_ID, archiveId));
+    public ResponseEntity<List<ArchiveItemResponse>> getItems(
+            @PathVariable Long archiveId,
+            @RequestParam(defaultValue = "latest") String sort) {
+        return ResponseEntity.ok(archiveService.getItems(TEMP_USER_ID, archiveId, sort));
     }
 
     @Operation(summary = "뉴스 저장 (폴더 지정)")

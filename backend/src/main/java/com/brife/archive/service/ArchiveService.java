@@ -47,7 +47,7 @@ public class ArchiveService {
 
         // 특수문자 방지
         if (!folderName.matches("^[a-zA-Z0-9가-힣\\s]+$")) {
-            throw new IllegalArgumentException("특수문자는 폴더 이름에 사용할 수 없습니다.");
+            throw new IllegalArgumentException("특수문자(/, ,)는 폴더 이름에 쓸 수 없어요.");
         }
 
         // 20자 초과 방지
@@ -57,7 +57,7 @@ public class ArchiveService {
 
         // 같은 이름 폴더 중복 방지
         if (archiveRepository.existsByUserIdAndFolderName(userId, folderName)) {
-            throw new IllegalArgumentException("이미 사용 중인 폴더 이름입니다.");
+            throw new IllegalArgumentException("이미 사용중인 폴더 이름이에요.");
         }
 
         Archive archive = Archive.builder()
@@ -120,7 +120,7 @@ public class ArchiveService {
     }
 
     // 폴더 안의 뉴스 목록 조회
-    public List<ArchiveItemResponse> getItems(Long userId, Long archiveId) {
+    public List<ArchiveItemResponse> getItems(Long userId, Long archiveId, String sort) {
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
 
@@ -128,8 +128,16 @@ public class ArchiveService {
             throw new IllegalArgumentException("본인의 폴더만 조회할 수 있습니다.");
         }
 
-        return archiveItemRepository.findByArchiveId(archiveId)
-                .stream()
+        List<ArchiveItem> items;
+        if (sort.equals("oldest")) {
+            items = archiveItemRepository.findByArchiveIdOrderBySavedAtAsc(archiveId);
+        } else if (sort.equals("name")) {
+            items = archiveItemRepository.findByArchiveIdOrderBySavedAtAsc(archiveId); // 나중에 이름순 추가
+        } else {
+            items = archiveItemRepository.findByArchiveIdOrderBySavedAtDesc(archiveId);
+        }
+
+        return items.stream()
                 .map(ArchiveItemResponse::new)
                 .collect(Collectors.toList());
     }
