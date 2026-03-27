@@ -60,9 +60,6 @@ fun MainScreen(
 
     val isLoggedIn = false
     var showLoginBottomSheet by remember { mutableStateOf(false) }
-    // true: NewsLongScreen에서 열림 → 더 둘러보기 클릭 시 dismiss만
-    // false: 그 외(HomeScreen, 하단바) → 더 둘러보기 클릭 시 ProfileScreen 이동
-    var loginSheetFromNewsLong by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Archive 관련 상태
@@ -292,10 +289,7 @@ fun MainScreen(
                         // TODO: API 연동 후 item.id(실제 newsId)로 교체
                         shareNews(context, item.title, newsIndex.toString())
                     },
-                    onLoginRequired = {
-                        loginSheetFromNewsLong = true
-                        showLoginBottomSheet = true
-                    }
+                    onLoginRequired = { showLoginBottomSheet = true }
                 )
             }
         }
@@ -318,23 +312,12 @@ fun MainScreen(
         if (showLoginBottomSheet) {
             HomeToLoginBottomSheet(
                 sheetState = sheetState,
-                onDismissRequest = {
-                    showLoginBottomSheet = false
-                    loginSheetFromNewsLong = false
-                },
+                onDismissRequest = { showLoginBottomSheet = false },
                 onLoginClick = {
                     showLoginBottomSheet = false
                     onNavigateToLogin()
                 },
-                onBrowseClick = {
-                    showLoginBottomSheet = false
-                    if (!loginSheetFromNewsLong) {
-                        // HomeScreen / 하단바에서 열린 경우: ProfileScreen으로 이동
-                        navigateTo(NavRoutes.PROFILE)
-                    }
-                    // NewsLongScreen에서 열린 경우: 시트만 닫고 현재 화면 유지
-                    loginSheetFromNewsLong = false
-                }
+                onBrowseClick = { showLoginBottomSheet = false }
             )
         }
     }
