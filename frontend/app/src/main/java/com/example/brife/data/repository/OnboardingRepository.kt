@@ -17,12 +17,12 @@ class OnboardingRepository(
     suspend fun getCategories(): Result<List<CategoryResponse>> {
         return Result.success(
             listOf(
-                CategoryResponse(1L, "시사 정치"),
-                CategoryResponse(2L, "경제 재테크"),
-                CategoryResponse(3L, "IT 테크"),
-                CategoryResponse(4L, "문화 예술"),
-                CategoryResponse(5L, "엔터 스포츠"),
-                CategoryResponse(6L, "라이프 성장")
+                CategoryResponse(1L, "시사 · 정치"),
+                CategoryResponse(2L, "경제 · 재테크"),
+                CategoryResponse(3L, "IT · 테크"),
+                CategoryResponse(4L, "문화 · 예술"),
+                CategoryResponse(5L, "엔터 · 스포츠"),
+                CategoryResponse(6L, "라이프 · 성장")
             )
         )
     }
@@ -40,38 +40,38 @@ class OnboardingRepository(
     suspend fun getSubCategories(): Result<List<SubCategoryResponse>> {
         return Result.success(
             listOf(
-                SubCategoryResponse(1L, "청와대", 1L, "시사 정치"),
-                SubCategoryResponse(2L, "국회/정당", 1L, "시사 정치"),
-                SubCategoryResponse(3L, "북한", 1L, "시사 정치"),
-                SubCategoryResponse(4L, "행정", 1L, "시사 정치"),
-                SubCategoryResponse(5L, "국방/외교", 1L, "시사 정치"),
-                SubCategoryResponse(6L, "정치일반", 1L, "시사 정치"),
+                SubCategoryResponse(1L, "청와대", 1L, "시사 · 정치"),
+                SubCategoryResponse(2L, "국회/정당", 1L, "시사 · 정치"),
+                SubCategoryResponse(3L, "북한", 1L, "시사 · 정치"),
+                SubCategoryResponse(4L, "행정", 1L, "시사 · 정치"),
+                SubCategoryResponse(5L, "국방/외교", 1L, "시사 · 정치"),
+                SubCategoryResponse(6L, "정치일반", 1L, "시사 · 정치"),
 
-                SubCategoryResponse(11L, "금융", 2L, "경제 재테크"),
-                SubCategoryResponse(12L, "증권", 2L, "경제 재테크"),
-                SubCategoryResponse(13L, "산업/재계", 2L, "경제 재테크"),
-                SubCategoryResponse(14L, "중기/벤처", 2L, "경제 재테크"),
-                SubCategoryResponse(15L, "부동산", 2L, "경제 재테크"),
+                SubCategoryResponse(11L, "금융", 2L, "경제 · 재테크"),
+                SubCategoryResponse(12L, "증권", 2L, "경제 · 재테크"),
+                SubCategoryResponse(13L, "산업/재계", 2L, "경제 · 재테크"),
+                SubCategoryResponse(14L, "중기/벤처", 2L, "경제 · 재테크"),
+                SubCategoryResponse(15L, "부동산", 2L, "경제 · 재테크"),
 
-                SubCategoryResponse(21L, "모바일", 3L, "IT 테크"),
-                SubCategoryResponse(22L, "인터넷/SNS", 3L, "IT 테크"),
-                SubCategoryResponse(23L, "통신/뉴미디어", 3L, "IT 테크"),
-                SubCategoryResponse(24L, "보안/해킹", 3L, "IT 테크"),
+                SubCategoryResponse(21L, "모바일", 3L, "IT · 테크"),
+                SubCategoryResponse(22L, "인터넷/SNS", 3L, "IT · 테크"),
+                SubCategoryResponse(23L, "통신/뉴미디어", 3L, "IT · 테크"),
+                SubCategoryResponse(24L, "보안/해킹", 3L, "IT · 테크"),
 
-                SubCategoryResponse(31L, "공연/전시", 4L, "문화 예술"),
-                SubCategoryResponse(32L, "책", 4L, "문화 예술"),
-                SubCategoryResponse(33L, "종교", 4L, "문화 예술"),
-                SubCategoryResponse(34L, "영화", 4L, "문화 예술"),
+                SubCategoryResponse(31L, "공연/전시", 4L, "문화 · 예술"),
+                SubCategoryResponse(32L, "책", 4L, "문화 · 예술"),
+                SubCategoryResponse(33L, "종교", 4L, "문화 · 예술"),
+                SubCategoryResponse(34L, "영화", 4L, "문화 · 예술"),
 
                 SubCategoryResponse(41L, "드라마", 5L, "엔터 스포츠"),
-                SubCategoryResponse(42L, "뮤직", 5L, "엔터 스포츠"),
-                SubCategoryResponse(43L, "연예", 5L, "엔터 스포츠"),
-                SubCategoryResponse(44L, "축구", 5L, "엔터 스포츠"),
+                SubCategoryResponse(42L, "뮤직", 5L, "엔터 · 스포츠"),
+                SubCategoryResponse(43L, "연예", 5L, "엔터 · 스포츠"),
+                SubCategoryResponse(44L, "축구", 5L, "엔터 · 스포츠"),
 
-                SubCategoryResponse(51L, "건강정보", 6L, "라이프 성장"),
-                SubCategoryResponse(52L, "여행/레저", 6L, "라이프 성장"),
-                SubCategoryResponse(53L, "음식/맛집", 6L, "라이프 성장"),
-                SubCategoryResponse(54L, "패션/뷰티", 6L, "라이프 성장")
+                SubCategoryResponse(51L, "건강정보", 6L, "라이프 · 성장"),
+                SubCategoryResponse(52L, "여행/레저", 6L, "라이프 · 성장"),
+                SubCategoryResponse(53L, "음식/맛집", 6L, "라이프 · 성장"),
+                SubCategoryResponse(54L, "패션/뷰티", 6L, "라이프 · 성장")
             )
         )
     }

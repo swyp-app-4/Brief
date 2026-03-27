@@ -33,16 +33,25 @@ import kotlin.math.absoluteValue
 fun HomeScreen(
     newsList: List<HomeNewsCardItem>,
     isLoggedIn: Boolean,
+    isLoading: Boolean = false,
     onLoginRequired: () -> Unit,
     onLoginClick: () -> Unit = {},
     onDetailClick: (HomeNewsCardItem) -> Unit,
     onShareClick: (HomeNewsCardItem) -> Unit = {},
     topPadding: Dp = 0.dp
 ) {
-//    var selectedIndex by remember { mutableIntStateOf(0) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
-    val pagerState = rememberPagerState(pageCount = { newsList.size })
+    val pageCount = if (isLoading) 1 else newsList.size
+    val pagerState = rememberPagerState(pageCount = { pageCount })
+
+    // 현재 페이지 category 기반으로 가운데 일러스트 결정
+    // 로딩 중에는 img_home_life 고정
+    val currentCategory = if (!isLoading && newsList.isNotEmpty())
+        newsList[pagerState.currentPage].category
+    else ""
+    val illustrationRes = if (isLoading) R.drawable.img_home_life
+    else illustrationResForCategory(currentCategory)
 
     LaunchedEffect(pagerState.currentPage, isLoggedIn) {
         if (!isLoggedIn && pagerState.currentPage >= 3) {
@@ -50,8 +59,6 @@ fun HomeScreen(
         }
     }
 
-    // Scaffold, TopBar, BottomBar, Image 배경을 모두 제거했습니다.
-    // MainScreen에서 넘겨준 영역(Box) 안에서 콘텐츠만 배치합니다.
     Box(modifier = Modifier.fillMaxSize()) {
 
         Image(
@@ -63,17 +70,20 @@ fun HomeScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = topPadding),
+                .fillMaxSize(),
+//                .padding(top = topPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // [일러스트 자리]
-            // 추후 TopBar 아래 일러스트를 여기에 배치합니다.
-            // 일러스트가 HomeNewsCard와 겹치도록 하려면:
-            //   Box { Illustration(modifier = Modifier.align(BottomCenter).offset(y = 24.dp)) }
-            // 형태로 추가하면 됩니다.
-
-            Spacer(modifier = Modifier.weight(1f))
+            // 일러스트 영역 — 남은 공간을 채우며 카드 상단과 20dp 겹침
+            // offset(y=20.dp): 시각적으로 20dp 아래로 내려가 카드 영역과 겹침
+            // HorizontalPager가 나중에 그려지므로 카드가 일러스트 하단을 덮음
+            HomeIllustrationArea(
+                illustrationRes = illustrationRes,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .offset(y = 30.dp)
+            )
 
             HorizontalPager(
                 state = pagerState,
@@ -109,30 +119,31 @@ fun HomeScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    HomeNewsCardContent(
-                        item = newsList[page],
-                        modifier = Modifier.fillMaxWidth(),
-                        onShareClick = { onShareClick(newsList[page]) },
-                        onDetailClick = {
-                            onDetailClick(newsList[page])
-                        }
-                    )
+                    if (isLoading) {
+                        HomeNewsCardSkeleton()
+                    } else {
+                        HomeNewsCardContent(
+                            item = newsList[page],
+                            modifier = Modifier.fillMaxWidth(),
+                            onShareClick = { onShareClick(newsList[page]) },
+                            onDetailClick = { onDetailClick(newsList[page]) }
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // 페이지 인디케이터 — Pager 외부에서 fillMaxWidth + Center 정렬
+            // 페이지 인디케이터
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(newsList.size) { index ->
+                repeat(pageCount) { index ->
                     val color =
-                        if (pagerState.currentPage == index) Color.White else Color.White.copy(
-                            alpha = 0.5f
-                        )
+                        if (pagerState.currentPage == index) Color.White
+                        else Color.White.copy(alpha = 0.5f)
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
@@ -148,7 +159,126 @@ fun HomeScreen(
     }
 }
 
-// --- 프리뷰 영역 ---
+// ─────────────────────────────────────────────────────────────
+// 일러스트 영역
+// 왼쪽: img_home_mailbox (고정)
+// 가운데: category별 이미지 (illustrationRes로 전달)
+// ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun HomeIllustrationArea(
+    illustrationRes: Int,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        // 왼쪽 고정 — mailbox
+        Image(
+            painter = painterResource(id = R.drawable.img_home_mailbox),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 70.dp)
+                .height(70.dp)
+        )
+        // 가운데 — category 기반 이미지
+        Image(
+            painter = painterResource(id = illustrationRes),
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .height(140.dp)
+        )
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 스켈레톤 UI — 로딩 중 카드 내부를 대체
+// ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun HomeNewsCardSkeleton() {
+    val shimmerColor = Color(0xFFE0E0E0)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 10.dp)
+    ) {
+        Spacer(modifier = Modifier.height(4.dp))
+        // 카테고리 칩 영역
+        Row {
+            Box(
+                Modifier
+                    .width(60.dp)
+                    .height(24.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(shimmerColor)
+            )
+            Spacer(Modifier.width(6.dp))
+            Box(
+                Modifier
+                    .width(80.dp)
+                    .height(24.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(shimmerColor)
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        // 제목 (2줄)
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(20.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(shimmerColor)
+        )
+        Spacer(Modifier.height(6.dp))
+        Box(
+            Modifier
+                .fillMaxWidth(0.65f)
+                .height(20.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(shimmerColor)
+        )
+        Spacer(Modifier.height(16.dp))
+        // 알림 텍스트
+        Box(
+            Modifier
+                .fillMaxWidth(0.5f)
+                .height(14.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(shimmerColor)
+        )
+        Spacer(Modifier.height(18.dp))
+        // 간단요약 + 살펴보기 박스
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFFF5F5F5))
+        )
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// category String → drawable res 매핑
+// 매핑 없는 category는 img_home_life 기본값 사용
+// ─────────────────────────────────────────────────────────────
+
+private fun illustrationResForCategory(category: String): Int = when (category) {
+    "라이프 · 성장" -> R.drawable.img_home_life
+    "IT · 테크" -> R.drawable.img_home_tech
+    "시사 · 정치" -> R.drawable.img_home_politics
+    "경제 · 재테크" -> R.drawable.img_home_economy
+    "엔터 · 스포츠" -> R.drawable.img_home_entertainment
+    "문화 · 예술" -> R.drawable.img_home_art
+    else -> R.drawable.img_home_life
+}
+
+// ─────────────────────────────────────────────────────────────
+// Preview
+// ─────────────────────────────────────────────────────────────
 
 @Preview(
     showBackground = true,
@@ -158,13 +288,28 @@ fun HomeScreen(
 @Composable
 fun HomeScreenInMainPreview() {
     BrifeTheme {
-        // MainScreen을 호출하여 상단바가 투명하게 배경 위에 겹치는지 확인합니다.
-        // (MainScreen에서 currentRoute가 HOME일 때 투명하게 설정했으므로 여기서 확인 가능)
         MainScreen(
             onLogout = {},
             onNavigateToLogin = {},
             onNavigateToNewsLong = {}
         )
+    }
+}
 
+@Preview(
+    showBackground = true,
+    device = "spec:width=1080px,height=2340px,dpi=440",
+    name = "2. 홈 화면 - 로딩 스켈레톤"
+)
+@Composable
+fun HomeScreenSkeletonPreview() {
+    BrifeTheme {
+        HomeScreen(
+            newsList = emptyList(),
+            isLoggedIn = false,
+            isLoading = true,
+            onLoginRequired = {},
+            onDetailClick = {}
+        )
     }
 }
