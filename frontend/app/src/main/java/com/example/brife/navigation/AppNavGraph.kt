@@ -26,6 +26,7 @@ import com.example.brife.feature.setting.WidgetInstallGuideScreen
 import com.example.brife.feature.auth.LoginViewModel
 import com.example.brife.feature.auth.LoginViewModelFactory
 import com.example.brife.feature.home.NewsLongScreen
+import com.example.brife.feature.home.shareNews
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.navigation.NavRoutes
 
@@ -190,6 +191,7 @@ fun AppNavGraph() {
         composable(
             route = "${NavRoutes.NEWS_LONG}/{newsIndex}"
         ) { backStackEntry ->
+            val context = LocalContext.current
             val newsIndex = backStackEntry.arguments
                 ?.getString("newsIndex")
                 ?.toIntOrNull() ?: 0
@@ -198,7 +200,11 @@ fun AppNavGraph() {
 
             NewsLongScreen(
                 item = item,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onShareClick = {
+                    // TODO: API 연동 후 item.id(실제 newsId)로 교체
+                    shareNews(context, item.title, newsIndex.toString())
+                }
             )
         }
 

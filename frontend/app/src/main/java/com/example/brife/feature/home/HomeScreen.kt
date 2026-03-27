@@ -36,6 +36,7 @@ fun HomeScreen(
     onLoginRequired: () -> Unit,
     onLoginClick: () -> Unit = {},
     onDetailClick: (HomeNewsCardItem) -> Unit,
+    onShareClick: (HomeNewsCardItem) -> Unit = {},
     topPadding: Dp = 0.dp
 ) {
 //    var selectedIndex by remember { mutableIntStateOf(0) }
@@ -107,7 +108,7 @@ fun HomeScreen(
                     HomeNewsCardContent(
                         item = newsList[page],
                         modifier = Modifier.fillMaxWidth(),
-                        onShareClick = {},
+                        onShareClick = { onShareClick(newsList[page]) },
                         onDetailClick = {
                             onDetailClick(newsList[page])
                         }

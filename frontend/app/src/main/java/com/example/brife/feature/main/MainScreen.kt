@@ -33,6 +33,7 @@ import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
 import com.example.brife.feature.home.HomeToLoginBottomSheet
 import com.example.brife.feature.home.NewsLongScreen
+import com.example.brife.feature.home.shareNews
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -175,6 +176,11 @@ fun MainScreen(
                             navController.navigate("${NavRoutes.NEWS_LONG}/$index")
                         }
                     },
+                    onShareClick = { item ->
+                        // TODO: API 연동 후 item.id(실제 newsId)로 교체
+                        val index = shortsampleHomeNews.indexOf(item)
+                        shareNews(context, item.title, index.toString())
+                    },
                     topPadding = innerPadding.calculateTopPadding()
                 )
             }
@@ -281,6 +287,10 @@ fun MainScreen(
                     onNavigateToArchive = {
                         navController.popBackStack()
                         navigateTo(NavRoutes.ARCHIVE)
+                    },
+                    onShareClick = {
+                        // TODO: API 연동 후 item.id(실제 newsId)로 교체
+                        shareNews(context, item.title, newsIndex.toString())
                     }
                 )
             }
