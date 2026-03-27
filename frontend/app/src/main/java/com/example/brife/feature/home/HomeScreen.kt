@@ -64,18 +64,22 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = topPadding), // 이 부분을 추가해야 상단바 아이콘과 겹치지 않습니다.
+                .padding(top = topPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // [일러스트 자리]
+            // 추후 TopBar 아래 일러스트를 여기에 배치합니다.
+            // 일러스트가 HomeNewsCard와 겹치도록 하려면:
+            //   Box { Illustration(modifier = Modifier.align(BottomCenter).offset(y = 24.dp)) }
+            // 형태로 추가하면 됩니다.
+
             Spacer(modifier = Modifier.weight(1f))
 
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(480.dp),
-                contentPadding = PaddingValues(horizontal = 35.dp),
-                pageSpacing = 0.dp
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 36.dp),
+                pageSpacing = 12.dp
             ) { page ->
                 val pageOffset =
                     (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
@@ -84,11 +88,11 @@ fun HomeScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight()
+                        .wrapContentHeight()
                         .zIndex(1f - absOffset.coerceIn(0f, 1f))
                         .graphicsLayer {
                             val scale = lerp(
-                                start = 0.7f,
+                                start = 0.67f,
                                 stop = 1f,
                                 fraction = 1f - absOffset.coerceIn(0f, 1f)
                             )
@@ -99,7 +103,6 @@ fun HomeScreen(
                                 stop = 1f,
                                 fraction = 1f - absOffset.coerceIn(0f, 1f)
                             )
-                            translationX = -pageOffset * 22.dp.toPx()
                         },
                     shape = RoundedCornerShape(20.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -114,31 +117,32 @@ fun HomeScreen(
                         }
                     )
                 }
-
-                // 페이지 인디케이터
-                Row(
-                    modifier = Modifier.padding(bottom = 12.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    repeat(newsList.size) { index ->
-                        val color =
-                            if (pagerState.currentPage == index) Color.White else Color.White.copy(
-                                alpha = 0.5f
-                            )
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(color)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 페이지 인디케이터 — Pager 외부에서 fillMaxWidth + Center 정렬
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(newsList.size) { index ->
+                    val color =
+                        if (pagerState.currentPage == index) Color.White else Color.White.copy(
+                            alpha = 0.5f
+                        )
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
