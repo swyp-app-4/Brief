@@ -3,11 +3,14 @@ jwt:
   access-expiration-ms: 3600000    # 1시간
   refresh-expiration-days: 30      # 30일
 
+server:
+  port: 8085
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/brifedb
-    username: brifeuser
-    password: brifepass
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5436}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -25,7 +28,4 @@ spring:
 
   autoconfigure:
     exclude:
-#      - org.springframework.ai.model.vertex.autoconfigure.gemini.VertexAiGeminiAutoConfiguration
-#      - org.springframework.ai.model.vertex.autoconfigure.embedding.VertexAiEmbeddingAutoConfiguration
       - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
-

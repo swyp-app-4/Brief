@@ -7,30 +7,5 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
-
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: 6379
-
-#  ai:
-#    vertex:
-#      ai:
-#        gemini:
-#          project-id: ${GCP_PROJECT_ID}
-#          location: ${GCP_LOCATION}
-#          chat:
-#            options:
-#              model: gemini-3.0-flash-preview
-#              temperature: 0.3
-#        embedding:
-#          project-id: ${GCP_PROJECT_ID}
-#          location: ${GCP_LOCATION}
-#    vectorstore:
-#      pgvector:
-#        initialize-schema: true
-#        index-type: hnsw
-#        distance-type: cosine_distance
-#        dimensions: 768

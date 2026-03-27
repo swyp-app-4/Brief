@@ -16,11 +16,10 @@ java {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
 }
 
-ext {
-	set('springAiVersion', "2.0.0-M2")
-}
 
 dependencies {
 	// ==========================================
@@ -29,10 +28,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-batch'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
-	// ==========================================
-	// Security
-	// ==========================================
+	// Spring Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
 	// JWT
@@ -47,18 +46,26 @@ dependencies {
 	runtimeOnly    'org.postgresql:postgresql'
 
 	// ==========================================
-	// Redis
+	// Google Cloud Auth (Vertex AI 인증)
 	// ==========================================
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'com.google.auth:google-auth-library-oauth2-http:1.23.0'
 
 	// ==========================================
-	// Spring AI
+	// HTTP / Crawling
 	// ==========================================
-//	implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-gemini'
-//	implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-embedding'
-	implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
-	implementation 'org.springframework.ai:spring-ai-advisors-vector-store'
-	implementation 'org.springframework.ai:spring-ai-jsoup-document-reader'
+	implementation 'org.jsoup:jsoup:1.17.2'
+	implementation 'org.apache.httpcomponents.client5:httpclient5'
+
+	// ==========================================
+	// JSON
+	// ==========================================
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+	// ==========================================
+	// Resilience4j
+	// ==========================================
+	implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'
 
 	// ==========================================
 	// Swagger
@@ -74,20 +81,29 @@ dependencies {
 	// ==========================================
 	// Test
 	// ==========================================
-	testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.batch:spring-batch-test'
 	testRuntimeOnly    'org.junit.platform:junit-platform-launcher'
-}
-
-dependencyManagement {
-	imports {
-		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
-	}
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+// .env 파일을 읽어 bootRun 환경변수로 주입
+bootRun {
+	def envFile = file('.env')
+	println "[bootRun] .env exists: ${envFile.exists()}, path: ${envFile.absolutePath}"
+	if (envFile.exists()) {
+		envFile.readLines().each { line ->
+			def trimmed = line.trim()
+			if (trimmed && !trimmed.startsWith('#') && trimmed.contains('=')) {
+				def idx = trimmed.indexOf('=')
+				def key = trimmed.substring(0, idx).trim()
+				def val = trimmed.substring(idx + 1).trim()
+				println "[bootRun] env: $key=***"
+				environment(key, val)
+			}
+		}
+	}
 }

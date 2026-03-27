@@ -1,5 +1,6 @@
-package com.swap.news.domain;
+package com.brife.news.domain;
 
+import com.brife.category.domain.Category;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -8,11 +9,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-    name = "raw_news",
-    indexes = {
-        @Index(name = "idx_raw_news_topic",      columnList = "topic_id"),
-        @Index(name = "idx_raw_news_summarized", columnList = "summarized_news_id")
-    }
+        name = "raw_news",
+        indexes = {
+                @Index(name = "idx_raw_news_summarized", columnList = "summarized_news_id")
+        }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -28,11 +28,6 @@ public class RawNews {
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id",
-            foreignKey = @ForeignKey(name = "fk_rn_topic"))
-    private Topic topic;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "summarized_news_id",
             foreignKey = @ForeignKey(name = "fk_rn_summarized"))
     private SummarizedNews summarizedNews;
@@ -43,7 +38,7 @@ public class RawNews {
     @Column(name = "source_url", nullable = false, length = 500)
     private String sourceUrl;
 
-    @Column(name = "naver_url", length = 500, unique = true)
+    @Column(name = "naver_url", nullable = false, length = 500, unique = true)
     private String naverUrl;
 
     @Column(name = "pub_date", nullable = false)
@@ -54,10 +49,9 @@ public class RawNews {
     private LocalDateTime createdAt;
 
     @Builder
-    public RawNews(Category category, Topic topic,
-                   String title, String sourceUrl, String naverUrl, LocalDateTime pubDate) {
+    public RawNews(Category category, String title,
+                   String sourceUrl, String naverUrl, LocalDateTime pubDate) {
         this.category = category;
-        this.topic = topic;
         this.title = title;
         this.sourceUrl = sourceUrl;
         this.naverUrl = naverUrl;

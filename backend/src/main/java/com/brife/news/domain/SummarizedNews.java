@@ -1,5 +1,6 @@
-package com.swap.news.domain;
+package com.brife.news.domain;
 
+import com.brife.category.domain.Category;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,13 +10,13 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-    name = "summarized_news",
-    indexes = {
-        @Index(name = "idx_summarized_news_category",   columnList = "category_id"),
-        @Index(name = "idx_summarized_news_published",  columnList = "published_date DESC"),
-        @Index(name = "idx_summarized_news_view",       columnList = "view_count DESC"),
-        @Index(name = "idx_summarized_news_summarized", columnList = "is_summarized")
-    }
+        name = "summarized_news",
+        indexes = {
+                @Index(name = "idx_summarized_news_category",   columnList = "category_id"),
+                @Index(name = "idx_summarized_news_published",  columnList = "published_date DESC"),
+                @Index(name = "idx_summarized_news_view",       columnList = "view_count DESC"),
+                @Index(name = "idx_summarized_news_summarized", columnList = "is_summarized")
+        }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -29,11 +30,6 @@ public class SummarizedNews {
     @JoinColumn(name = "category_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_sn_category"))
     private Category category;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id",
-            foreignKey = @ForeignKey(name = "fk_sn_topic"))
-    private Topic topic;
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -58,9 +54,6 @@ public class SummarizedNews {
     @Column(name = "save_count")
     private int saveCount = 0;
 
-    @Column(name = "embedding", columnDefinition = "vector(768)")
-    private String embedding;
-
     @Column(name = "is_summarized")
     private boolean isSummarized = false;
 
@@ -72,22 +65,17 @@ public class SummarizedNews {
     private LocalDateTime createdAt;
 
     @Builder
-    public SummarizedNews(Category category, Topic topic, String title,
+    public SummarizedNews(Category category, String title,
                           String summary, String body,
                           int sourceCount, String thumbnailUrl, LocalDate publishedDate) {
         this.category = category;
-        this.topic = topic;
         this.title = title;
         this.summary = summary;
         this.body = body;
         this.sourceCount = sourceCount;
         this.thumbnailUrl = thumbnailUrl;
         this.publishedDate = publishedDate;
-        this.isSummarized = true;  // gemini로 항상 요약
+        this.isSummarized = true;
     }
 
-    // 임베딩
-    public void updateEmbedding(String embedding) {
-        this.embedding = embedding;
-    }
 }
