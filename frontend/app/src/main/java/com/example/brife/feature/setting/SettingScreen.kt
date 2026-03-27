@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.AppTopBar2
+import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.*
 
 data class SettingUiState(
@@ -34,6 +35,8 @@ data class SettingUiState(
 fun SettingScreen(
     uiState: SettingUiState,
     onBackClick: () -> Unit,
+    isLoggedIn: Boolean = true,
+    onLoginClick: () -> Unit = {},
     onWidgetSettingClick: () -> Unit = {},
     onTermsClick: () -> Unit = {},
     onPrivacyClick: () -> Unit = {},
@@ -82,9 +85,19 @@ fun SettingScreen(
 
             // 계정
             SettingSection(title = "계정") {
-                SettingInfoItem(label = "로그인 방식", trailingText = uiState.loginMethod)
-                SettingTextItem(label = "로그아웃", onClick = { showLogoutSheet = true }, color = TextSubtitle)
-                SettingTextItem(label = "회원탈퇴", onClick = { showWithdrawSheet = true }, color = Negative)
+                if (isLoggedIn) {
+                    SettingInfoItem(label = "로그인 방식", trailingText = uiState.loginMethod)
+                    SettingTextItem(label = "로그아웃", onClick = { showLogoutSheet = true }, color = TextSubtitle)
+                    SettingTextItem(label = "회원탈퇴", onClick = { showWithdrawSheet = true }, color = Negative)
+                } else {
+                    PrimaryButton(
+                        text = "로그인",
+                        onClick = onLoginClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
+                    )
+                }
             }
         }
 
@@ -224,6 +237,19 @@ fun SettingScreenPreview() {
     BrifeTheme {
         SettingScreen(
             uiState = SettingUiState(loginMethod = "Google", appVersion = "1.0.0"),
+            isLoggedIn = true,
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "3. 비로그인 설정 화면")
+@Composable
+fun SettingScreenGuestPreview() {
+    BrifeTheme {
+        SettingScreen(
+            uiState = SettingUiState(appVersion = "1.0.0"),
+            isLoggedIn = false,
             onBackClick = {}
         )
     }

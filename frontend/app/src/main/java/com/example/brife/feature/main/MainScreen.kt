@@ -141,10 +141,7 @@ fun MainScreen(
                                 if (isLoggedIn) navigateTo(NavRoutes.ARCHIVE)
                                 else showLoginBottomSheet = true
                             }
-                            3 -> {
-                                if (isLoggedIn) navigateTo(NavRoutes.PROFILE)
-                                else showLoginBottomSheet = true
-                            }
+                            3 -> navigateTo(NavRoutes.PROFILE)
                         }
                     }
                 )
@@ -229,7 +226,8 @@ fun MainScreen(
                     ),
                     onResetInterestClick = {
                         navController.navigate(NavRoutes.ONBOARDING_INTEREST_RESET)
-                    }
+                    },
+                    onLoginClick = onNavigateToLogin
                 )
             }
 

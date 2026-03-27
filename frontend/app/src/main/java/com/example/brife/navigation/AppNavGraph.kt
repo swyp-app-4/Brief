@@ -174,7 +174,9 @@ fun AppNavGraph() {
         composable(NavRoutes.SETTING) {
             SettingScreen(
                 uiState = SettingUiState(loginMethod = "Google", appVersion = "1.0.0"),
+                isLoggedIn = false, // TODO: 실제 로그인 상태로 교체
                 onBackClick = { navController.popBackStack() },
+                onLoginClick = { navController.navigate(NavRoutes.LOGIN) },
                 onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) }
             )
         }
