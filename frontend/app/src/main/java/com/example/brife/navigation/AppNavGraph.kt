@@ -25,8 +25,6 @@ import com.example.brife.feature.setting.SettingUiState
 import com.example.brife.feature.setting.WidgetInstallGuideScreen
 import com.example.brife.feature.auth.LoginViewModel
 import com.example.brife.feature.auth.LoginViewModelFactory
-import com.example.brife.feature.home.NewsLongScreen
-import com.example.brife.feature.home.shareNews
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.navigation.NavRoutes
 
@@ -188,27 +186,7 @@ fun AppNavGraph() {
         }
 
 
-        composable(
-            route = "${NavRoutes.NEWS_LONG}/{newsIndex}"
-        ) { backStackEntry ->
-            val context = LocalContext.current
-            val newsIndex = backStackEntry.arguments
-                ?.getString("newsIndex")
-                ?.toIntOrNull() ?: 0
-
-            val item = longsampleHomeNews.getOrNull(newsIndex) ?: longsampleHomeNews.first()
-
-            NewsLongScreen(
-                item = item,
-                onBackClick = { navController.popBackStack() },
-                onShareClick = {
-                    // TODO: API 연동 후 item.id(실제 newsId)로 교체
-                    shareNews(context, item.title, newsIndex.toString())
-                }
-            )
-        }
-
-
+        // NEWS_LONG은 MainScreen 내부 NavHost에서 처리
         // AppNavGraph.kt 내 NavHost 부분에 추가
         composable(
             route = "${NavRoutes.ARCHIVE_DETAIL}/{folderName}"

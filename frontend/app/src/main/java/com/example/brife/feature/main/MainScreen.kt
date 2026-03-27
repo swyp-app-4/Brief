@@ -104,12 +104,8 @@ fun MainScreen(
                     AppTopBar(onSettingClick = onNavigateToSetting)
                 }
                 isNewsLongRoute -> {
-                    AppTopBar(
-                        showLogo = false,
-                        showSearch = false,
-                        showSettings = false
-//                        backgroundColor = Color.Transparent
-                    )
+                    // NewsLongScreen이 자체 TopBar를 가지고 있으므로 렌더링하지 않음
+                    // (MainScreen이 빈 AppTopBar를 렌더링하면 터치 이벤트를 가로챔)
                 }
                 currentRoute == NavRoutes.EXPLORE -> {
                     AppTopBar(showLogo = false, showSearch = true)
@@ -283,6 +279,7 @@ fun MainScreen(
 
                 NewsLongScreen(
                     item = item,
+                    isLoggedIn = isLoggedIn,
                     onBackClick = { navController.popBackStack() },
                     onNavigateToArchive = {
                         navController.popBackStack()
@@ -291,7 +288,8 @@ fun MainScreen(
                     onShareClick = {
                         // TODO: API 연동 후 item.id(실제 newsId)로 교체
                         shareNews(context, item.title, newsIndex.toString())
-                    }
+                    },
+                    onLoginRequired = { showLoginBottomSheet = true }
                 )
             }
         }

@@ -59,8 +59,10 @@ import com.example.brife.feature.archive.component.CreateFolderBottomSheet
 fun NewsLongScreen(
     item: HomeNewsCardItem,
     onBackClick: () -> Unit,
+    isLoggedIn: Boolean = false,
     onShareClick: () -> Unit = {},
     onNavigateToArchive: () -> Unit = {},
+    onLoginRequired: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -118,8 +120,12 @@ fun NewsLongScreen(
             isBookmarked = folderItems.any { it.isSelected },
             onBackClick = onBackClick,
             onBookmarkClick = {
-                tempFolders = folderItems  // 시트 열 때 확정 상태를 임시 상태로 동기화
-                showBookmarkSheet = true
+                if (isLoggedIn) {
+                    tempFolders = folderItems  // 시트 열 때 확정 상태를 임시 상태로 동기화
+                    showBookmarkSheet = true
+                } else {
+                    onLoginRequired()
+                }
             },
             onShareClick = onShareClick
         )
