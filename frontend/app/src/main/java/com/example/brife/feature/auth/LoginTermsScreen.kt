@@ -33,7 +33,7 @@ import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.BgDefault
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.ComponentDefault
-import com.example.brife.ui.theme.InterestSelected
+import com.example.brife.ui.theme.InterestSelectedLight
 import com.example.brife.ui.theme.PrimaryNormal
 
 @Composable
@@ -134,7 +134,7 @@ fun TermsRow(
     val rowShape = RoundedCornerShape(20.dp)
 
     val backgroundColor = when {
-        highlightBox && checked -> InterestSelected
+        highlightBox && checked -> InterestSelectedLight
         highlightBox && !checked -> ComponentDefault
         else -> Color.Transparent
     }

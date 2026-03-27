@@ -40,7 +40,7 @@ import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.ComponentDefault
 import com.example.brife.ui.theme.CtaActive
 import com.example.brife.ui.theme.CtaDisabled
-import com.example.brife.ui.theme.InterestSelected
+import com.example.brife.ui.theme.InterestSelectedLight
 import com.example.brife.ui.theme.PrimaryNormal
 
 @Composable
@@ -255,7 +255,7 @@ private fun SubCategoryChip(
             .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        color = if (selected) InterestSelected else ComponentDefault,
+        color = if (selected) InterestSelectedLight else ComponentDefault,
         border = BorderStroke(
             width = if (selected) 1.5.dp else 0.dp,
             color = if (selected) PrimaryNormal else androidx.compose.ui.graphics.Color.Transparent
