@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.AppTopBar2
-import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.*
 
 data class SettingUiState(
@@ -90,12 +89,10 @@ fun SettingScreen(
                     SettingTextItem(label = "로그아웃", onClick = { showLogoutSheet = true }, color = TextSubtitle)
                     SettingTextItem(label = "회원탈퇴", onClick = { showWithdrawSheet = true }, color = Negative)
                 } else {
-                    PrimaryButton(
-                        text = "로그인",
+                    SettingTextItem(
+                        label = "로그인",
                         onClick = onLoginClick,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
+                        color = Positive
                     )
                 }
             }
