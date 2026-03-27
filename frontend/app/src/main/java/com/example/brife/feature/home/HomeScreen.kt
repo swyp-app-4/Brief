@@ -41,6 +41,9 @@ fun HomeScreen(
     topPadding: Dp = 0.dp
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
+    // 한 세션 내에서 로그인 유도 바텀시트를 이미 표시했는지 여부
+    // "더 둘러보기" 클릭 후 다음 페이지로 넘어가도 다시 표시되지 않음
+    var loginPromptShown by remember { mutableStateOf(false) }
 
     val pageCount = if (isLoading) 1 else newsList.size
     val pagerState = rememberPagerState(pageCount = { pageCount })
@@ -54,7 +57,8 @@ fun HomeScreen(
     else illustrationResForCategory(currentCategory)
 
     LaunchedEffect(pagerState.currentPage, isLoggedIn) {
-        if (!isLoggedIn && pagerState.currentPage >= 3) {
+        if (!isLoggedIn && !loginPromptShown && pagerState.currentPage >= 3) {
+            loginPromptShown = true
             onLoginRequired()
         }
     }
