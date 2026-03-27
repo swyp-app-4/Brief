@@ -33,12 +33,12 @@ import com.example.brife.ui.component.AppText
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.ComponentDefault
 import com.example.brife.ui.theme.CtaDisabled
-import com.example.brife.ui.theme.InterestSelected
 import com.example.brife.ui.theme.Negative
 import com.example.brife.ui.theme.PrimaryNormal
 import com.example.brife.feature.archive.component.CreateFolderBottomSheet
 import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
+import com.example.brife.ui.theme.InterestSelectedLight
 
 @Composable
 fun ArchiveScreen(
@@ -286,7 +286,7 @@ fun ArchiveFolderCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) InterestSelected else ComponentDefault
+            containerColor = if (selected) InterestSelectedLight else ComponentDefault
         )
     ) {
         Box(
