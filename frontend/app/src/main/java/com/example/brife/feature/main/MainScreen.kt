@@ -2,7 +2,6 @@ package com.example.brife.feature.main
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -20,10 +19,9 @@ import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.local.shortsampleHomeNews
 import com.example.brife.feature.archive.ArchiveDetailScreen
-import com.example.brife.feature.archive.ArchiveNewsItem
 import com.example.brife.feature.archive.ArchiveScreen
 import com.example.brife.feature.archive.component.ArchiveMoreBottomSheet
-import com.example.brife.feature.explore.ExploreScreen
+import com.example.brife.feature.explore.ExploreRoute
 import com.example.brife.feature.home.HomeScreen
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
@@ -75,46 +73,6 @@ fun MainScreen(
     var profileInterests by remember {
         mutableStateOf(
             onboardingStorage.getSelectedCategoryIds().mapNotNull { categoryItemFromId(it) }
-        )
-    }
-
-    val exploreNewsList = remember {
-        listOf(
-            ArchiveNewsItem(
-                title = "미국 연준, 기준금리 동결 결정",
-                summary = "연방준비제도가 이번 FOMC 회의에서 기준금리를 현 수준에서 동결하기로 결정했다.",
-                time = "2시간 전",
-                company = "한국경제",
-                imageUrl = com.example.brife.R.drawable.homescreen_bg
-            ),
-            ArchiveNewsItem(
-                title = "애플, 새로운 AI 기능 탑재한 아이폰 17 공개",
-                summary = "애플이 차세대 아이폰에 온디바이스 AI 기능을 전면 탑재한다고 발표했다.",
-                time = "4시간 전",
-                company = "조선일보",
-                imageUrl = com.example.brife.R.drawable.homescreen_bg
-            ),
-            ArchiveNewsItem(
-                title = "국내 부동산 시장 안정세 지속",
-                summary = "수도권 아파트 가격이 3개월 연속 보합세를 유지하며 안정세를 이어가고 있다.",
-                time = "6시간 전",
-                company = "매일경제",
-                imageUrl = com.example.brife.R.drawable.homescreen_bg
-            ),
-            ArchiveNewsItem(
-                title = "국내 전기차 판매량, 전년 대비 30% 증가",
-                summary = "올해 상반기 국내 전기차 신규 등록 대수가 전년 동기 대비 30% 증가한 것으로 집계됐다.",
-                time = "8시간 전",
-                company = "동아일보",
-                imageUrl = com.example.brife.R.drawable.homescreen_bg
-            ),
-            ArchiveNewsItem(
-                title = "정부, 청년 주거 지원 정책 강화 발표",
-                summary = "국토교통부가 청년층 주거 부담 완화를 위한 새로운 지원 정책 패키지를 발표했다.",
-                time = "10시간 전",
-                company = "연합뉴스",
-                imageUrl = com.example.brife.R.drawable.homescreen_bg
-            )
         )
     }
 
@@ -218,9 +176,8 @@ fun MainScreen(
             }
 
             composable(NavRoutes.EXPLORE) {
-                ExploreScreen(
-                    newsList = exploreNewsList,
-                    modifier = Modifier.statusBarsPadding()
+                ExploreRoute(
+                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
                 )
             }
 
