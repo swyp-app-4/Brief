@@ -1,5 +1,6 @@
 package com.example.brife.feature.archive
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -287,7 +288,8 @@ fun ArchiveFolderCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (selected) InterestSelectedLight else ComponentDefault
-        )
+        ),
+        border = if (selected) BorderStroke(1.dp, PrimaryNormal) else null
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
