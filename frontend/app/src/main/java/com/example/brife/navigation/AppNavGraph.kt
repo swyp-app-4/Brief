@@ -1,13 +1,16 @@
 package com.example.brife.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.remote.NetworkModule
@@ -23,6 +26,7 @@ import com.example.brife.feature.auth.LoginTermsRoute
 import com.example.brife.feature.setting.SettingScreen
 import com.example.brife.feature.setting.SettingUiState
 import com.example.brife.feature.setting.WidgetInstallGuideScreen
+import com.example.brife.feature.webview.WebViewScreen
 import com.example.brife.feature.auth.LoginViewModel
 import com.example.brife.feature.auth.LoginViewModelFactory
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
@@ -177,12 +181,38 @@ fun AppNavGraph() {
                 isLoggedIn = false, // TODO: 실제 로그인 상태로 교체
                 onBackClick = { navController.popBackStack() },
                 onLoginClick = { navController.navigate(NavRoutes.LOGIN) },
-                onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) }
+                onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) },
+                onTermsClick = {
+                    val encodedUrl = Uri.encode("https://buttered-palm-c4c.notion.site/32e4778e859280eca570ce215e9ee048")
+                    val encodedTitle = Uri.encode("서비스 이용약관")
+                    navController.navigate("${NavRoutes.WEB_VIEW}?title=$encodedTitle&url=$encodedUrl")
+                },
+                onPrivacyClick = {
+                    val encodedUrl = Uri.encode("https://buttered-palm-c4c.notion.site/32e4778e85928009966ac723b49f0f95")
+                    val encodedTitle = Uri.encode("개인정보 처리방침")
+                    navController.navigate("${NavRoutes.WEB_VIEW}?title=$encodedTitle&url=$encodedUrl")
+                }
             )
         }
 
         composable(NavRoutes.WIDGET_INSTALL_GUIDE) {
             WidgetInstallGuideScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = "${NavRoutes.WEB_VIEW}?title={title}&url={url}",
+            arguments = listOf(
+                navArgument("title") { type = NavType.StringType },
+                navArgument("url") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val title = Uri.decode(backStackEntry.arguments?.getString("title") ?: "")
+            val url = Uri.decode(backStackEntry.arguments?.getString("url") ?: "")
+            WebViewScreen(
+                title = title,
+                url = url,
                 onBackClick = { navController.popBackStack() }
             )
         }
