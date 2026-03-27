@@ -79,7 +79,8 @@ fun HomeScreen(
                 state = pagerState,
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 36.dp),
-                pageSpacing = 12.dp
+                pageSpacing = 12.dp,
+                beyondViewportPageCount = 1
             ) { page ->
                 val pageOffset =
                     (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
@@ -92,7 +93,7 @@ fun HomeScreen(
                         .zIndex(1f - absOffset.coerceIn(0f, 1f))
                         .graphicsLayer {
                             val scale = lerp(
-                                start = 0.67f,
+                                start = 0.9f,
                                 stop = 1f,
                                 fraction = 1f - absOffset.coerceIn(0f, 1f)
                             )
@@ -119,7 +120,7 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // 페이지 인디케이터 — Pager 외부에서 fillMaxWidth + Center 정렬
             Row(
