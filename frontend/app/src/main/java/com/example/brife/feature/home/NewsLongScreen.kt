@@ -81,6 +81,12 @@ fun NewsLongScreen(
         label = "newsLongTopBarColor"
     )
 
+    // isExpanded 변화(if/else 분기 교체)로 NewsLongContent 인스턴스가 달라져도
+    // 동일 item에 대해 이미지가 바뀌지 않도록 이 레벨에서 고정
+    val imageRes = remember(item.category) {
+        LongFormImageProvider.getRandomImageRes(item.category)
+    }
+
     var showBookmarkSheet by remember { mutableStateOf(false) }
     var showCreateFolderSheet by remember { mutableStateOf(false) }
 
@@ -111,7 +117,8 @@ fun NewsLongScreen(
             ) {
                 NewsLongContent(
                     item = item,
-                    isExpanded = true
+                    isExpanded = true,
+                    imageRes = imageRes
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -124,7 +131,8 @@ fun NewsLongScreen(
             ) {
                 NewsLongContent(
                     item = item,
-                    isExpanded = false
+                    isExpanded = false,
+                    imageRes = imageRes
                 )
             }
         }
@@ -213,13 +221,9 @@ fun NewsLongScreen(
 @Composable
 private fun NewsLongContent(
     item: HomeNewsCardItem,
-    isExpanded: Boolean
+    isExpanded: Boolean,
+    imageRes: Int
 ) {
-    // recomposition 시 이미지가 바뀌지 않도록 최초 1회만 선택
-    val imageRes = remember(item.category) {
-        LongFormImageProvider.getRandomImageRes(item.category)
-    }
-
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
