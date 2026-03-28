@@ -1,4 +1,4 @@
-package com.brife.user.profile;
+package com.brife.user.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,5 +11,4 @@ public class InterestRequest {
 
     private List<Long> categoryIds;
     private List<Long> groupIds;
-
 }

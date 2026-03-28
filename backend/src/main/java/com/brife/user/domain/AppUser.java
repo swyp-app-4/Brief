@@ -68,5 +68,9 @@ public class AppUser {
         this.termsAgreedAt = LocalDateTime.now();
     }
 
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
 }
 
