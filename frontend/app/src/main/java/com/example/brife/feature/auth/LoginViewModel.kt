@@ -2,6 +2,7 @@ package com.example.brife.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -9,7 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val authLocalStorage: AuthLocalStorage
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -99,7 +101,8 @@ class LoginViewModel(
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 isLoginSuccess = true,
-                isNewUser = false
+                isNewUser = false,
+                pendingAccessToken = accessToken  // agreeTerms() 호출에 필요
             )
         }
     }
@@ -115,6 +118,7 @@ class LoginViewModel(
 
             repository.agreeTerms(accessToken)
                 .onSuccess {
+                    authLocalStorage.saveAccessToken(accessToken)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         needTermsAgreement = false,

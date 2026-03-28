@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.local.shortsampleHomeNews
@@ -45,6 +46,7 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val onboardingStorage = remember { OnboardingLocalStorage(context) }
+    val authStorage = remember { AuthLocalStorage(context) }
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -58,7 +60,7 @@ fun MainScreen(
     val backgroundColor =
         if (currentRoute == NavRoutes.HOME) Color.Transparent else Color.White
 
-    val isLoggedIn = false
+    val isLoggedIn = remember { authStorage.isLoggedIn() }
     var showLoginBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -218,7 +220,7 @@ fun MainScreen(
                 ProfileScreen(
                     modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
                     uiState = ProfileUiState(
-                        isLoggedIn = false,
+                        isLoggedIn = isLoggedIn,
                         interests = profileInterests
                     ),
                     onResetInterestClick = {

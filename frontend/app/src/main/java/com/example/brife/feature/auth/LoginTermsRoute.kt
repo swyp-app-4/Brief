@@ -16,6 +16,7 @@ private enum class LoginTermsPage {
 fun LoginTermsRoute(
     viewModel: LoginViewModel,
     onNavigateToOnboarding: () -> Unit,
+    onNavigateToHome: () -> Unit,
     onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -36,7 +37,9 @@ fun LoginTermsRoute(
 
     LaunchedEffect(uiState.isTermsSuccess) {
         if (uiState.isTermsSuccess) {
-            onNavigateToOnboarding()
+            // 신규 유저 → 온보딩, 기존 유저 → 홈으로 바로 이동
+            if (uiState.isNewUser) onNavigateToOnboarding()
+            else onNavigateToHome()
         }
     }
 

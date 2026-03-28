@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.remote.NetworkModule
@@ -36,6 +37,8 @@ import com.example.brife.navigation.NavRoutes
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val authLocalStorage = remember { AuthLocalStorage(context) }
 
 //    val context = LocalContext.current
 //    val hasCompletedOnboarding = OnboardingLocalStorage(context).hasCompletedOnboarding()
@@ -113,7 +116,7 @@ fun AppNavGraph() {
                 val repository = AuthRepository(NetworkModule.authApiService)
                 val loginViewModel: LoginViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = LoginViewModelFactory(repository)
+                    factory = LoginViewModelFactory(repository, authLocalStorage)
                 )
 
                 LoginRoute(
@@ -137,13 +140,18 @@ fun AppNavGraph() {
                 val repository = AuthRepository(NetworkModule.authApiService)
                 val loginViewModel: LoginViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = LoginViewModelFactory(repository)
+                    factory = LoginViewModelFactory(repository, authLocalStorage)
                 )
 
                 LoginTermsRoute(
                     viewModel = loginViewModel,
                     onNavigateToOnboarding = {
                         navController.navigate(NavRoutes.ONBOARDING_GUIDE) {
+                            popUpTo(NavRoutes.AUTH) { inclusive = true }
+                        }
+                    },
+                    onNavigateToHome = {
+                        navController.navigate(NavRoutes.MAIN) {
                             popUpTo(NavRoutes.AUTH) { inclusive = true }
                         }
                     },
@@ -178,7 +186,7 @@ fun AppNavGraph() {
         composable(NavRoutes.SETTING) {
             SettingScreen(
                 uiState = SettingUiState(loginMethod = "Google", appVersion = "1.0.0"),
-                isLoggedIn = false, // TODO: 실제 로그인 상태로 교체
+                isLoggedIn = authLocalStorage.isLoggedIn(),
                 onBackClick = { navController.popBackStack() },
                 onLoginClick = { navController.navigate(NavRoutes.LOGIN) },
                 onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) },
