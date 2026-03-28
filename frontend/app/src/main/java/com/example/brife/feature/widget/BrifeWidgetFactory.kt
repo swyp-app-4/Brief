@@ -4,6 +4,8 @@ import android.content.Context
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.example.brife.R
+import com.example.brife.data.local.OnboardingLocalStorage
+import com.example.brife.data.remote.NetworkModule
 
 class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.RemoteViewsFactory {
 
@@ -14,6 +16,7 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         val summary3: String
     )
 
+    // API 실패 또는 관심사 미설정 시 표시할 fallback mock 데이터
     private val mockData = listOf(
         WidgetNews(
             title = "미국 연준, 기준금리 동결 결정",
@@ -47,6 +50,14 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         )
     )
 
+    private val repository = WidgetNewsRepository(
+        api = NetworkModule.newsApiService,
+        onboardingLocalStorage = OnboardingLocalStorage(context)
+    )
+
+    // 현재 표시할 데이터 (onDataSetChanged에서 갱신)
+    private var currentData: List<WidgetNews> = mockData
+
     // 인디케이터 dot View ID 목록
     private val dotIds = listOf(
         R.id.widget_dot_0,
@@ -57,16 +68,34 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
     )
 
     override fun onCreate() {}
-    override fun onDataSetChanged() {}
+
+    // background thread에서 호출됨 — 블로킹 API 호출 가능
+    override fun onDataSetChanged() {
+        val apiResult = repository.fetchTop5()
+        currentData = if (apiResult.isNotEmpty()) {
+            apiResult.map { news ->
+                WidgetNews(
+                    title = news.title,
+                    summary1 = "• ${news.summaryList.getOrElse(0) { "" }}",
+                    summary2 = "• ${news.summaryList.getOrElse(1) { "" }}",
+                    summary3 = "• ${news.summaryList.getOrElse(2) { "" }}"
+                )
+            }
+        } else {
+            // 관심사 미설정 또는 API 실패 시 mock 유지
+            mockData
+        }
+    }
+
     override fun onDestroy() {}
-    override fun getCount() = mockData.size
+    override fun getCount() = currentData.size
     override fun getLoadingView() = null
     override fun getViewTypeCount() = 1
     override fun getItemId(position: Int) = position.toLong()
     override fun hasStableIds() = true
 
     override fun getViewAt(position: Int): RemoteViews {
-        val news = mockData[position]
+        val news = currentData[position]
         val rv = RemoteViews(context.packageName, R.layout.widget_stack_item)
 
         // 텍스트 세팅
@@ -76,7 +105,6 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         rv.setTextViewText(R.id.widget_tv_summary_3, news.summary3)
 
         // 인디케이터: 현재 위치만 active (White), 나머지 inactive (White 50%)
-        // HomeScreen과 동일: active=Color.White, inactive=Color.White.copy(alpha=0.5f)
         dotIds.forEachIndexed { index, dotId ->
             rv.setImageViewResource(
                 dotId,

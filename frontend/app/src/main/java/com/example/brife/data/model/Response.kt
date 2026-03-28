@@ -37,13 +37,30 @@ data class SubCategoryResponse(
     val parentCategoryName: String = ""
 )
 
-// GET /home/news/recommended 응답
+// GET /news/top5, GET /home/news/recommended 공통 응답 구조
 data class RecommendedNewsResponse(
     @SerializedName("id") val id: Long,
     @SerializedName("categoryName") val categoryName: String,
     @SerializedName("title") val title: String,
     @SerializedName("summaryList") val summaryList: List<String>,
     @SerializedName("bodyPreview") val bodyPreview: String,
+    @SerializedName("sourceCount") val sourceCount: Int,
+    @SerializedName("publishedDate") val publishedDate: String
+)
+
+// GET /news/{id} 응답 — 2차 연동 예정
+data class NewsDetailSection(
+    @SerializedName("heading") val heading: String,
+    @SerializedName("contentList") val contentList: List<String>
+)
+
+data class NewsDetailResponse(
+    @SerializedName("id") val id: Long,
+    @SerializedName("groupName") val groupName: String,
+    @SerializedName("categoryName") val categoryName: String,
+    @SerializedName("title") val title: String,
+    @SerializedName("summaryList") val summaryList: List<String>,
+    @SerializedName("sections") val sections: List<NewsDetailSection>,
     @SerializedName("sourceCount") val sourceCount: Int,
     @SerializedName("publishedDate") val publishedDate: String
 )
