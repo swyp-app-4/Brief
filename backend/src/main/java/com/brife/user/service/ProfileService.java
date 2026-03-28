@@ -1,7 +1,4 @@
-package com.brife.user.profile;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+package com.brife.user.service;
 
 import com.brife.news.domain.Category;
 import com.brife.news.domain.CategoryGroup;
@@ -9,10 +6,17 @@ import com.brife.news.repository.CategoryGroupRepository;
 import com.brife.news.repository.CategoryRepository;
 import com.brife.user.domain.AppUser;
 import com.brife.user.domain.UserInterest;
-import com.brife.user.social.AppUserRepository;
-
+import com.brife.user.dto.InterestRequest;
+import com.brife.user.dto.UserProfileResponse;
+import com.brife.user.dto.UserProfileUpdate;
+import com.brife.user.repository.AppUserRepository;
+import com.brife.user.repository.RefreshTokenRepository;
+import com.brife.user.repository.UserInterestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,11 +27,11 @@ public class ProfileService {
     private final UserInterestRepository userInterestRepository;
     private final CategoryRepository categoryRepository;
     private final CategoryGroupRepository categoryGroupRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public UserProfileResponse getProfile(Long userId){
+    public UserProfileResponse getProfile(Long userId) {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
-
         return new UserProfileResponse(user);
     }
 
@@ -35,11 +39,11 @@ public class ProfileService {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
-        if(request.getNickname() != null) {
+        if (request.getNickname() != null) {
             user.update(request.getNickname());
         }
 
-        if(request.getProfileImageUrl() != null) {
+        if (request.getProfileImageUrl() != null) {
             user.updateProfileImage(request.getProfileImageUrl());
         }
 
@@ -70,8 +74,18 @@ public class ProfileService {
         userInterestRepository.saveAll(interests);
     }
 
+    @Transactional
+    public void deleteUser(Long userId) {
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+
+        refreshTokenRepository.deleteByUserId(userId);
+        user.delete();
+        appUserRepository.save(user);
+    }
+
     private List<UserInterest> buildInterests(AppUser user, InterestRequest request) {
-        List<UserInterest> result = new java.util.ArrayList<>();
+        List<UserInterest> result = new ArrayList<>();
 
         if (request.getCategoryIds() != null) {
             request.getCategoryIds().forEach(categoryId -> {
@@ -91,5 +105,4 @@ public class ProfileService {
 
         return result;
     }
-
 }

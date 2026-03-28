@@ -1,4 +1,4 @@
-package com.brife.user.auth;
+package com.brife.user.security;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;

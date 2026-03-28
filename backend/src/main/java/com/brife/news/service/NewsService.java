@@ -8,7 +8,7 @@ import com.brife.news.dto.WidgetNewsDto;
 import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.SummarizedNewsRepository;
 import com.brife.user.domain.UserInterest;
-import com.brife.user.profile.UserInterestRepository;
+import com.brife.user.repository.UserInterestRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

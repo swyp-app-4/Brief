@@ -1,18 +1,13 @@
-package com.brife.user.profile;
+package com.brife.user.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.brife.user.dto.InterestRequest;
+import com.brife.user.dto.UserProfileResponse;
+import com.brife.user.dto.UserProfileUpdate;
+import com.brife.user.service.ProfileService;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -31,6 +26,12 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateProfile(userId, request));
     }
 
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal Long userId) {
+        profileService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/me/interests")
     public ResponseEntity<Void> saveInterests(@AuthenticationPrincipal Long userId, @RequestBody InterestRequest request) {
         profileService.saveInterests(userId, request);
@@ -42,5 +43,4 @@ public class ProfileController {
         profileService.resetInterests(userId, request);
         return ResponseEntity.ok().build();
     }
-
 }

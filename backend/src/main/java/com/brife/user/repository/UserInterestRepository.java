@@ -1,4 +1,4 @@
-package com.brife.user.profile;
+package com.brife.user.repository;
 
 import com.brife.user.domain.UserInterest;
 import org.springframework.data.jpa.repository.EntityGraph;
