@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -49,9 +49,9 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
             throw new RuntimeException("sections JSON 직렬화 실패 - keyword=" + group.getKeyword(), e);
         }
 
-        LocalDate publishedDate = newArticles.get(0).getPubDate() != null
-                ? newArticles.get(0).getPubDate().toLocalDate()
-                : LocalDate.now();
+        LocalDateTime publishedAt = newArticles.get(0).getPubDate() != null
+                ? newArticles.get(0).getPubDate()
+                : LocalDateTime.now();
 
         return ProcessedNewsDto.builder()
                 .category(category)
@@ -59,7 +59,8 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
                 .synthesisResult(result)
                 .sectionsJson(sectionsJson)
                 .totalArticleCount(group.getArticles().size())
-                .publishedDate(publishedDate)
+                .publishedDate(publishedAt.toLocalDate())
+                .publishedAt(publishedAt)
                 .build();
     }
 }

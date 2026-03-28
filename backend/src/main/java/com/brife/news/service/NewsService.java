@@ -7,6 +7,7 @@ import com.brife.news.dto.SectionResponseDto;
 import com.brife.news.dto.WidgetNewsDto;
 import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.SummarizedNewsRepository;
+import com.brife.user.domain.UserInterest;
 import com.brife.user.profile.UserInterestRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,13 +69,20 @@ public class NewsService {
     }
 
     public List<WidgetNewsDto> getRecommendedNews(Long userId) {
-        List<Long> categoryIds = userInterestRepository.findByUserId(userId)
-                .stream()
-                .map(interest -> interest.getCategory().getId())
+        List<UserInterest> interests = userInterestRepository.findByUserId(userId);
+        if (interests.isEmpty()) return List.of();
+
+        List<Long> categoryIds = interests.stream()
+                .filter(i -> i.getCategory() != null)
+                .map(i -> i.getCategory().getId())
                 .toList();
 
-        if (categoryIds.isEmpty()) return List.of();
-        return getTop5News(categoryIds, List.of());
+        List<Long> groupIds = interests.stream()
+                .filter(i -> i.getCategoryGroup() != null)
+                .map(i -> i.getCategoryGroup().getId())
+                .toList();
+
+        return getTop5News(categoryIds, groupIds);
     }
 
     public NewsDetailDto getNewsDetail(Long id) {

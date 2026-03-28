@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface UserInterestRepository extends JpaRepository<UserInterest, Long> {
 
-    @EntityGraph(attributePaths = {"category"})
+    @EntityGraph(attributePaths = {"category", "categoryGroup"})
     List<UserInterest> findByUserId(Long userId);
 
     void deleteByUserId(Long userId);

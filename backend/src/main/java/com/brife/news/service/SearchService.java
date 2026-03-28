@@ -29,6 +29,6 @@ public class SearchService {
     // 탐색 탭을 누르면 기본으로 전체 조회
     @Transactional(readOnly = true)
     public Slice<NewsSearchResponse> getAllSummarizedNewsByPublishedDesc(Pageable pageable) {
-        return summarizedNewsRepository.findAllByOrderByPublishedDateDesc(pageable).map(NewsSearchResponse::from);
+        return summarizedNewsRepository.findAllBy(pageable).map(NewsSearchResponse::from);
     }
 }

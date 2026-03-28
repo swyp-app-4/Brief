@@ -6,8 +6,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,13 +26,16 @@ public class SearchController {
 
     @Operation(summary = "키워드 검색 결과 조회", description = "탐색 탭에서 키워드로 검색 시 반환되는 뉴스 조회")
     @GetMapping("/search")
-    public ResponseEntity<Slice<NewsSearchResponse>> searchNews(@Parameter(description = "검색어") @RequestParam String keyword, Pageable pageable) {
+    public ResponseEntity<Slice<NewsSearchResponse>> searchNews(
+            @Parameter(description = "검색어") @RequestParam String keyword,
+            @ParameterObject @SortDefault(sort = "publishedAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(searchService.getSummarizedNewsByKeyword(keyword, pageable));
     }
 
     @Operation(summary = "전체 뉴스 조회", description = "탐색 탭에서 최근 검색어가 생기기 전 초기 상태에서 전체 뉴스 조회")
     @GetMapping("/latest")
-    public ResponseEntity<Slice<NewsSearchResponse>> getLatestNews(Pageable pageable) {
+    public ResponseEntity<Slice<NewsSearchResponse>> getLatestNews(
+            @ParameterObject @SortDefault(sort = "publishedAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(searchService.getAllSummarizedNewsByPublishedDesc(pageable));
     }
 }

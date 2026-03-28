@@ -10,5 +10,6 @@ import java.util.List;
 public class InterestRequest {
 
     private List<Long> categoryIds;
+    private List<Long> groupIds;
 
 }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -16,4 +17,5 @@ public class ProcessedNewsDto {
     private String sectionsJson;
     private int totalArticleCount;
     private LocalDate publishedDate;
+    private LocalDateTime publishedAt;
 }

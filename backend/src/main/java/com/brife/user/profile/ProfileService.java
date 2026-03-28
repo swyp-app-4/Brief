@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.brife.news.domain.Category;
+import com.brife.news.domain.CategoryGroup;
+import com.brife.news.repository.CategoryGroupRepository;
 import com.brife.news.repository.CategoryRepository;
 import com.brife.user.domain.AppUser;
 import com.brife.user.domain.UserInterest;
@@ -20,6 +22,7 @@ public class ProfileService {
     private final AppUserRepository appUserRepository;
     private final UserInterestRepository userInterestRepository;
     private final CategoryRepository categoryRepository;
+    private final CategoryGroupRepository categoryGroupRepository;
 
     public UserProfileResponse getProfile(Long userId){
         AppUser user = appUserRepository.findById(userId)
@@ -52,7 +55,7 @@ public class ProfileService {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
-        List<UserInterest> interests = buildInterests(user, request.getCategoryIds());
+        List<UserInterest> interests = buildInterests(user, request);
         userInterestRepository.saveAll(interests);
     }
 
@@ -63,21 +66,30 @@ public class ProfileService {
 
         userInterestRepository.deleteByUserId(userId);
 
-        List<UserInterest> interests = buildInterests(user, request.getCategoryIds());
+        List<UserInterest> interests = buildInterests(user, request);
         userInterestRepository.saveAll(interests);
     }
 
-    private List<UserInterest> buildInterests(AppUser user, List<Long> categoryIds) {
-        return categoryIds.stream()
-                .map(categoryId -> {
-                    Category category = categoryRepository.findById(categoryId)
-                            .orElseThrow(() -> new RuntimeException("카테고리 없음: " + categoryId));
-                    return UserInterest.builder()
-                            .user(user)
-                            .category(category)
-                            .build();
-                })
-                .toList();
+    private List<UserInterest> buildInterests(AppUser user, InterestRequest request) {
+        List<UserInterest> result = new java.util.ArrayList<>();
+
+        if (request.getCategoryIds() != null) {
+            request.getCategoryIds().forEach(categoryId -> {
+                Category category = categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new RuntimeException("카테고리 없음: " + categoryId));
+                result.add(UserInterest.builder().user(user).category(category).build());
+            });
+        }
+
+        if (request.getGroupIds() != null) {
+            request.getGroupIds().forEach(groupId -> {
+                CategoryGroup group = categoryGroupRepository.findById(groupId)
+                        .orElseThrow(() -> new RuntimeException("대분류 없음: " + groupId));
+                result.add(UserInterest.builder().user(user).categoryGroup(group).build());
+            });
+        }
+
+        return result;
     }
 
 }

@@ -60,6 +60,9 @@ public class SummarizedNews {
     @Column(name = "published_date", nullable = false)
     private LocalDate publishedDate;
 
+    @Column(name = "published_at")
+    private LocalDateTime publishedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -67,7 +70,8 @@ public class SummarizedNews {
     @Builder
     public SummarizedNews(Category category, String title,
                           String summary, String body,
-                          int sourceCount, String thumbnailUrl, LocalDate publishedDate) {
+                          int sourceCount, String thumbnailUrl,
+                          LocalDate publishedDate, LocalDateTime publishedAt) {
         this.category = category;
         this.title = title;
         this.summary = summary;
@@ -75,6 +79,7 @@ public class SummarizedNews {
         this.sourceCount = sourceCount;
         this.thumbnailUrl = thumbnailUrl;
         this.publishedDate = publishedDate;
+        this.publishedAt = publishedAt;
         this.isSummarized = true;
     }
 

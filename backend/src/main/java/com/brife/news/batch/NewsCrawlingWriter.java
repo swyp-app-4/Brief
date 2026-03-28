@@ -34,6 +34,7 @@ public class NewsCrawlingWriter implements ItemWriter<ProcessedNewsDto> {
                             .body(data.getSectionsJson())
                             .sourceCount(data.getTotalArticleCount())
                             .publishedDate(data.getPublishedDate())
+                            .publishedAt(data.getPublishedAt())
                             .build()
             );
 
