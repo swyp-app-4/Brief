@@ -15,7 +15,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.local.OnboardingLocalStorage
-import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.AuthRepository
 import com.example.brife.data.repository.UserRepository

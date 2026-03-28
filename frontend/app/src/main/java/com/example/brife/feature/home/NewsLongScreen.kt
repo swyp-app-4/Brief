@@ -42,7 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
-import com.example.brife.data.local.longsampleHomeNews
+//import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.CategoryChip
 import com.example.brife.ui.component.PrimaryButton
@@ -463,18 +463,18 @@ private fun NewsLongTopBar(
     )
 }
 
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-    name = "News Long Screen"
-)
-@Composable
-fun NewsLongScreenPreview() {
-    BrifeTheme {
-        NewsLongScreen(
-            item = longsampleHomeNews.first(),
-            onBackClick = {},
-            onShareClick = {}
-        )
-    }
-}
+//@Preview(
+//    showBackground = true,
+//    showSystemUi = true,
+//    name = "News Long Screen"
+//)
+//@Composable
+//fun NewsLongScreenPreview() {
+//    BrifeTheme {
+//        NewsLongScreen(
+//            item = longsampleHomeNews.first(),
+//            onBackClick = {},
+//            onShareClick = {}
+//        )
+//    }
+//}

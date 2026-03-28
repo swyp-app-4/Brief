@@ -20,11 +20,12 @@ import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.UserRepository
 import com.example.brife.feature.profile.ProfileRoute
-import com.example.brife.data.local.longsampleHomeNews
+//import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.feature.archive.ArchiveDetailRoute
 import com.example.brife.feature.archive.ArchiveRoute
 import com.example.brife.feature.archive.component.ArchiveMoreBottomSheet
 import com.example.brife.feature.explore.ExploreRoute
+import com.example.brife.feature.home.HomeNewsCardItem
 import com.example.brife.feature.home.HomeRoute
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
@@ -72,6 +73,11 @@ fun MainScreen(
     var isArchiveDeleteMode by remember { mutableStateOf(false) }
     var isArchiveRenameMode by remember { mutableStateOf(false) }
     val archiveMoreSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+
+    //롱폼 관련
+    var selectedNewsItem by remember { mutableStateOf<HomeNewsCardItem?>(null) }
+
 
     var profileInterests by remember {
         mutableStateOf(
@@ -148,6 +154,7 @@ fun MainScreen(
                     isLoggedIn = isLoggedIn,
                     onLoginRequired = { showLoginBottomSheet = true },
                     onDetailClick = { item ->
+                        selectedNewsItem = item
                         navController.navigate("${NavRoutes.NEWS_LONG}/${item.newsId}")
                     },
                     onShareClick = { item ->
@@ -235,30 +242,28 @@ fun MainScreen(
                     }
                 )
             }
-
             composable(
                 route = "${NavRoutes.NEWS_LONG}/{newsId}",
                 arguments = listOf(navArgument("newsId") { type = NavType.LongType })
             ) { backStackEntry ->
                 val newsId = backStackEntry.arguments?.getLong("newsId") ?: 0L
-                // TODO: 2차 연동 시 newsId로 GET /news/{newsId} API 호출 예정
-                // 현재는 mock 데이터 첫 번째 아이템을 표시
-                val item = longsampleHomeNews.first()
+                val item = selectedNewsItem
 
-                NewsLongScreen(
-                    item = item,
-                    isLoggedIn = isLoggedIn,
-                    onBackClick = { navController.popBackStack() },
-                    onNavigateToArchive = {
-                        navController.popBackStack()
-                        navigateTo(NavRoutes.ARCHIVE)
-                    },
-                    onShareClick = {
-                        // TODO: API 연동 후 item.id(실제 newsId)로 교체
-                        shareNews(context, item.title, newsId.toString())
-                    },
-                    onLoginRequired = { showLoginBottomSheet = true }
-                )
+                if (item != null) {
+                    NewsLongScreen(
+                        item = item,
+                        isLoggedIn = isLoggedIn,
+                        onBackClick = { navController.popBackStack() },
+                        onNavigateToArchive = {
+                            navController.popBackStack()
+                            navigateTo(NavRoutes.ARCHIVE)
+                        },
+                        onShareClick = {
+                            shareNews(context, item.title, newsId.toString())
+                        },
+                        onLoginRequired = { showLoginBottomSheet = true }
+                    )
+                }
             }
         }
 
