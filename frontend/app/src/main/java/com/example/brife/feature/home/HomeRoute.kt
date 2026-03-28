@@ -39,7 +39,6 @@ fun HomeRoute(
         onLoginRequired = onLoginRequired,
         onDetailClick = onDetailClick,
         onShareClick = onShareClick,
-        topPadding = topPadding,
-        modifier = modifier
+        topPadding = topPadding
     )
 }
