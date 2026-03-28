@@ -1,4 +1,5 @@
-package com.brife.user.profile;
+// [레포지토리] UserInterest JPA 레포지토리. userId 기반 조회/삭제/존재 여부 확인.
+package com.brife.user.repository;
 
 import com.brife.user.domain.UserInterest;
 import org.springframework.data.jpa.repository.JpaRepository;

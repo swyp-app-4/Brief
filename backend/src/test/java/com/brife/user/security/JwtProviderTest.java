@@ -1,4 +1,4 @@
-package com.brife.user.auth;
+package com.brife.user.security;
 
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +50,7 @@ class JwtProviderTest {
     @Test
     @DisplayName("만료된 토큰은 isValid가 false를 반환한다")
     void expiredToken() {
-        JwtProvider shortLivedProvider = new JwtProvider(SECRET, -1L); // 이미 만료
+        JwtProvider shortLivedProvider = new JwtProvider(SECRET, -1L);
         String token = shortLivedProvider.generateAccessToken(1L, "ROLE_USER");
 
         assertThat(jwtProvider.isValid(token)).isFalse();

@@ -1,4 +1,5 @@
-package com.brife.user.auth;
+// [JWT 유틸] Access Token 생성(userId, role), 파싱, 유효성 검증.
+package com.brife.user.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

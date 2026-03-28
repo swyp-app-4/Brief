@@ -1,3 +1,4 @@
+// [엔티티] 소셜 로그인 유저 (provider/providerId 복합 유니크). 약관 동의, 소프트 삭제(deletedAt) 포함.
 package com.brife.user.domain;
 
 import jakarta.persistence.*;
@@ -66,6 +67,10 @@ public class AppUser {
         this.serviceTermsAgreed = true;
         this.privacyTermsAgreed = true;
         this.termsAgreedAt = LocalDateTime.now();
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
     }
 
 }

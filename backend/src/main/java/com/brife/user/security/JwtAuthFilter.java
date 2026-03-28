@@ -1,4 +1,5 @@
-package com.brife.user.auth;
+// [JWT 필터] 요청마다 Authorization 헤더에서 토큰 추출 후 SecurityContext에 userId 등록.
+package com.brife.user.security;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;

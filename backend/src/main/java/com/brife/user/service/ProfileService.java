@@ -1,15 +1,19 @@
-package com.brife.user.profile;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+// [프로필 서비스] 프로필 조회/수정, 관심사 저장(POST)/재설정(PUT), 회원 탈퇴(소프트 삭제).
+package com.brife.user.service;
 
 import com.brife.category.domain.Category;
-import com.brife.category.service.CategoryRepository;
+import com.brife.category.repository.CategoryRepository;
 import com.brife.user.domain.AppUser;
 import com.brife.user.domain.UserInterest;
-import com.brife.user.social.AppUserRepository;
-
+import com.brife.user.dto.InterestRequest;
+import com.brife.user.dto.UserProfileResponse;
+import com.brife.user.dto.UserProfileUpdate;
+import com.brife.user.repository.AppUserRepository;
+import com.brife.user.repository.RefreshTokenRepository;
+import com.brife.user.repository.UserInterestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,27 +24,29 @@ public class ProfileService {
     private final AppUserRepository appUserRepository;
     private final UserInterestRepository userInterestRepository;
     private final CategoryRepository categoryRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public UserProfileResponse getProfile(Long userId){
+    public UserProfileResponse getProfile(Long userId) {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
-        return new UserProfileResponse(user);
+        return new UserProfileResponse(user, userInterestRepository.findByUserId(userId));
     }
 
     public UserProfileResponse updateProfile(Long userId, UserProfileUpdate request) {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
-        if(request.getNickname() != null) {
+        if (request.getNickname() != null) {
             user.update(request.getNickname());
         }
 
-        if(request.getProfileImageUrl() != null) {
+        if (request.getProfileImageUrl() != null) {
             user.updateProfileImage(request.getProfileImageUrl());
         }
 
-        return new UserProfileResponse(appUserRepository.save(user));
+        AppUser saved = appUserRepository.save(user);
+        return new UserProfileResponse(saved, userInterestRepository.findByUserId(userId));
     }
 
     @Transactional
@@ -67,17 +73,28 @@ public class ProfileService {
         userInterestRepository.saveAll(interests);
     }
 
-    private List<UserInterest> buildInterests(AppUser user, List<Long> categoryIds) {
-        return categoryIds.stream()
-                .map(categoryId -> {
-                    Category category = categoryRepository.findById(categoryId)
-                            .orElseThrow(() -> new RuntimeException("카테고리 없음: " + categoryId));
-                    return UserInterest.builder()
-                            .user(user)
-                            .category(category)
-                            .build();
-                })
-                .toList();
+    @Transactional
+    public void deleteUser(Long userId) {
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+
+        refreshTokenRepository.deleteByUserId(userId);
+        user.delete();
+        appUserRepository.save(user);
     }
 
+    private List<UserInterest> buildInterests(AppUser user, List<Long> categoryIds) {
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+
+        if (categories.size() != categoryIds.size()) {
+            throw new RuntimeException("존재하지 않는 카테고리가 포함되어 있습니다.");
+        }
+
+        return categories.stream()
+                .map(category -> UserInterest.builder()
+                        .user(user)
+                        .category(category)
+                        .build())
+                .toList();
+    }
 }

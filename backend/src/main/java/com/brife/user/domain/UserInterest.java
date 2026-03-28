@@ -1,3 +1,4 @@
+// [엔티티] 유저-카테고리 관심사 매핑 (user_id + category_id 복합 유니크).
 package com.brife.user.domain;
 
 import com.brife.category.domain.Category;

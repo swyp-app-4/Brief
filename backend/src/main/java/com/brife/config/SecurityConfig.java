@@ -1,7 +1,8 @@
-package com.brife.user.social;
+// [보안 설정] JWT 필터 등록, 인증 없이 접근 가능한 경로(/auth/**, /categories/**, Swagger) 설정.
+package com.brife.config;
 
-import com.brife.user.auth.JwtAuthFilter;
-import com.brife.user.auth.JwtProvider;
+import com.brife.user.security.JwtAuthFilter;
+import com.brife.user.security.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

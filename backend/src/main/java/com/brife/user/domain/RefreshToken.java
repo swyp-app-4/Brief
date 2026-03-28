@@ -1,3 +1,4 @@
+// [엔티티] JWT Refresh Token (token, userId, expiresAt). 만료 여부 확인 메서드 포함.
 package com.brife.user.domain;
 
 import jakarta.persistence.*;

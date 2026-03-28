@@ -1,8 +1,13 @@
-package com.brife.user.auth;
+// [인증 서비스] 카카오/네이버/구글 소셜 로그인, JWT 발급, 토큰 갱신, 로그아웃, 약관 동의 처리.
+package com.brife.user.service;
 
 import com.brife.user.domain.AppUser;
 import com.brife.user.domain.RefreshToken;
-import com.brife.user.social.AppUserRepository;
+import com.brife.user.dto.AuthResponse;
+import com.brife.user.dto.TermsRequest;
+import com.brife.user.repository.AppUserRepository;
+import com.brife.user.repository.RefreshTokenRepository;
+import com.brife.user.security.JwtProvider;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
