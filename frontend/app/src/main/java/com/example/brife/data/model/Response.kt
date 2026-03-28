@@ -36,3 +36,14 @@ data class SubCategoryResponse(
     @SerializedName("categoryGroupId") val parentCategoryId: Long,
     val parentCategoryName: String = ""
 )
+
+// GET /home/news/recommended 응답
+data class RecommendedNewsResponse(
+    @SerializedName("id") val id: Long,
+    @SerializedName("categoryName") val categoryName: String,
+    @SerializedName("title") val title: String,
+    @SerializedName("summaryList") val summaryList: List<String>,
+    @SerializedName("bodyPreview") val bodyPreview: String,
+    @SerializedName("sourceCount") val sourceCount: Int,
+    @SerializedName("publishedDate") val publishedDate: String
+)

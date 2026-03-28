@@ -1,6 +1,7 @@
 package com.example.brife.data.remote
 
 import com.example.brife.data.remote.api.AuthApiService
+import com.example.brife.data.remote.api.HomeApiService
 import com.example.brife.data.remote.api.OnboardingApiService
 import com.example.brife.data.remote.api.UserApiService
 import okhttp3.OkHttpClient
@@ -44,5 +45,9 @@ object NetworkModule {
 
     val userApiService: UserApiService by lazy {
         retrofit.create(UserApiService::class.java)
+    }
+
+    val homeApiService: HomeApiService by lazy {
+        retrofit.create(HomeApiService::class.java)
     }
 }

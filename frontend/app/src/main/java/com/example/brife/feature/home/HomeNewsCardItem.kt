@@ -6,6 +6,7 @@ data class NewsSourceArticle(
 )
 
 data class HomeNewsCardItem(
+    val newsId: Long = 0L,
     val category: String,
     val subCategory: String = "",
     val title: String,
@@ -16,5 +17,4 @@ data class HomeNewsCardItem(
     val updatedAt: String = "",
     val relatedArticles: List<NewsSourceArticle> = emptyList(),
     val articleCount: Int,
-
 )

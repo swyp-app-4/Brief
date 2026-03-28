@@ -21,12 +21,11 @@ import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.UserRepository
 import com.example.brife.feature.profile.ProfileRoute
 import com.example.brife.data.local.longsampleHomeNews
-import com.example.brife.data.local.shortsampleHomeNews
 import com.example.brife.feature.archive.ArchiveDetailScreen
 import com.example.brife.feature.archive.ArchiveScreen
 import com.example.brife.feature.archive.component.ArchiveMoreBottomSheet
 import com.example.brife.feature.explore.ExploreRoute
-import com.example.brife.feature.home.HomeScreen
+import com.example.brife.feature.home.HomeRoute
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
 import com.example.brife.feature.profile.categoryItemFromId
@@ -80,18 +79,6 @@ fun MainScreen(
         mutableStateOf(
             onboardingStorage.getSelectedCategoryIds().mapNotNull { categoryItemFromId(it) }
         )
-    }
-
-    // 저장된 대분류 관심사 기준으로 매칭 뉴스 우선, 나머지 후순위 정렬 후 Top5
-    val homeNewsList = remember(profileInterests) {
-        val interestNames = profileInterests.map { it.name }.toSet()
-        if (interestNames.isEmpty()) {
-            shortsampleHomeNews.take(5)
-        } else {
-            val matching = shortsampleHomeNews.filter { it.category in interestNames }
-            val nonMatching = shortsampleHomeNews.filter { it.category !in interestNames }
-            (matching + nonMatching).take(5)
-        }
     }
 
     fun navigateTo(route: String) {
@@ -159,23 +146,14 @@ fun MainScreen(
                 .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             composable(NavRoutes.HOME) {
-                HomeScreen(
-                    newsList = homeNewsList,
+                HomeRoute(
                     isLoggedIn = isLoggedIn,
-                    onLoginRequired = {
-                        showLoginBottomSheet = true
-                    },
-                    onLoginClick = onNavigateToLogin,
+                    onLoginRequired = { showLoginBottomSheet = true },
                     onDetailClick = { item ->
-                        val index = shortsampleHomeNews.indexOf(item)
-                        if (index != -1) {
-                            navController.navigate("${NavRoutes.NEWS_LONG}/$index")
-                        }
+                        navController.navigate("${NavRoutes.NEWS_LONG}/${item.newsId}")
                     },
                     onShareClick = { item ->
-                        // TODO: API 연동 후 item.id(실제 newsId)로 교체
-                        val index = shortsampleHomeNews.indexOf(item)
-                        shareNews(context, item.title, index.toString())
+                        shareNews(context, item.title, item.newsId.toString())
                     },
                     topPadding = innerPadding.calculateTopPadding()
                 )
@@ -276,11 +254,13 @@ fun MainScreen(
             }
 
             composable(
-                route = "${NavRoutes.NEWS_LONG}/{newsIndex}",
-                arguments = listOf(navArgument("newsIndex") { type = NavType.IntType })
+                route = "${NavRoutes.NEWS_LONG}/{newsId}",
+                arguments = listOf(navArgument("newsId") { type = NavType.LongType })
             ) { backStackEntry ->
-                val newsIndex = backStackEntry.arguments?.getInt("newsIndex") ?: 0
-                val item = longsampleHomeNews.getOrNull(newsIndex) ?: longsampleHomeNews.first()
+                val newsId = backStackEntry.arguments?.getLong("newsId") ?: 0L
+                // TODO: 2차 연동 시 newsId로 GET /news/{newsId} API 호출 예정
+                // 현재는 mock 데이터 첫 번째 아이템을 표시
+                val item = longsampleHomeNews.first()
 
                 NewsLongScreen(
                     item = item,
