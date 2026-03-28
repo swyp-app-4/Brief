@@ -51,6 +51,22 @@ class UserRepository(
         }
     }
 
+    // DELETE /users/me — 회원 탈퇴 (30일 후 완전 삭제, 응답 204)
+    suspend fun deleteUser(): Result<Unit> {
+        val token = bearerToken()
+            ?: return Result.failure(Exception("로그인이 필요합니다."))
+        return try {
+            val response = api.deleteUser(token)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("회원 탈퇴 실패: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     // PATCH /users/me — 프로필 수정 (닉네임, 이미지) — UI 연결은 추후 진행
     suspend fun updateProfile(nickname: String? = null, profileImageUrl: String? = null): Result<Unit> {
         val token = bearerToken()

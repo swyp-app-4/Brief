@@ -218,6 +218,15 @@ fun AppNavGraph() {
                             popUpTo(0) { inclusive = true }
                         }
                     }
+                },
+                onWithdrawClick = {
+                    scope.launch {
+                        userRepository.deleteUser()
+                        authLocalStorage.clear()
+                        navController.navigate(NavRoutes.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
                 }
             )
         }
