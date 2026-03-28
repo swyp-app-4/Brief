@@ -95,7 +95,6 @@ fun NewsLongScreen(
         mutableStateOf(
             listOf(
                 BookmarkFolderUiModel(id = 1L, name = "즐겨찾기", newsCount = 12, isSelected = false),
-                BookmarkFolderUiModel(id = 2L, name = "전쟁", newsCount = 3, isSelected = false)
             )
         )
     }
