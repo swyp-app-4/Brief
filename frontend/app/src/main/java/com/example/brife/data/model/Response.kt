@@ -1,5 +1,6 @@
 package com.example.brife.data.model
 
+import com.example.brife.feature.home.HomeNewsCardItem
 import com.google.gson.annotations.SerializedName
 
 
@@ -47,6 +48,9 @@ data class RecommendedNewsResponse(
     @SerializedName("sourceCount") val sourceCount: Int,
     @SerializedName("publishedDate") val publishedDate: String
 )
+
+
+
 
 // GET /news/latest, GET /news/search 공통 응답 아이템
 data class NewsListItem(
