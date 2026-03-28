@@ -57,7 +57,7 @@ public class NewsService {
                 .map(news -> WidgetNewsDto.from(news, extractBodyPreview(news.getBody())))
                 .toList();
 
-        if (result.isEmpty()) {
+        if (result.size() < 5) {
             result = summarizedNewsRepository
                     .findTop5ByCategoryIdInOrderBySourceCountDesc(mergedIds)
                     .stream()
