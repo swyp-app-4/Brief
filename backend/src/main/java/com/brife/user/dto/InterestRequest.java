@@ -1,4 +1,4 @@
-// [DTO - 요청] 관심사 저장/재설정 요청 (categoryIds 리스트).
+// [DTO - 요청] 관심사 저장/재설정 요청. categoryIds(소분류), groupIds(대분류만 선택 시). 혼합 가능.
 package com.brife.user.dto;
 
 import lombok.Getter;
@@ -11,4 +11,5 @@ import java.util.List;
 public class InterestRequest {
 
     private List<Long> categoryIds;
+    private List<Long> groupIds;
 }
