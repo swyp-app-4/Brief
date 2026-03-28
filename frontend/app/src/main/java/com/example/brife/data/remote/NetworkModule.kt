@@ -1,5 +1,6 @@
 package com.example.brife.data.remote
 
+import com.example.brife.data.remote.api.ArchiveApiService
 import com.example.brife.data.remote.api.AuthApiService
 import com.example.brife.data.remote.api.ExploreApiService
 import com.example.brife.data.remote.api.HomeApiService
@@ -59,5 +60,9 @@ object NetworkModule {
 
     val exploreApiService: ExploreApiService by lazy {
         retrofit.create(ExploreApiService::class.java)
+    }
+
+    val archiveApiService: ArchiveApiService by lazy {
+        retrofit.create(ArchiveApiService::class.java)
     }
 }

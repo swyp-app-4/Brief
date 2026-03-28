@@ -44,17 +44,18 @@ import com.example.brife.ui.theme.InterestSelectedLight
 @Composable
 fun ArchiveScreen(
     modifier: Modifier = Modifier,
-    folders: List<String>,
+    folders: List<ArchiveFolderUiModel>,
+    favoriteArchiveId: Long = 0L,
     onFolderAdd: (String) -> Unit,
-    onNavigateToDetail: (String) -> Unit,
+    onNavigateToDetail: (archiveId: Long, folderName: String) -> Unit,
     isDeleteMode: Boolean = false,
-    selectedFolderNames: Set<String> = emptySet(),
-    onToggleFolderSelect: (String) -> Unit = {},
+    selectedFolderIds: Set<Long> = emptySet(),
+    onToggleFolderSelect: (Long) -> Unit = {},
     onCancelDelete: () -> Unit = {},
     onConfirmDelete: () -> Unit = {},
     // 수정 모드
     isRenameMode: Boolean = false,
-    onFolderRename: (oldName: String, newName: String) -> Unit = { _, _ -> },
+    onFolderRename: (archiveId: Long, newName: String) -> Unit = { _, _ -> },
     onCancelRename: () -> Unit = {},
 ) {
     val folderCount = folders.size + 1 // 즐겨찾기 기본 포함
@@ -62,6 +63,7 @@ fun ArchiveScreen(
     // 수정 모드 로컬 상태
     var showRenameSheet by remember { mutableStateOf(false) }
     var renamingFolderName by remember { mutableStateOf("") }
+    var renamingFolderId by remember { mutableStateOf(0L) }
 
     Box(modifier = modifier.fillMaxSize()) {
 
@@ -113,7 +115,10 @@ fun ArchiveScreen(
                 // 즐겨찾기 폴더 — 삭제·수정 불가, 해당 모드에서 클릭 no-op
                 ArchiveFolderCard(
                     modifier = Modifier.weight(1f),
-                    onClick = { if (!isDeleteMode && !isRenameMode) onNavigateToDetail("즐겨찾기") }
+                    onClick = {
+                        if (!isDeleteMode && !isRenameMode)
+                            onNavigateToDetail(favoriteArchiveId, "즐겨찾기")
+                    }
                 ) {
                     Box(
                         modifier = Modifier
@@ -143,18 +148,19 @@ fun ArchiveScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    rowFolders.forEach { folderName ->
+                    rowFolders.forEach { folder ->
                         ArchiveFolderCard(
                             modifier = Modifier.weight(1f),
-                            selected = isDeleteMode && folderName in selectedFolderNames,
+                            selected = isDeleteMode && folder.archiveId in selectedFolderIds,
                             onClick = {
                                 when {
-                                    isDeleteMode -> onToggleFolderSelect(folderName)
+                                    isDeleteMode -> onToggleFolderSelect(folder.archiveId)
                                     isRenameMode -> {
-                                        renamingFolderName = folderName
+                                        renamingFolderName = folder.folderName
+                                        renamingFolderId = folder.archiveId
                                         showRenameSheet = true
                                     }
-                                    else -> onNavigateToDetail(folderName)
+                                    else -> onNavigateToDetail(folder.archiveId, folder.folderName)
                                 }
                             }
                         ) {
@@ -164,7 +170,7 @@ fun ArchiveScreen(
                                     .padding(16.dp)
                             ) {
                                 AppText(
-                                    text = folderName,
+                                    text = folder.folderName,
                                     style = MaterialTheme.typography.bodyMedium,
                                     modifier = Modifier.align(Alignment.TopStart)
                                 )
@@ -216,7 +222,7 @@ fun ArchiveScreen(
                 // 삭제 버튼 (선택된 폴더 없으면 비활성)
                 Button(
                     onClick = onConfirmDelete,
-                    enabled = selectedFolderNames.isNotEmpty(),
+                    enabled = selectedFolderIds.isNotEmpty(),
                     modifier = Modifier
                         .weight(1f)
                         .height(56.dp),
@@ -245,7 +251,7 @@ fun ArchiveScreen(
                     showCreateSheet = false
                 },
                 currentFolderCount = folderCount,
-                existingFolders = folders + "즐겨찾기"
+                existingFolders = folders.map { it.folderName } + "즐겨찾기"
             )
         }
 
@@ -259,12 +265,12 @@ fun ArchiveScreen(
                     onCancelRename()
                 },
                 onSave = { newName ->
-                    onFolderRename(renamingFolderName, newName)
+                    onFolderRename(renamingFolderId, newName)
                     showRenameSheet = false
                     onCancelRename()
                 },
                 currentFolderCount = 0, // 수정 모드: 생성 제한 체크 불필요
-                existingFolders = (folders + "즐겨찾기").filter { it != renamingFolderName }
+                existingFolders = (folders.map { it.folderName } + "즐겨찾기").filter { it != renamingFolderName }
             )
         }
     }
@@ -302,73 +308,17 @@ fun ArchiveFolderCard(
 // Preview
 // ────────────────────────────────────────────
 
-//// Preview 1. 기본 상태
-//@Preview(showBackground = true, showSystemUi = true, name = "1. 기본 상태")
-//@Composable
-//fun ArchiveScreenPreview() {
-//    BrifeTheme {
-//        ArchiveScreen(
-//            folders = listOf("경제 공부", "IT 트렌드"),
-//            onFolderAdd = {},
-//            onNavigateToDetail = {}
-//        )
-//    }
-//}
-//
-//// Preview 3. 삭제 모드 진입 - 선택 없음 (삭제 버튼 비활성)
-//@Preview(showBackground = true, showSystemUi = true, name = "3. 삭제 모드 - 선택 없음")
-//@Composable
-//fun ArchiveScreenDeleteModePreview() {
-//    BrifeTheme {
-//        ArchiveScreen(
-//            folders = listOf("경제 공부", "IT 트렌드"),
-//            onFolderAdd = {},
-//            onNavigateToDetail = {},
-//            isDeleteMode = true,
-//            selectedFolderNames = emptySet()
-//        )
-//    }
-//}
-//
-//// Preview 4. 삭제 모드 - 폴더 선택됨 (삭제 버튼 활성)
-//@Preview(showBackground = true, showSystemUi = true, name = "4. 삭제 모드 - 폴더 선택됨")
-//@Composable
-//fun ArchiveScreenDeleteModeSelectedPreview() {
-//    BrifeTheme {
-//        ArchiveScreen(
-//            folders = listOf("경제 공부", "IT 트렌드"),
-//            onFolderAdd = {},
-//            onNavigateToDetail = {},
-//            isDeleteMode = true,
-//            selectedFolderNames = setOf("경제 공부")
-//        )
-//    }
-//}
-// Preview 5. 수정 모드 진입 상태 (폴더 선택 대기)
 @Preview(showBackground = true, showSystemUi = true, name = "5. 수정 모드 - 선택 대기")
 @Composable
 fun ArchiveScreenRenameModePreview() {
     BrifeTheme {
         ArchiveScreen(
-            folders = listOf("경제 공부", "IT 트렌드"),
+            folders = listOf(
+                ArchiveFolderUiModel(1L, "경제 공부"),
+                ArchiveFolderUiModel(2L, "IT 트렌드")
+            ),
             onFolderAdd = {},
-            onNavigateToDetail = {},
-            isRenameMode = true
-        )
-    }
-}
-
-// Preview 6. 수정 모드 - 폴더 선택됨 (수정 바텀시트 열리기 직전 상태)
-// 바텀시트 자체는 CreateFolderBottomSheet Preview 5에서 확인
-@Preview(showBackground = true, showSystemUi = true, name = "6. 수정 모드 - 폴더 선택됨")
-@Composable
-fun ArchiveScreenRenameSelectedPreview() {
-    BrifeTheme {
-        // isRenameMode=true 상태에서 폴더 탭 직전 화면 (바텀시트는 compose 로컬 상태라 직접 표시 불가)
-        ArchiveScreen(
-            folders = listOf("경제 공부", "IT 트렌드"),
-            onFolderAdd = {},
-            onNavigateToDetail = {},
+            onNavigateToDetail = { _, _ -> },
             isRenameMode = true
         )
     }
@@ -378,21 +328,18 @@ fun ArchiveScreenRenameSelectedPreview() {
 @Composable
 fun ArchiveScreenFullPreview() {
     BrifeTheme {
-        // Scaffold를 사용하여 실제 앱의 상단/하단 바 레이아웃을 시뮬레이션합니다.
         Scaffold(
             topBar = {
                 AppTopBar(
                     title = "보관함",
-                    showLogo = false,       // 로고 대신 제목 표시
-                    showSettings = false,   // 설정 아이콘 숨김
-                    showMore = true,        // 더보기 아이콘 표시
-                    centerTitle = true,     // 제목 중앙 정렬
-                    onMoreClick = { /* 프리뷰이므로 동작 없음 */ }
+                    showLogo = false,
+                    showSettings = false,
+                    showMore = true,
+                    centerTitle = true,
+                    onMoreClick = {}
                 )
             },
             bottomBar = {
-                // 기본 상태에서는 하단 네비게이션 바를 표시합니다.
-                // selectedRoute 혹은 currentRoute 등 프로젝트의 파라미터에 맞춰 수정하세요.
                 AppNavigationBar(
                     selectedIndex = 2,
                     onItemSelected = {}
@@ -401,12 +348,14 @@ fun ArchiveScreenFullPreview() {
         ) { innerPadding ->
             ArchiveScreen(
                 modifier = Modifier.padding(innerPadding),
-                folders = listOf("경제 공부", "IT 트렌드"),
+                folders = listOf(
+                    ArchiveFolderUiModel(1L, "경제 공부"),
+                    ArchiveFolderUiModel(2L, "IT 트렌드")
+                ),
                 onFolderAdd = {},
-                onNavigateToDetail = {},
+                onNavigateToDetail = { _, _ -> },
                 isDeleteMode = false
             )
         }
     }
 }
-

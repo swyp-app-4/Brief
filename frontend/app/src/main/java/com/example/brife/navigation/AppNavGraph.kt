@@ -25,7 +25,7 @@ import com.example.brife.feature.onboarding.OnboardingGuideScreen
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
 import com.example.brife.feature.onboarding.SplashScreen
-import com.example.brife.feature.archive.ArchiveDetailScreen
+import com.example.brife.feature.archive.ArchiveDetailRoute
 import com.example.brife.feature.auth.LoginTermsRoute
 import com.example.brife.feature.setting.SettingScreen
 import com.example.brife.feature.setting.SettingUiState
@@ -248,10 +248,16 @@ fun AppNavGraph() {
         // NEWS_LONG은 MainScreen 내부 NavHost에서 처리
         // AppNavGraph.kt 내 NavHost 부분에 추가
         composable(
-            route = "${NavRoutes.ARCHIVE_DETAIL}/{folderName}"
+            route = "${NavRoutes.ARCHIVE_DETAIL}/{archiveId}/{folderName}",
+            arguments = listOf(
+                navArgument("archiveId") { type = NavType.LongType },
+                navArgument("folderName") { type = NavType.StringType }
+            )
         ) { backStackEntry ->
+            val archiveId = backStackEntry.arguments?.getLong("archiveId") ?: 0L
             val folderName = backStackEntry.arguments?.getString("folderName") ?: ""
-            ArchiveDetailScreen(
+            ArchiveDetailRoute(
+                archiveId = archiveId,
                 folderName = folderName,
                 onBackClick = { navController.popBackStack() }
             )

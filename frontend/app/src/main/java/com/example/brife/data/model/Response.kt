@@ -63,6 +63,31 @@ data class NewsPageResponse(
     @SerializedName("empty") val empty: Boolean
 )
 
+// Archive 폴더 응답
+data class ArchiveFolderResponse(
+    @SerializedName("id") val id: Long,
+    @SerializedName("folderName") val folderName: String,
+    @SerializedName("itemCount") val itemCount: Int,
+    @SerializedName("createdAt") val createdAt: String,
+    @SerializedName("favorite") val favorite: Boolean
+)
+
+// Archive 아이템 응답
+data class ArchiveItemResponse(
+    @SerializedName("id") val id: Long,
+    @SerializedName("contentId") val contentId: Long,
+    @SerializedName("savedAt") val savedAt: String
+)
+
+// Archive 요청 바디
+data class CreateArchiveRequest(
+    @SerializedName("folderName") val folderName: String
+)
+
+data class AddArchiveItemRequest(
+    @SerializedName("contentId") val contentId: Long
+)
+
 // GET /news/{id} 응답 — 2차 연동 예정
 data class NewsDetailSection(
     @SerializedName("heading") val heading: String,

@@ -21,8 +21,8 @@ import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.UserRepository
 import com.example.brife.feature.profile.ProfileRoute
 import com.example.brife.data.local.longsampleHomeNews
-import com.example.brife.feature.archive.ArchiveDetailScreen
-import com.example.brife.feature.archive.ArchiveScreen
+import com.example.brife.feature.archive.ArchiveDetailRoute
+import com.example.brife.feature.archive.ArchiveRoute
 import com.example.brife.feature.archive.component.ArchiveMoreBottomSheet
 import com.example.brife.feature.explore.ExploreRoute
 import com.example.brife.feature.home.HomeRoute
@@ -68,10 +68,8 @@ fun MainScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Archive 관련 상태
-    var archiveFolders by remember { mutableStateOf(listOf<String>()) }
     var showArchiveMoreSheet by remember { mutableStateOf(false) }
     var isArchiveDeleteMode by remember { mutableStateOf(false) }
-    var selectedFolderNames by remember { mutableStateOf(setOf<String>()) }
     var isArchiveRenameMode by remember { mutableStateOf(false) }
     val archiveMoreSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -166,35 +164,15 @@ fun MainScreen(
             }
 
             composable(NavRoutes.ARCHIVE) {
-                ArchiveScreen(
+                ArchiveRoute(
                     modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
-                    folders = archiveFolders,
-                    onFolderAdd = { name -> archiveFolders = archiveFolders + name },
-                    onNavigateToDetail = { folderName ->
-                        navController.navigate("${NavRoutes.ARCHIVE_DETAIL}/$folderName")
-                    },
                     isDeleteMode = isArchiveDeleteMode,
-                    selectedFolderNames = selectedFolderNames,
-                    onToggleFolderSelect = { name ->
-                        selectedFolderNames = if (name in selectedFolderNames)
-                            selectedFolderNames - name
-                        else
-                            selectedFolderNames + name
-                    },
-                    onCancelDelete = {
-                        isArchiveDeleteMode = false
-                        selectedFolderNames = emptySet()
-                    },
-                    onConfirmDelete = {
-                        archiveFolders = archiveFolders.filter { it !in selectedFolderNames }
-                        selectedFolderNames = emptySet()
-                        isArchiveDeleteMode = false
-                    },
                     isRenameMode = isArchiveRenameMode,
-                    onFolderRename = { oldName, newName ->
-                        archiveFolders = archiveFolders.map { if (it == oldName) newName else it }
-                    },
-                    onCancelRename = { isArchiveRenameMode = false }
+                    onDeleteModeExit = { isArchiveDeleteMode = false },
+                    onRenameModeExit = { isArchiveRenameMode = false },
+                    onNavigateToDetail = { archiveId, folderName ->
+                        navController.navigate("${NavRoutes.ARCHIVE_DETAIL}/$archiveId/$folderName")
+                    }
                 )
             }
 
@@ -209,11 +187,16 @@ fun MainScreen(
             }
 
             composable(
-                route = "${NavRoutes.ARCHIVE_DETAIL}/{folderName}",
-                arguments = listOf(navArgument("folderName") { type = NavType.StringType })
+                route = "${NavRoutes.ARCHIVE_DETAIL}/{archiveId}/{folderName}",
+                arguments = listOf(
+                    navArgument("archiveId") { type = NavType.LongType },
+                    navArgument("folderName") { type = NavType.StringType }
+                )
             ) { backStackEntry ->
+                val archiveId = backStackEntry.arguments?.getLong("archiveId") ?: 0L
                 val folderName = backStackEntry.arguments?.getString("folderName") ?: ""
-                ArchiveDetailScreen(
+                ArchiveDetailRoute(
+                    archiveId = archiveId,
                     folderName = folderName,
                     onBackClick = { navController.popBackStack() }
                 )
