@@ -3,7 +3,9 @@ package com.example.brife.feature.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.brife.data.local.AuthLocalStorage
+import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.repository.AuthRepository
+import com.example.brife.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,7 +13,9 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val repository: AuthRepository,
-    private val authLocalStorage: AuthLocalStorage
+    private val authLocalStorage: AuthLocalStorage,
+    private val onboardingLocalStorage: OnboardingLocalStorage,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -129,6 +133,15 @@ class LoginViewModel(
                     if (refreshToken != null) {
                         authLocalStorage.saveRefreshToken(refreshToken)
                     }
+
+                    // 비로그인 온보딩에서 로컬에만 저장된 관심사를 서버에 동기화
+                    // (온보딩 시점에는 토큰이 없어 API 전송이 스킵됐기 때문)
+                    val categoryIds = onboardingLocalStorage.getSelectedCategoryIds()
+                    val groupIds = onboardingLocalStorage.getSelectedSubCategoryIds()
+                    if (categoryIds.isNotEmpty() || groupIds.isNotEmpty()) {
+                        userRepository.updateInterests(categoryIds, groupIds)
+                    }
+
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         needTermsAgreement = false,

@@ -18,6 +18,7 @@ import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.AuthRepository
+import com.example.brife.data.repository.UserRepository
 import com.example.brife.feature.auth.LoginRoute
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
@@ -42,6 +43,8 @@ fun AppNavGraph() {
     val context = LocalContext.current
     val authLocalStorage = remember { AuthLocalStorage(context) }
     val authRepository = remember { AuthRepository(NetworkModule.authApiService) }
+    val onboardingLocalStorage = remember { OnboardingLocalStorage(context) }
+    val userRepository = remember { UserRepository(NetworkModule.userApiService, authLocalStorage) }
     val scope = rememberCoroutineScope()
 
 //    val context = LocalContext.current
@@ -120,7 +123,7 @@ fun AppNavGraph() {
                 val repository = AuthRepository(NetworkModule.authApiService)
                 val loginViewModel: LoginViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = LoginViewModelFactory(repository, authLocalStorage)
+                    factory = LoginViewModelFactory(repository, authLocalStorage, onboardingLocalStorage, userRepository)
                 )
 
                 LoginRoute(
@@ -144,7 +147,7 @@ fun AppNavGraph() {
                 val repository = AuthRepository(NetworkModule.authApiService)
                 val loginViewModel: LoginViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = LoginViewModelFactory(repository, authLocalStorage)
+                    factory = LoginViewModelFactory(repository, authLocalStorage, onboardingLocalStorage, userRepository)
                 )
 
                 LoginTermsRoute(
