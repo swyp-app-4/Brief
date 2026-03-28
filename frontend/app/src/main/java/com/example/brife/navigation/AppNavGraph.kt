@@ -54,15 +54,15 @@ fun AppNavGraph() {
         composable(NavRoutes.SPLASH) {
             SplashScreen(
                 onFinish = {
-//                    if (hasCompletedOnboarding) {
-//                        navController.navigate(NavRoutes.MAIN) {
-//                            popUpTo(NavRoutes.SPLASH) { inclusive = true }
-//                        }
-//                    } else {
+                    if (authLocalStorage.isLoggedIn()) {
+                        navController.navigate(NavRoutes.MAIN) {
+                            popUpTo(NavRoutes.SPLASH) { inclusive = true }
+                        }
+                    } else {
                         navController.navigate(NavRoutes.ONBOARDING_GUIDE) {
                             popUpTo(NavRoutes.SPLASH) { inclusive = true }
                         }
-//                    }
+                    }
                 }
             )
         }
@@ -150,7 +150,7 @@ fun AppNavGraph() {
                 LoginTermsRoute(
                     viewModel = loginViewModel,
                     onNavigateToOnboarding = {
-                        navController.navigate(NavRoutes.ONBOARDING_GUIDE) {
+                        navController.navigate(NavRoutes.MAIN) {
                             popUpTo(NavRoutes.AUTH) { inclusive = true }
                         }
                     },

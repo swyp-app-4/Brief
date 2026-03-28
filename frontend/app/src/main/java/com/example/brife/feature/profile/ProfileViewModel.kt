@@ -22,6 +22,18 @@ class ProfileViewModel(
             val localInterests = onboardingLocalStorage.getSelectedCategoryIds()
                 .mapNotNull { categoryItemFromId(it) }
 
+            // isLoggedIn은 API 성공 여부가 아니라 토큰 존재 여부로 판단
+            val loggedIn = userRepository.isLoggedIn()
+
+            if (!loggedIn) {
+                _uiState.value = ProfileUiState(
+                    isLoggedIn = false,
+                    interests = localInterests
+                )
+                return@launch
+            }
+
+            // 로그인 상태 → 프로필 API 호출 (실패해도 isLoggedIn은 true 유지)
             userRepository.getMyProfile()
                 .onSuccess { profile ->
                     _uiState.value = ProfileUiState(
@@ -32,9 +44,9 @@ class ProfileViewModel(
                     )
                 }
                 .onFailure {
-                    // 비로그인 또는 API 실패 시 로컬 관심사만 표시
+                    // API 실패해도 토큰이 있으면 로그인 상태 유지
                     _uiState.value = ProfileUiState(
-                        isLoggedIn = false,
+                        isLoggedIn = true,
                         interests = localInterests
                     )
                 }

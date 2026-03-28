@@ -13,6 +13,9 @@ class UserRepository(
     private fun bearerToken(): String? =
         authLocalStorage.getAccessToken()?.let { "Bearer $it" }
 
+    // 토큰 존재 여부로 로그인 상태 판단
+    fun isLoggedIn(): Boolean = authLocalStorage.isLoggedIn()
+
     // GET /users/me
     suspend fun getMyProfile(): Result<UserProfileResponse> {
         val token = bearerToken()
