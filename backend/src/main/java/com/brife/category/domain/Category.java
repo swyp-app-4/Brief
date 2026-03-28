@@ -1,3 +1,4 @@
+// [엔티티] 소분류 카테고리 (name, query). CategoryGroup에 N:1 소속.
 package com.brife.category.domain;
 
 import jakarta.persistence.*;

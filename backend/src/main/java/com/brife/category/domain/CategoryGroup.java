@@ -1,3 +1,4 @@
+// [엔티티] 대분류 카테고리 그룹 (시사/정치, IT/테크 등 6개).
 package com.brife.category.domain;
 
 import jakarta.persistence.*;

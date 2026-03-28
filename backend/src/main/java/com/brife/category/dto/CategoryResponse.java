@@ -1,4 +1,5 @@
-package com.brife.category.service;
+// [DTO - 응답] 소분류 카테고리 응답 (id, name, query).
+package com.brife.category.dto;
 
 import com.brife.category.domain.Category;
 import lombok.Getter;
