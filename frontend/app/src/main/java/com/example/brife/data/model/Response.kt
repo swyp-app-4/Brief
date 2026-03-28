@@ -48,6 +48,21 @@ data class RecommendedNewsResponse(
     @SerializedName("publishedDate") val publishedDate: String
 )
 
+// GET /news/latest, GET /news/search 공통 응답 아이템
+data class NewsListItem(
+    @SerializedName("id") val id: Long,
+    @SerializedName("categoryName") val categoryName: String,
+    @SerializedName("title") val title: String,
+    @SerializedName("publishedDate") val publishedDate: String
+)
+
+// 페이지네이션 응답 래퍼 (content만 사용, 1차)
+data class NewsPageResponse(
+    @SerializedName("content") val content: List<NewsListItem>,
+    @SerializedName("last") val last: Boolean,
+    @SerializedName("empty") val empty: Boolean
+)
+
 // GET /news/{id} 응답 — 2차 연동 예정
 data class NewsDetailSection(
     @SerializedName("heading") val heading: String,

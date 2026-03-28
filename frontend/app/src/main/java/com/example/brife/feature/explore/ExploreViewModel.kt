@@ -1,15 +1,20 @@
 package com.example.brife.feature.explore
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.brife.data.local.SearchHistoryLocalStorage
+import com.example.brife.data.model.NewsListItem
+import com.example.brife.data.repository.ExploreRepository
 import com.example.brife.feature.archive.ArchiveNewsItem
 import com.example.brife.feature.home.LongFormImageProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class ExploreViewModel(
-    private val searchHistoryStorage: SearchHistoryLocalStorage
+    private val searchHistoryStorage: SearchHistoryLocalStorage,
+    private val exploreRepository: ExploreRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ExploreUiState>(
@@ -19,6 +24,28 @@ class ExploreViewModel(
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    // API 성공 시 캐시 — 검색 후 뒤로가기 시 재사용
+    private var cachedLatestNews: List<ArchiveNewsItem> = exploreMockNewsList
+
+    init {
+        loadLatestNews()
+    }
+
+    private fun loadLatestNews() {
+        viewModelScope.launch {
+            exploreRepository.getLatestNews()
+                .onSuccess { items ->
+                    val archiveItems = items.mapIndexed { index, item -> item.toArchiveNewsItem(index) }
+                    cachedLatestNews = archiveItems
+                    _uiState.value = ExploreUiState.Default(recentNewsList = archiveItems)
+                }
+                .onFailure {
+                    // API 실패 시 mock 데이터 유지
+                    _uiState.value = ExploreUiState.Default(recentNewsList = exploreMockNewsList)
+                }
+        }
+    }
 
     /** 기본 화면에서 검색창 탭 → 검색 입력 상태로 전환 */
     fun onSearchBarClick() {
@@ -50,23 +77,26 @@ class ExploreViewModel(
 
         searchHistoryStorage.addQuery(trimmed)
 
-        // API 연동 전 mock 처리 — title/summary 기준 필터링
-        val results = exploreMockNewsList.filter { item ->
-            item.title.contains(trimmed, ignoreCase = true) ||
-                    item.summary.contains(trimmed, ignoreCase = true)
-        }
-
-        _uiState.value = if (results.isEmpty()) {
-            ExploreUiState.Empty(trimmed)
-        } else {
-            ExploreUiState.Results(trimmed, results)
+        viewModelScope.launch {
+            exploreRepository.searchNews(trimmed)
+                .onSuccess { items ->
+                    val archiveItems = items.mapIndexed { index, item -> item.toArchiveNewsItem(index) }
+                    _uiState.value = if (archiveItems.isEmpty()) {
+                        ExploreUiState.Empty(trimmed)
+                    } else {
+                        ExploreUiState.Results(trimmed, archiveItems)
+                    }
+                }
+                .onFailure {
+                    _uiState.value = ExploreUiState.NetworkError(trimmed)
+                }
         }
     }
 
     /** 검색 상태에서 뒤로가기 → 기본 화면으로 복귀 */
     fun onBackFromSearch() {
         _searchQuery.value = ""
-        _uiState.value = ExploreUiState.Default(recentNewsList = exploreMockNewsList)
+        _uiState.value = ExploreUiState.Default(recentNewsList = cachedLatestNews)
     }
 
     /** 검색창 텍스트 초기화 */
@@ -107,7 +137,20 @@ class ExploreViewModel(
     }
 }
 
-// ── Mock 데이터 (API 연동 전 임시 사용) ───────────────────────────────────────
+// NewsListItem → ArchiveNewsItem 매핑
+// - summary: API list 미제공 → ""
+// - company: categoryName으로 대체
+// - imageUrl: categoryName + index 기반 결정론적 이미지
+private fun NewsListItem.toArchiveNewsItem(index: Int) = ArchiveNewsItem(
+    title = title,
+    summary = "",
+    time = publishedDate,
+    company = categoryName,
+    imageUrl = LongFormImageProvider.getStableImageRes(categoryName, index),
+    newsId = id
+)
+
+// ── fallback Mock 데이터 (API 실패 시 표시) ──────────────────────────────────
 private val exploreMockNewsList = listOf(
     ArchiveNewsItem(
         title = "미국 연준, 기준금리 동결 결정",

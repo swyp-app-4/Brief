@@ -39,7 +39,8 @@ data class ArchiveNewsItem(
     val summary: String,
     val time: String,
     val company: String,
-    val imageUrl: Int
+    val imageUrl: Int,
+    val newsId: Long = 0L
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -3,10 +3,13 @@ package com.example.brife.feature.explore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.brife.data.local.SearchHistoryLocalStorage
+import com.example.brife.data.remote.NetworkModule
+import com.example.brife.data.repository.ExploreRepository
 
 @Composable
 fun ExploreRoute(
@@ -14,7 +17,10 @@ fun ExploreRoute(
 ) {
     val context = LocalContext.current
     val viewModel: ExploreViewModel = viewModel(
-        factory = ExploreViewModelFactory(SearchHistoryLocalStorage(context))
+        factory = ExploreViewModelFactory(
+            searchHistoryStorage = SearchHistoryLocalStorage(context),
+            exploreRepository = remember { ExploreRepository(NetworkModule.exploreApiService) }
+        )
     )
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
