@@ -28,6 +28,7 @@ class LoginViewModel(
                 .onSuccess { response ->
                     handleLoginSuccess(
                         accessToken = response.accessToken,
+                        refreshToken = response.refreshToken,
                         isNewUser = response.isNewUser
                     )
                 }
@@ -51,6 +52,7 @@ class LoginViewModel(
                 .onSuccess { response ->
                     handleLoginSuccess(
                         accessToken = response.accessToken,
+                        refreshToken = response.refreshToken,
                         isNewUser = response.isNewUser
                     )
                 }
@@ -74,6 +76,7 @@ class LoginViewModel(
                 .onSuccess { response ->
                     handleLoginSuccess(
                         accessToken = response.accessToken,
+                        refreshToken = response.refreshToken,
                         isNewUser = response.isNewUser
                     )
                 }
@@ -88,6 +91,7 @@ class LoginViewModel(
 
     private fun handleLoginSuccess(
         accessToken: String,
+        refreshToken: String,
         isNewUser: Boolean
     ) {
         if (isNewUser) {
@@ -95,6 +99,7 @@ class LoginViewModel(
                 isLoading = false,
                 isNewUser = true,
                 pendingAccessToken = accessToken,
+                pendingRefreshToken = refreshToken,
                 needTermsAgreement = true
             )
         } else {
@@ -102,13 +107,15 @@ class LoginViewModel(
                 isLoading = false,
                 isLoginSuccess = true,
                 isNewUser = false,
-                pendingAccessToken = accessToken  // agreeTerms() 호출에 필요
+                pendingAccessToken = accessToken,
+                pendingRefreshToken = refreshToken
             )
         }
     }
 
     fun agreeTerms() {
         val accessToken = _uiState.value.pendingAccessToken ?: return
+        val refreshToken = _uiState.value.pendingRefreshToken
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
@@ -119,6 +126,9 @@ class LoginViewModel(
             repository.agreeTerms(accessToken)
                 .onSuccess {
                     authLocalStorage.saveAccessToken(accessToken)
+                    if (refreshToken != null) {
+                        authLocalStorage.saveRefreshToken(refreshToken)
+                    }
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         needTermsAgreement = false,

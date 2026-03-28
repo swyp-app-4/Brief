@@ -3,8 +3,10 @@ package com.example.brife.navigation
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,6 +41,8 @@ fun AppNavGraph() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val authLocalStorage = remember { AuthLocalStorage(context) }
+    val authRepository = remember { AuthRepository(NetworkModule.authApiService) }
+    val scope = rememberCoroutineScope()
 
 //    val context = LocalContext.current
 //    val hasCompletedOnboarding = OnboardingLocalStorage(context).hasCompletedOnboarding()
@@ -199,6 +203,18 @@ fun AppNavGraph() {
                     val encodedUrl = Uri.encode("https://buttered-palm-c4c.notion.site/32e4778e85928009966ac723b49f0f95")
                     val encodedTitle = Uri.encode("개인정보 처리방침")
                     navController.navigate("${NavRoutes.WEB_VIEW}?title=$encodedTitle&url=$encodedUrl")
+                },
+                onLogoutClick = {
+                    scope.launch {
+                        val refreshToken = authLocalStorage.getRefreshToken()
+                        if (refreshToken != null) {
+                            authRepository.logout(refreshToken)
+                        }
+                        authLocalStorage.clear()
+                        navController.navigate(NavRoutes.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
                 }
             )
         }

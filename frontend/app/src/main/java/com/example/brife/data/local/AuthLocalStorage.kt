@@ -12,6 +12,12 @@ class AuthLocalStorage(context: Context) {
 
     fun getAccessToken(): String? = prefs.getString("access_token", null)
 
+    fun saveRefreshToken(token: String) {
+        prefs.edit().putString("refresh_token", token).apply()
+    }
+
+    fun getRefreshToken(): String? = prefs.getString("refresh_token", null)
+
     fun isLoggedIn(): Boolean = getAccessToken() != null
 
     fun clear() {
