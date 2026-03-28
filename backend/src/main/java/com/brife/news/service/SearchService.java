@@ -4,6 +4,7 @@ import com.brife.news.dto.NewsSearchResponse;
 import com.brife.news.exception.InvalidSearchKeywordException;
 import com.brife.news.repository.SummarizedNewsRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,8 @@ public class SearchService {
             throw new InvalidSearchKeywordException("검색어를 입력해주세요.");
 
         if(keyword.matches("[가-힣a-zA-Z0-9 ]+"))
-            return summarizedNewsRepository.searchByKeyword(keyword, pageable).map(NewsSearchResponse::from);
+            return summarizedNewsRepository.searchByKeyword(keyword,
+                    PageRequest.of(pageable.getPageNumber(), pageable.getPageSize())).map(NewsSearchResponse::from);
         else throw new InvalidSearchKeywordException("특수문자를 제외한 키워드로 입력해주세요.");
     }
 

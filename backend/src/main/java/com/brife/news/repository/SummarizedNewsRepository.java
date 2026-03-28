@@ -33,6 +33,7 @@ public interface SummarizedNewsRepository extends JpaRepository<SummarizedNews, 
             SELECT * FROM summarized_news
             WHERE title ILIKE CONCAT('%%', :keyword, '%%')
             OR summary ILIKE CONCAT('%%', :keyword, '%%')
+            ORDER BY published_at DESC
             """)
     Slice<SummarizedNews> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
