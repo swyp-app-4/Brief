@@ -1,6 +1,6 @@
 package com.brife.news.domain;
 
-import com.brife.category.domain.Category;
+import com.brife.news.domain.Category;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

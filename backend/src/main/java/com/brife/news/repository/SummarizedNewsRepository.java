@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,11 +29,12 @@ public interface SummarizedNewsRepository extends JpaRepository<SummarizedNews, 
     @EntityGraph(attributePaths = {"category"})
     List<SummarizedNews> findTop5ByCategoryIdInOrderBySourceCountDesc(List<Long> categoryIds);
 
-
-    @EntityGraph(attributePaths = {"category"})
-    @Query("SELECT s FROM SummarizedNews s " +
-            "WHERE s.title LIKE %:keyword% OR s.summary LIKE %:keyword% " +
-            "ORDER BY s.publishedDate DESC")
+    @NativeQuery(value = """
+            SELECT * FROM summarized_news
+            WHERE title ILIKE CONCAT('%%', :keyword, '%%')
+            OR summary ILIKE CONCAT('%%', :keyword, '%%')
+            ORDER BY published_date DESC
+            """)
     Slice<SummarizedNews> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     @EntityGraph(attributePaths = {"category"})

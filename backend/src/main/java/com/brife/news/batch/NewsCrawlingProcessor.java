@@ -1,7 +1,7 @@
 package com.brife.news.batch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.brife.category.domain.Category;
+import com.brife.news.domain.Category;
 import com.brife.news.dto.KeywordGroupDto;
 import com.brife.news.dto.ProcessedNewsDto;
 import com.brife.news.dto.RawArticleDto;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Component
@@ -33,16 +32,8 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
         Category category = categoryRepository.findById(group.getCategoryId())
                 .orElseThrow(() -> new IllegalStateException("category 없음 id=" + group.getCategoryId()));
 
-        List<String> naverUrls = group.getArticles().stream()
-                .map(RawArticleDto::getNaverUrl)
-                .filter(url -> url != null && !url.isBlank())
-                .toList();
-
-        Set<String> existingUrls = naverUrls.isEmpty() ? Set.of()
-                : rawNewsRepository.findExistingNaverUrls(naverUrls);
-
         List<RawArticleDto> newArticles = group.getArticles().stream()
-                .filter(a -> a.getNaverUrl() == null || !existingUrls.contains(a.getNaverUrl()))
+                .filter(a -> a.getNaverUrl() == null || !rawNewsRepository.existsByNaverUrl(a.getNaverUrl()))
                 .toList();
 
         if (newArticles.isEmpty()) {

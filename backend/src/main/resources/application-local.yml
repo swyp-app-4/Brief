@@ -26,6 +26,4 @@ spring:
       host: localhost
       port: 6379
 
-  autoconfigure:
-    exclude:
-      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+

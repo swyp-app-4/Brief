@@ -1,6 +1,6 @@
 package com.brife.user.domain;
 
-import com.brife.category.domain.Category;
+import com.brife.news.domain.Category;
 import jakarta.persistence.*;
 import lombok.*;
 

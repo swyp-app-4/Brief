@@ -1,3 +1,8 @@
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:3600000}
+  refresh-expiration-days: ${JWT_REFRESH_EXPIRATION_DAYS:30}
+
 spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}

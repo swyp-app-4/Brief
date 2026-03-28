@@ -1,6 +1,6 @@
 package com.brife.news.dto;
 
-import com.brife.category.domain.Category;
+import com.brife.news.domain.Category;
 
 public record CategoryResponse(Long id, Long categoryGroupId, String name) {
     public static CategoryResponse from(Category entity) {

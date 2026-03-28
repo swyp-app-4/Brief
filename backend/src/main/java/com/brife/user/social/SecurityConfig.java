@@ -2,7 +2,6 @@ package com.brife.user.social;
 
 import com.brife.user.auth.JwtAuthFilter;
 import com.brife.user.auth.JwtProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,11 +19,6 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
 
     @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .sessionManagement(session -> session
@@ -32,7 +26,7 @@ public class SecurityConfig {
             )
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/categories/**", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
+                .requestMatchers("/auth/**", "/categories/**", "/news/**", "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**", "/api/test/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtAuthFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);

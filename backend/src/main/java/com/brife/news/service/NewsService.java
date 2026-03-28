@@ -5,6 +5,7 @@ import com.brife.news.dto.NewsDetailDto;
 import com.brife.news.dto.SectionDto;
 import com.brife.news.dto.SectionResponseDto;
 import com.brife.news.dto.WidgetNewsDto;
+import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.SummarizedNewsRepository;
 import com.brife.user.profile.UserInterestRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -27,13 +29,28 @@ public class NewsService {
     private static final int BODY_PREVIEW_LENGTH = 150;
 
     private final SummarizedNewsRepository summarizedNewsRepository;
+    private final CategoryRepository categoryRepository;
     private final UserInterestRepository userInterestRepository;
     private final ObjectMapper objectMapper;
 
-    public List<WidgetNewsDto> getTop5NewsByCategories(List<Long> categoryIds) {
+    // categoryIds, groupIds 혼합 지원 (둘 다 없으면 빈 리스트)
+    public List<WidgetNewsDto> getTop5News(List<Long> categoryIds, List<Long> groupIds) {
+        List<Long> mergedIds = new ArrayList<>(categoryIds);
+
+        if (!groupIds.isEmpty()) {
+            categoryRepository.findByCategoryGroup_IdIn(groupIds)
+                    .stream()
+                    .map(c -> c.getId())
+                    .filter(id -> !mergedIds.contains(id))
+                    .forEach(mergedIds::add);
+        }
+
+        if (mergedIds.isEmpty()) return List.of();
+
         List<WidgetNewsDto> result = summarizedNewsRepository.findMaxCreatedAt()
                 .map(lastBatch -> summarizedNewsRepository
-                        .findTop5ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(categoryIds, lastBatch.minusHours(BATCH_WINDOW_HOURS)))
+                        .findTop5ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
+                                mergedIds, lastBatch.minusHours(BATCH_WINDOW_HOURS)))
                 .orElse(List.of())
                 .stream()
                 .map(news -> WidgetNewsDto.from(news, extractBodyPreview(news.getBody())))
@@ -41,7 +58,7 @@ public class NewsService {
 
         if (result.isEmpty()) {
             result = summarizedNewsRepository
-                    .findTop5ByCategoryIdInOrderBySourceCountDesc(categoryIds)
+                    .findTop5ByCategoryIdInOrderBySourceCountDesc(mergedIds)
                     .stream()
                     .map(news -> WidgetNewsDto.from(news, extractBodyPreview(news.getBody())))
                     .toList();
@@ -56,10 +73,8 @@ public class NewsService {
                 .map(interest -> interest.getCategory().getId())
                 .toList();
 
-        if (categoryIds.isEmpty()) {
-            return List.of();
-        }
-        return getTop5NewsByCategories(categoryIds);
+        if (categoryIds.isEmpty()) return List.of();
+        return getTop5News(categoryIds, List.of());
     }
 
     public NewsDetailDto getNewsDetail(Long id) {

@@ -3,8 +3,8 @@ package com.brife.user.profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.brife.category.domain.Category;
-import com.brife.category.service.CategoryRepository;
+import com.brife.news.domain.Category;
+import com.brife.news.repository.CategoryRepository;
 import com.brife.user.domain.AppUser;
 import com.brife.user.domain.UserInterest;
 import com.brife.user.social.AppUserRepository;

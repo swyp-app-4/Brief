@@ -1,7 +1,7 @@
 package com.brife.news.batch;
 
 import com.brife.news.config.NaverNewsProperties;
-import com.brife.category.domain.Category;
+import com.brife.news.domain.Category;
 import com.brife.news.dto.KeywordGroupDto;
 import com.brife.news.dto.NaverNewsResponse;
 import com.brife.news.dto.RawArticleDto;

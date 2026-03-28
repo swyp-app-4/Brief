@@ -1,6 +1,6 @@
 package com.brife.news.dto;
 
-import com.brife.category.domain.Category;
+import com.brife.news.domain.Category;
 import lombok.Builder;
 import lombok.Getter;
 
