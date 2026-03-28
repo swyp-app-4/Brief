@@ -271,14 +271,16 @@ private fun HomeNewsCardSkeleton() {
 // ─────────────────────────────────────────────────────────────
 
 private fun illustrationResForCategory(category: String): Int = when (category) {
-    "라이프 · 성장" -> R.drawable.img_home_life
-    "IT · 테크" -> R.drawable.img_home_tech
-    "시사 · 정치" -> R.drawable.img_home_politics
-    "경제 · 재테크" -> R.drawable.img_home_economy
-    "엔터 · 스포츠" -> R.drawable.img_home_entertainment
-    "문화 · 예술" -> R.drawable.img_home_art
+    "라이프 성장", "라이프/성장", "라이프•성장" -> R.drawable.img_home_life
+    "IT 테크", "IT/테크", "IT•테크" -> R.drawable.img_home_tech
+    "시사 정치", "시사/정치", "시사•정치" -> R.drawable.img_home_politics
+    "경제 재테크", "경제/재테크", "경제•재테크" -> R.drawable.img_home_economy
+    "엔터 스포츠", "엔터/스포츠", "연예•스포츠", "엔터•스포츠" -> R.drawable.img_home_entertainment
+    "문화 예술", "문화/예술", "문화•예술" -> R.drawable.img_home_art
     else -> R.drawable.img_home_life
 }
+
+
 
 // ─────────────────────────────────────────────────────────────
 // Preview

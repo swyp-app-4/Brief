@@ -111,12 +111,12 @@ fun OnboardingInterestScreen(
 
 private fun getInterestIconRes(groupName: String): Int {
     return when (groupName) {
-        "시사 정치", "시사•정치" -> R.drawable.news_politics
-        "경제 재테크", "경제•재테크" -> R.drawable.economy
-        "IT 테크", "IT•테크" -> R.drawable.ittech
-        "문화 예술", "문화•예술" -> R.drawable.cultureart
-        "엔터 스포츠", "연예•스포츠", "엔터•스포츠" -> R.drawable.entsports
-        "라이프 성장", "라이프•성장" -> R.drawable.lifegrowth
+        "시사 정치", "시사/정치", "시사•정치" -> R.drawable.news_politics
+        "경제 재테크", "경제/재테크", "경제•재테크" -> R.drawable.economy
+        "IT 테크", "IT/테크", "IT•테크" -> R.drawable.ittech
+        "문화 예술", "문화/예술", "문화•예술" -> R.drawable.cultureart
+        "엔터 스포츠", "엔터/스포츠", "연예•스포츠", "엔터•스포츠" -> R.drawable.entsports
+        "라이프 성장", "라이프/성장", "라이프•성장" -> R.drawable.lifegrowth
         else -> R.drawable.news_politics
     }
 }
