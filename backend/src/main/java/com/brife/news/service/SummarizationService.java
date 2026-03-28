@@ -121,7 +121,6 @@ public class SummarizationService {
         );
 
         String rawText = sanitizeJson(extractText(response.getBody()));
-        log.debug("[Summarization] Vertex AI 응답 원문:\n{}", rawText);
         return objectMapper.readValue(rawText, SynthesisResult.class);
     }
 
