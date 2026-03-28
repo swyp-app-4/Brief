@@ -77,7 +77,10 @@ class OnboardingSubInterestViewModel(
                 errorMessage = null
             )
 
-            repository.saveSubInterests(selectedIds)
+            repository.saveSubInterests(
+                subCategoryIds = selectedIds,
+                parentCategoryIds = selectedParentCategoryIds
+            )
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(
                         isSubmitting = false,

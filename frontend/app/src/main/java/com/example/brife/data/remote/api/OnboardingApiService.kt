@@ -6,6 +6,7 @@ import com.example.brife.data.model.SubCategoryResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Query
 
@@ -21,8 +22,10 @@ interface OnboardingApiService {
         @Query("categoryGroupIds") categoryGroupIds: List<Long>
     ): Response<List<SubCategoryResponse>>
 
+    // POST /users/me/interests — 온보딩 최초 관심사 저장
     @POST("users/me/interests")
     suspend fun saveInterests(
+        @Header("Authorization") authorization: String,
         @Body request: InterestRequest
     ): Response<Unit>
 }

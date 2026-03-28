@@ -5,12 +5,14 @@ import com.example.brife.data.model.InterestRequest
 import com.example.brife.data.model.SubCategoryResponse
 import com.example.brife.data.remote.api.OnboardingApiService
 import android.util.Log
+import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.local.OnboardingLocalStorage
 
 
 class OnboardingRepository(
     private val api: OnboardingApiService,
-    private val localStorage: OnboardingLocalStorage
+    private val localStorage: OnboardingLocalStorage,
+    private val authLocalStorage: AuthLocalStorage
 ) {
 
     suspend fun getCategories(): Result<List<CategoryResponse>> {
@@ -63,11 +65,25 @@ class OnboardingRepository(
         }
     }
 
-    suspend fun saveSubInterests(subCategoryIds: List<Long>): Result<Unit> {
+    // POST /users/me/interests — 온보딩 완료 시 대분류(categoryIds) + 소분류(groupIds) 함께 전송
+    suspend fun saveSubInterests(
+        subCategoryIds: List<Long>,
+        parentCategoryIds: List<Long>
+    ): Result<Unit> {
         return try {
+            val token = authLocalStorage.getAccessToken()
+            if (token != null) {
+                api.saveInterests(
+                    authorization = "Bearer $token",
+                    request = InterestRequest(
+                        categoryIds = parentCategoryIds,
+                        groupIds = subCategoryIds
+                    )
+                )
+            }
             localStorage.saveSelectedSubCategoryIds(subCategoryIds)
             localStorage.saveOnboardingCompleted(true)
-            Log.d("OnboardingRepo", "saved subCategoryIds locally: $subCategoryIds")
+            Log.d("OnboardingRepo", "saved subCategoryIds: $subCategoryIds, parentIds: $parentCategoryIds")
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

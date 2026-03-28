@@ -17,6 +17,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.local.OnboardingLocalStorage
+import com.example.brife.data.remote.NetworkModule
+import com.example.brife.data.repository.UserRepository
+import com.example.brife.feature.profile.ProfileRoute
 import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.data.local.shortsampleHomeNews
 import com.example.brife.feature.archive.ArchiveDetailScreen
@@ -26,8 +29,6 @@ import com.example.brife.feature.explore.ExploreRoute
 import com.example.brife.feature.home.HomeScreen
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
-import com.example.brife.feature.profile.ProfileScreen
-import com.example.brife.feature.profile.ProfileUiState
 import com.example.brife.feature.profile.categoryItemFromId
 import com.example.brife.navigation.NavRoutes
 import com.example.brife.ui.component.AppNavigationBar
@@ -35,6 +36,7 @@ import com.example.brife.ui.component.AppTopBar
 import com.example.brife.feature.home.HomeToLoginBottomSheet
 import com.example.brife.feature.home.NewsLongScreen
 import com.example.brife.feature.home.shareNews
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +49,8 @@ fun MainScreen(
     val context = LocalContext.current
     val onboardingStorage = remember { OnboardingLocalStorage(context) }
     val authStorage = remember { AuthLocalStorage(context) }
+    val userRepository = remember { UserRepository(NetworkModule.userApiService, authStorage) }
+    val scope = rememberCoroutineScope()
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -217,12 +221,8 @@ fun MainScreen(
             }
 
             composable(NavRoutes.PROFILE) {
-                ProfileScreen(
+                ProfileRoute(
                     modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
-                    uiState = ProfileUiState(
-                        isLoggedIn = isLoggedIn,
-                        interests = profileInterests
-                    ),
                     onResetInterestClick = {
                         navController.navigate(NavRoutes.ONBOARDING_INTEREST_RESET)
                     },
@@ -260,8 +260,16 @@ fun MainScreen(
                 OnboardingSubInterestRoute(
                     selectedParentCategoryIds = selectedIds,
                     onNextClick = {
+                        // 로컬 관심사 갱신 (homeNewsList에 반영)
                         profileInterests = onboardingStorage.getSelectedCategoryIds()
                             .mapNotNull { categoryItemFromId(it) }
+                        // PUT /users/me/interests — 서버에 관심사 재설정
+                        scope.launch {
+                            userRepository.updateInterests(
+                                categoryIds = onboardingStorage.getSelectedCategoryIds(),
+                                groupIds = onboardingStorage.getSelectedSubCategoryIds()
+                            )
+                        }
                         navController.popBackStack(NavRoutes.PROFILE, false)
                     }
                 )

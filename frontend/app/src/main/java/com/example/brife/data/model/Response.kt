@@ -15,6 +15,14 @@ data class LoginResponse(
 )
 
 
+// GET /users/me 응답
+data class UserProfileResponse(
+    val id: Long,
+    val nickname: String,
+    val email: String,
+    val profileImageUrl: String?
+)
+
 // GET /categories 응답: { "id": 0, "name": "string" }
 data class CategoryResponse(
     val id: Long,
