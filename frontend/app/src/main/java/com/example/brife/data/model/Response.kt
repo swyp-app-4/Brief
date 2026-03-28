@@ -1,5 +1,6 @@
 package com.example.brife.data.model
 
+import com.google.gson.annotations.SerializedName
 
 
 data class ReissueResponse(
@@ -14,14 +15,16 @@ data class LoginResponse(
 )
 
 
+// GET /categories 응답: { "id": 0, "name": "string" }
 data class CategoryResponse(
     val id: Long,
-    val groupName: String
+    @SerializedName("name") val groupName: String
 )
 
+// GET /categories/details 응답: { "id": 0, "categoryGroupId": 0, "name": "string" }
 data class SubCategoryResponse(
     val id: Long,
     val name: String,
-    val parentCategoryId: Long,
-    val parentCategoryName: String
+    @SerializedName("categoryGroupId") val parentCategoryId: Long,
+    val parentCategoryName: String = ""
 )

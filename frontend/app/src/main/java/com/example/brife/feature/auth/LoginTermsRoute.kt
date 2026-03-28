@@ -51,7 +51,7 @@ fun LoginTermsRoute(
                 onNextClick = {
                     serviceConfirmed = true
                     if (isAllAgreeFlow) {
-                        // 전체동의 플로우: 서비스 약관 완료 → 개인정보 처리 동의서로 이동
+                        // 전체동의 플로우: 서비스 약관 완료 → 개인정보 처리 동의서로 이동sp
                         privacyChecked = privacyConfirmed
                         currentPage = LoginTermsPage.PRIVACY_DETAIL
                     } else {

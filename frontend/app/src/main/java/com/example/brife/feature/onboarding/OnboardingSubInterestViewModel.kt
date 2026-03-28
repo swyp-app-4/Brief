@@ -27,13 +27,10 @@ class OnboardingSubInterestViewModel(
                 errorMessage = null
             )
 
-            repository.getSubCategories()
+            repository.getSubCategories(selectedParentCategoryIds)
                 .onSuccess { subCategories ->
-                    val filtered = subCategories.filter {
-                        selectedParentCategoryIds.contains(it.parentCategoryId)
-                    }
-
-                    val sections = filtered
+                    // API가 이미 categoryGroupIds 기준으로 필터링해서 반환하므로 별도 필터 불필요
+                    val sections = subCategories
                         .groupBy { it.parentCategoryId }
                         .map { (parentId, items) ->
                             SubCategorySection(
