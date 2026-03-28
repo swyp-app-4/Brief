@@ -272,7 +272,7 @@ fun MainScreen(
                     },
                     onShareClick = {
                         // TODO: API 연동 후 item.id(실제 newsId)로 교체
-                        shareNews(context, item.title, newsIndex.toString())
+                        shareNews(context, item.title, newsId.toString())
                     },
                     onLoginRequired = { showLoginBottomSheet = true }
                 )
