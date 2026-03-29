@@ -137,8 +137,8 @@ class LoginViewModel(
 
                     // 비로그인 온보딩에서 로컬에만 저장된 관심사를 서버에 동기화
                     // (온보딩 시점에는 토큰이 없어 API 전송이 스킵됐기 때문)
-                    val categoryIds = onboardingLocalStorage.getSelectedCategoryIds()
-                    val groupIds = onboardingLocalStorage.getSelectedSubCategoryIds()
+                    val categoryIds = onboardingLocalStorage.getSelectedSubCategoryIds()
+                    val groupIds = onboardingLocalStorage.getSelectedCategoryIds()
                     if (categoryIds.isNotEmpty() || groupIds.isNotEmpty()) {
                         val interestResult = userRepository.updateInterests(categoryIds, groupIds)
                         if (interestResult.isFailure) {
