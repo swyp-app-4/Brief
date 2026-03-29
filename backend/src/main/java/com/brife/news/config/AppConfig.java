@@ -71,8 +71,8 @@ public class AppConfig {
     public Executor crawlingExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(50);
+        executor.setMaxPoolSize(20);
+        executor.setQueueCapacity(200);
         executor.setThreadNamePrefix("crawling-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(30);

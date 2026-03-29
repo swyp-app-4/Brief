@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -127,11 +126,11 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         headers.set("X-Naver-Client-Id", properties.getClientId());
         headers.set("X-Naver-Client-Secret", properties.getClientSecret());
 
-        // 관련도순 30개 수집
+        // 최신순 100개 수집
         String url = UriComponentsBuilder.fromUriString(properties.getNewsUrl())
                 .queryParam("query", keyword)
-                .queryParam("display", 30)
-                .queryParam("sort", "sim")
+                .queryParam("display", 100)
+                .queryParam("sort", "date")
                 .build()
                 .toUriString();
 
@@ -143,11 +142,11 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         }
 
         // 카테고리는 이미 병렬로 돌고 있어서 내부 파싱은 순차 처리 (풀 재사용 시 데드락 방지)
-        LocalDate today = LocalDate.now();
+        LocalDateTime since = LocalDateTime.now().minusHours(24);
         return response.getBody().getItems().stream()
                 .map(this::toRawArticle)
                 .filter(Objects::nonNull)
-                .filter(a -> a.getPubDate() != null && a.getPubDate().toLocalDate().equals(today))
+                .filter(a -> a.getPubDate() != null && a.getPubDate().isAfter(since))
                 .toList();
     }
 
