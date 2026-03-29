@@ -1,7 +1,6 @@
 package com.example.brife.data.repository
 
 import com.example.brife.data.model.CategoryResponse
-import com.example.brife.data.model.InterestRequest
 import com.example.brife.data.model.SubCategoryResponse
 import com.example.brife.data.remote.api.OnboardingApiService
 import android.util.Log
@@ -65,25 +64,18 @@ class OnboardingRepository(
         }
     }
 
-    // POST /users/me/interests — 온보딩 완료 시 대분류(categoryIds) + 소분류(groupIds) 함께 전송
+    // 온보딩 소분류 선택 결과를 로컬에만 저장
+    // 서버 전송 책임은 호출 시점에 따라 분리됨:
+    //   - 초기 온보딩(비로그인): 로그인 완료 후 LoginViewModel.agreeTerms()에서 PUT
+    //   - 관심사 재설정(로그인): MainScreen의 onNextClick 람다에서 PUT
     suspend fun saveSubInterests(
         subCategoryIds: List<Long>,
         parentCategoryIds: List<Long>
     ): Result<Unit> {
         return try {
-            val token = authLocalStorage.getAccessToken()
-            if (token != null) {
-                api.saveInterests(
-                    authorization = "Bearer $token",
-                    request = InterestRequest(
-                        categoryIds = parentCategoryIds,
-                        groupIds = subCategoryIds
-                    )
-                )
-            }
             localStorage.saveSelectedSubCategoryIds(subCategoryIds)
             localStorage.saveOnboardingCompleted(true)
-            Log.d("OnboardingRepo", "saved subCategoryIds: $subCategoryIds, parentIds: $parentCategoryIds")
+            Log.d("OnboardingRepo", "saved subCategoryIds locally: $subCategoryIds, parentIds: $parentCategoryIds")
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
