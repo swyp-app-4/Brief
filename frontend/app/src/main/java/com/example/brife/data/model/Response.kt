@@ -39,14 +39,16 @@ data class SubCategoryResponse(
 )
 
 // GET /news/top5, GET /home/news/recommended 공통 응답 구조
+// 서버가 일부 필드를 반환하지 않을 경우 NPE 방지를 위해 모든 필드에 기본값 설정
 data class RecommendedNewsResponse(
-    @SerializedName("id") val id: Long,
-    @SerializedName("categoryName") val categoryName: String,
-    @SerializedName("title") val title: String,
-    @SerializedName("summaryList") val summaryList: List<String>,
-    @SerializedName("bodyPreview") val bodyPreview: String,
-    @SerializedName("sourceCount") val sourceCount: Int,
-    @SerializedName("publishedDate") val publishedDate: String
+    @SerializedName("id") val id: Long = 0L,
+    @SerializedName("groupName") val groupName: String = "",
+    @SerializedName("categoryName") val categoryName: String = "",
+    @SerializedName("title") val title: String = "",
+    @SerializedName("summaryList") val summaryList: List<String> = emptyList(),
+    @SerializedName("bodyPreview") val bodyPreview: String = "",
+    @SerializedName("sourceCount") val sourceCount: Int = 0,
+    @SerializedName("publishedDate") val publishedDate: String = ""
 )
 
 

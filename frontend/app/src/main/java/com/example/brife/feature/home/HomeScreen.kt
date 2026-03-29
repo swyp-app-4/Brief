@@ -270,13 +270,14 @@ private fun HomeNewsCardSkeleton() {
 // 매핑 없는 category는 img_home_life 기본값 사용
 // ─────────────────────────────────────────────────────────────
 
-private fun illustrationResForCategory(category: String): Int = when (category) {
-    "라이프 성장", "라이프/성장", "라이프•성장" -> R.drawable.img_home_life
-    "IT 테크", "IT/테크", "IT•테크" -> R.drawable.img_home_tech
-    "시사 정치", "시사/정치", "시사•정치" -> R.drawable.img_home_politics
-    "경제 재테크", "경제/재테크", "경제•재테크" -> R.drawable.img_home_economy
-    "엔터 스포츠", "엔터/스포츠", "연예•스포츠", "엔터•스포츠" -> R.drawable.img_home_entertainment
-    "문화 예술", "문화/예술", "문화•예술" -> R.drawable.img_home_art
+// 구분자(·, /, 공백 등) 형식에 무관하게 contains로 매핑
+private fun illustrationResForCategory(category: String): Int = when {
+    category.contains("라이프") || category.contains("성장") -> R.drawable.img_home_life
+    category.contains("IT") || category.contains("테크") -> R.drawable.img_home_tech
+    category.contains("시사") || category.contains("정치") -> R.drawable.img_home_politics
+    category.contains("경제") || category.contains("재테크") -> R.drawable.img_home_economy
+    category.contains("엔터") || category.contains("스포츠") || category.contains("연예") -> R.drawable.img_home_entertainment
+    category.contains("문화") || category.contains("예술") -> R.drawable.img_home_art
     else -> R.drawable.img_home_life
 }
 
