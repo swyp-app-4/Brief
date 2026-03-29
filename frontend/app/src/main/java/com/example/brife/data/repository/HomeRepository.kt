@@ -56,7 +56,6 @@ class HomeRepository(
 
         Log.d(TAG, "비회원 요청: groupIds=$groupIds, categoryIds=$categoryIds")
 
-        // 관심사 미설정 시 빈 리스트 반환 (API 필수 파라미터 없음)
         if (categoryIds.isEmpty() && groupIds.isEmpty()) {
             Log.d(TAG, "관심사 미설정 → 빈 리스트 반환")
             return Result.success(emptyList())
@@ -68,7 +67,10 @@ class HomeRepository(
             if (response.isSuccessful && response.body() != null) {
                 val items = response.body()!!
                 items.firstOrNull()?.let {
-                    Log.d(TAG, "첫 항목: id=${it.id}, groupName='${it.groupName}', categoryName='${it.categoryName}', bodyPreview='${it.bodyPreview.take(20)}'")
+                    Log.d(
+                        TAG,
+                        "첫 항목: id=${it.id}, groupName='${it.groupName}', categoryName='${it.categoryName}', bodyPreview='${it.bodyPreview.take(20)}'"
+                    )
                 }
                 val mapped = items.map { it.toHomeNewsCardItem() }
                 Log.d(TAG, "매핑 완료: ${mapped.size}개")

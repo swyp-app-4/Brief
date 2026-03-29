@@ -56,12 +56,23 @@ fun HomeScreen(
     val illustrationRes = if (isLoading) R.drawable.img_home_life
     else illustrationResForCategory(currentCategory)
 
+
+    LaunchedEffect(newsList, isLoading) {
+        android.util.Log.d(
+            "HomeScreen",
+            "받은 값 newsList=${newsList.size}, isLoading=$isLoading"
+        )
+    }
+
+
     LaunchedEffect(pagerState.currentPage, isLoggedIn) {
         if (!isLoggedIn && !loginPromptShown && pagerState.currentPage >= 3) {
             loginPromptShown = true
             onLoginRequired()
         }
     }
+
+
 
     Box(modifier = Modifier.fillMaxSize()) {
 

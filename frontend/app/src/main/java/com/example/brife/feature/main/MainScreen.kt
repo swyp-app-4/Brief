@@ -236,8 +236,8 @@ fun MainScreen(
                         // PUT /users/me/interests — 서버에 관심사 재설정
                         scope.launch {
                             userRepository.updateInterests(
-                                categoryIds = onboardingStorage.getSelectedCategoryIds(),
-                                groupIds = onboardingStorage.getSelectedSubCategoryIds()
+                                categoryIds = onboardingStorage.getSelectedSubCategoryIds(),
+                                groupIds = onboardingStorage.getSelectedCategoryIds()
                             )
                         }
                         navController.popBackStack(NavRoutes.PROFILE, false)

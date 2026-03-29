@@ -1,5 +1,6 @@
 package com.example.brife.feature.home
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,7 +18,7 @@ import com.example.brife.data.repository.HomeRepository
 @Composable
 fun HomeRoute(
     isLoggedIn: Boolean,
-    onLoginRequired: () -> Unit,
+    onLoginRequired: () -> Unit ,
     onDetailClick: (HomeNewsCardItem) -> Unit,
     onShareClick: (HomeNewsCardItem) -> Unit,
     topPadding: Dp = 0.dp,
@@ -36,6 +37,17 @@ fun HomeRoute(
         )
     )
     val uiState by viewModel.uiState.collectAsState()
+
+    Log.d(
+        "HomeRoute",
+        "전달 직전 newsList=${uiState.newsList.size}, isLoading=${uiState.isLoading}, error=${uiState.errorMessage}"
+    )
+    uiState.newsList.forEach {
+        Log.d(
+            "HomeRoute",
+            "item category='${it.category}', subCategory='${it.subCategory}', title='${it.title}'"
+        )
+    }
 
     HomeScreen(
         newsList = uiState.newsList,
