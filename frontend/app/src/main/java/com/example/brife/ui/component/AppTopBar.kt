@@ -38,7 +38,7 @@ fun AppTopBar(
                 if (title != null) {
                     AppText(
                         text = title,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         textAlign = if (centerTitle) TextAlign.Center else TextAlign.Start
                     )
                 }

@@ -23,15 +23,17 @@ class NewsLongViewModel(
             archiveRepository.getFolders()
                 .onSuccess { archiveFolders ->
                     Log.d("NewsLongViewModel", "폴더 목록 로드 성공: ${archiveFolders.size}개")
-                    _folders.value = archiveFolders.map { folder ->
-                        BookmarkFolderUiModel(
-                            id = folder.archiveId,
-                            name = folder.folderName,
-                            newsCount = folder.itemCount,
-                            isSelected = false,
-                            isFavorite = folder.isFavorite
-                        )
-                    }
+                    _folders.value = archiveFolders
+                        .sortedByDescending { it.isFavorite }
+                        .map { folder ->
+                            BookmarkFolderUiModel(
+                                id = folder.archiveId,
+                                name = folder.folderName,
+                                newsCount = folder.itemCount,
+                                isSelected = folder.isFavorite,
+                                isFavorite = folder.isFavorite
+                            )
+                        }
                 }
                 .onFailure { e ->
                     Log.e("NewsLongViewModel", "폴더 목록 로드 실패: ${e.message}")

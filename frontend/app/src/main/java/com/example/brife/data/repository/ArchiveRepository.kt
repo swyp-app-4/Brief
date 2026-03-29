@@ -19,8 +19,10 @@ class ArchiveRepository(
         val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
         return try {
             val response = api.getArchives(token)
+            Log.d("ArchiveRepository", "getFolders: code=${response.code()}")
             if (response.isSuccessful) {
                 val folders = response.body()?.map {
+                    Log.d("ArchiveRepository", "folder: id=${it.id}, folderName=${it.folderName}, itemCount=${it.itemCount}, favorite=${it.favorite}")
                     ArchiveFolderUiModel(
                         archiveId = it.id,
                         folderName = it.folderName,
@@ -28,11 +30,14 @@ class ArchiveRepository(
                         isFavorite = it.favorite
                     )
                 } ?: emptyList()
+                Log.d("ArchiveRepository", "getFolders: 총 ${folders.size}개")
                 Result.success(folders)
             } else {
+                Log.e("ArchiveRepository", "getFolders: 실패 code=${response.code()}")
                 Result.failure(Exception("폴더 목록 조회 실패: ${response.code()}"))
             }
         } catch (e: Exception) {
+            Log.e("ArchiveRepository", "getFolders: exception=${e.message}")
             Result.failure(e)
         }
     }

@@ -1,6 +1,7 @@
 package com.example.brife.feature.archive
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +17,7 @@ import com.example.brife.data.repository.ArchiveRepository
 @Composable
 fun ArchiveRoute(
     modifier: Modifier = Modifier,
+    reloadVersion: Int = 0,
     isDeleteMode: Boolean,
     isRenameMode: Boolean,
     onDeleteModeExit: () -> Unit,
@@ -30,6 +32,10 @@ fun ArchiveRoute(
         factory = ArchiveViewModelFactory(repository)
     )
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(reloadVersion) {
+        if (reloadVersion > 0) viewModel.loadFolders()
+    }
 
     var selectedFolderIds by remember { mutableStateOf(setOf<Long>()) }
 

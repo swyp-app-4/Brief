@@ -89,6 +89,9 @@ fun MainScreen(
     // 관심사 재설정 완료 시 증가 → HomeRoute에서 감지하여 홈 뉴스 재로드
     var homeReloadVersion by remember { mutableStateOf(0) }
 
+    // 보관함 탭 재진입 또는 뉴스 저장 후 ArchiveRoute가 폴더 목록을 재로드하도록 하는 버전 카운터
+    var archiveReloadVersion by remember { mutableStateOf(0) }
+
 
     var profileInterests by remember {
         mutableStateOf(
@@ -143,8 +146,10 @@ fun MainScreen(
                             0 -> navigateTo(NavRoutes.HOME)
                             1 -> navigateTo(NavRoutes.EXPLORE)
                             2 -> {
-                                if (isLoggedIn) navigateTo(NavRoutes.ARCHIVE)
-                                else showLoginBottomSheet = true
+                                if (isLoggedIn) {
+                                    archiveReloadVersion++
+                                    navigateTo(NavRoutes.ARCHIVE)
+                                } else showLoginBottomSheet = true
                             }
                             3 -> navigateTo(NavRoutes.PROFILE)
                         }
@@ -185,6 +190,7 @@ fun MainScreen(
             composable(NavRoutes.ARCHIVE) {
                 ArchiveRoute(
                     modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
+                    reloadVersion = archiveReloadVersion,
                     isDeleteMode = isArchiveDeleteMode,
                     isRenameMode = isArchiveRenameMode,
                     onDeleteModeExit = { isArchiveDeleteMode = false },
@@ -295,6 +301,7 @@ fun MainScreen(
                         },
                         onBackClick = { navController.popBackStack() },
                         onNavigateToArchive = {
+                            archiveReloadVersion++
                             navController.popBackStack()
                             navigateTo(NavRoutes.ARCHIVE)
                         },

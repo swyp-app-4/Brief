@@ -71,19 +71,20 @@ data class NewsPageResponse(
 )
 
 // Archive 폴더 응답
+// 서버가 일부 필드를 반환하지 않을 경우 NPE 방지를 위해 모든 필드에 기본값 설정
 data class ArchiveFolderResponse(
-    @SerializedName("id") val id: Long,
-    @SerializedName("folderName") val folderName: String,
-    @SerializedName("itemCount") val itemCount: Int,
-    @SerializedName("createdAt") val createdAt: String,
-    @SerializedName("favorite") val favorite: Boolean
+    @SerializedName("id") val id: Long = 0L,
+    @SerializedName("folderName") val folderName: String = "",
+    @SerializedName("itemCount") val itemCount: Int = 0,
+    @SerializedName("createdAt") val createdAt: String = "",
+    @SerializedName("favorite") val favorite: Boolean = false
 )
 
 // Archive 아이템 응답
 data class ArchiveItemResponse(
-    @SerializedName("id") val id: Long,
-    @SerializedName("contentId") val contentId: Long,
-    @SerializedName("savedAt") val savedAt: String
+    @SerializedName("id") val id: Long = 0L,
+    @SerializedName("contentId") val contentId: Long = 0L,
+    @SerializedName("savedAt") val savedAt: String = ""
 )
 
 // Archive 요청 바디
