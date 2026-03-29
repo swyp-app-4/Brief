@@ -14,7 +14,7 @@ public class ArticleClusteringService {
 
     private static final int MIN_CLUSTER_SIZE = 3;
     private static final int MIN_WORD_LENGTH = 2;
-    private static final int MIN_INTERSECTION_SIZE = 3;
+    private static final int MIN_INTERSECTION_SIZE = 2;
 
     private static final Set<String> BASE_STOP_WORDS = Set.of(
             "것", "수", "등", "및", "에서", "으로", "에게", "이번", "지난", "올해",

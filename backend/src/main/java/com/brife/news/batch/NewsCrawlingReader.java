@@ -126,11 +126,11 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         headers.set("X-Naver-Client-Id", properties.getClientId());
         headers.set("X-Naver-Client-Secret", properties.getClientSecret());
 
-        // 관련도순 30개 수집
+        // 최신순 100개 수집
         String url = UriComponentsBuilder.fromUriString(properties.getNewsUrl())
                 .queryParam("query", keyword)
-                .queryParam("display", 30)
-                .queryParam("sort", "sim")
+                .queryParam("display", 100)
+                .queryParam("sort", "date")
                 .build()
                 .toUriString();
 
