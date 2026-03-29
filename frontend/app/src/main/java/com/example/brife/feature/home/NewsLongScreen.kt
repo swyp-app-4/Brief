@@ -118,7 +118,7 @@ fun NewsLongScreen(
         if (isExpanded) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .verticalScroll(scrollState)
                     .navigationBarsPadding()
             ) {
@@ -229,7 +229,7 @@ private fun NewsLongContent(
     imageRes: Int
 ) {
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Image(
             painter = painterResource(id = imageRes),
@@ -314,7 +314,7 @@ private fun NewsLongContent(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 AppText(
-                    text = "관련 기사 요약",
+                    text = "살펴보기",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black
                 )
@@ -439,18 +439,3 @@ private fun NewsLongTopBar(
     )
 }
 
-//@Preview(
-//    showBackground = true,
-//    showSystemUi = true,
-//    name = "News Long Screen"
-//)
-//@Composable
-//fun NewsLongScreenPreview() {
-//    BrifeTheme {
-//        NewsLongScreen(
-//            item = longsampleHomeNews.first(),
-//            onBackClick = {},
-//            onShareClick = {}
-//        )
-//    }
-//}

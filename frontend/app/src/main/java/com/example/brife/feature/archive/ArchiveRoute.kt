@@ -26,8 +26,13 @@ fun ArchiveRoute(
 ) {
     val context = LocalContext.current
     val authStorage = remember { AuthLocalStorage(context) }
-    val repository = remember { ArchiveRepository(NetworkModule.archiveApiService, authStorage) }
-
+    val repository = remember {
+        ArchiveRepository(
+            api = NetworkModule.archiveApiService,
+            newsApi = NetworkModule.newsApiService, // 이 인자를 추가하세요
+            authLocalStorage = authStorage
+        )
+    }
     val viewModel: ArchiveViewModel = viewModel(
         factory = ArchiveViewModelFactory(repository)
     )

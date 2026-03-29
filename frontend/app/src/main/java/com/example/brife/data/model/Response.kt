@@ -98,17 +98,17 @@ data class AddArchiveItemRequest(
 
 // GET /news/{id} 응답 — 2차 연동 예정
 data class NewsDetailSection(
-    @SerializedName("heading") val heading: String,
-    @SerializedName("contentList") val contentList: List<String>
+    @SerializedName("heading") val heading: String = "",
+    @SerializedName("contentList") val contentList: List<String> = emptyList()
 )
 
 data class NewsDetailResponse(
-    @SerializedName("id") val id: Long,
-    @SerializedName("groupName") val groupName: String,
-    @SerializedName("categoryName") val categoryName: String,
-    @SerializedName("title") val title: String,
-    @SerializedName("summaryList") val summaryList: List<String>,
-    @SerializedName("sections") val sections: List<NewsDetailSection>,
-    @SerializedName("sourceCount") val sourceCount: Int,
-    @SerializedName("publishedDate") val publishedDate: String
+    @SerializedName("id") val id: Long = 0L,
+    @SerializedName("groupName") val groupName: String = "",
+    @SerializedName("categoryName") val categoryName: String = "",
+    @SerializedName("title") val title: String = "",
+    @SerializedName("summaryList") val summaryList: List<String> = emptyList(),
+    @SerializedName("sections") val sections: List<NewsDetailSection> = emptyList(),
+    @SerializedName("sourceCount") val sourceCount: Int = 0,
+    @SerializedName("publishedDate") val publishedDate: String = ""
 )

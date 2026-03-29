@@ -5,11 +5,14 @@ import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.model.AddArchiveItemRequest
 import com.example.brife.data.model.ArchiveItemResponse
 import com.example.brife.data.model.CreateArchiveRequest
+import com.example.brife.data.model.NewsDetailResponse
 import com.example.brife.data.remote.api.ArchiveApiService
+import com.example.brife.data.remote.api.NewsApiService
 import com.example.brife.feature.archive.ArchiveFolderUiModel
 
 class ArchiveRepository(
     private val api: ArchiveApiService,
+    private val newsApi: NewsApiService,
     private val authLocalStorage: AuthLocalStorage
 ) {
     private fun bearerToken(): String? =
@@ -135,6 +138,43 @@ class ArchiveRepository(
             else Result.failure(Exception("폴더 저장 실패: ${response.code()}"))
         } catch (e: Exception) {
             Log.e("ArchiveRepository", "addToFolder: exception=${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getNewsDetail(contentId: Long): Result<NewsDetailResponse> {
+        return try {
+            val response = newsApi.getNewsDetailAsync(contentId)
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("뉴스 상세 조회 실패: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("ArchiveRepository", "getNewsDetail: contentId=$contentId, exception=${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteArchiveItem(archiveId: Long, itemId: Long): Result<Unit> {
+        val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
+        return try {
+            Log.d("ArchiveRepository", "deleteArchiveItem: archiveId=$archiveId, itemId=$itemId")
+            val response = api.deleteArchiveItem(token, archiveId, itemId)
+            Log.d(
+                "ArchiveRepository",
+                "deleteArchiveItem: code=${response.code()}, success=${response.isSuccessful}"
+            )
+
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("ArchiveRepository", "deleteArchiveItem: errorBody=$errorBody")
+                Result.failure(Exception("아이템 삭제 실패: ${response.code()} / $errorBody"))
+            }
+        } catch (e: Exception) {
+            Log.e("ArchiveRepository", "deleteArchiveItem: exception=${e.message}", e)
             Result.failure(e)
         }
     }

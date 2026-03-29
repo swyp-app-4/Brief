@@ -276,7 +276,11 @@ fun MainScreen(
 
                 if (item != null) {
                     val archiveRepository = remember {
-                        ArchiveRepository(NetworkModule.archiveApiService, authStorage)
+                        ArchiveRepository(
+                            api = NetworkModule.archiveApiService,
+                            newsApi = NetworkModule.newsApiService, // 이 인자를 추가하세요
+                            authLocalStorage = authStorage
+                        )
                     }
                     val newsLongViewModel: NewsLongViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
                         key = "newslong_$newsId",
