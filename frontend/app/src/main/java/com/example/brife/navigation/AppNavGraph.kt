@@ -33,6 +33,7 @@ import com.example.brife.feature.webview.WebViewScreen
 import com.example.brife.feature.auth.LoginViewModel
 import com.example.brife.feature.auth.LoginViewModelFactory
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
+import com.example.brife.feature.setting.OneToOneInquiryRoute
 import com.example.brife.navigation.NavRoutes
 
 
@@ -196,6 +197,7 @@ fun AppNavGraph() {
                 onBackClick = { navController.popBackStack() },
                 onLoginClick = { navController.navigate(NavRoutes.LOGIN) },
                 onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) },
+                onInquiryClick = { navController.navigate(NavRoutes.INQUIRY) },
                 onTermsClick = {
                     val encodedUrl = Uri.encode("https://buttered-palm-c4c.notion.site/32e4778e859280eca570ce215e9ee048")
                     val encodedTitle = Uri.encode("서비스 이용약관")
@@ -232,6 +234,12 @@ fun AppNavGraph() {
 
         composable(NavRoutes.WIDGET_INSTALL_GUIDE) {
             WidgetInstallGuideScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(NavRoutes.INQUIRY) {
+            OneToOneInquiryRoute(
                 onBackClick = { navController.popBackStack() }
             )
         }
