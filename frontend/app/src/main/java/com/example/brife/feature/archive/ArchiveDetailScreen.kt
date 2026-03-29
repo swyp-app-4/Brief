@@ -224,7 +224,7 @@ fun ArchiveNewsCard(item: ArchiveNewsItem) {
             ) {
                 AppText(
                     text = item.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = Color.Black,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
