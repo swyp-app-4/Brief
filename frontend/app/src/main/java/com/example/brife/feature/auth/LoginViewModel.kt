@@ -29,6 +29,7 @@ class LoginViewModel(
                 errorMessage = null
             )
 
+            _uiState.value = _uiState.value.copy(pendingLoginMethod = "kakao")
             repository.loginWithKakao(accessToken)
                 .onSuccess { response ->
                     handleLoginSuccess(
@@ -53,6 +54,7 @@ class LoginViewModel(
                 errorMessage = null
             )
 
+            _uiState.value = _uiState.value.copy(pendingLoginMethod = "naver")
             repository.loginWithNaver(accessToken)
                 .onSuccess { response ->
                     handleLoginSuccess(
@@ -77,6 +79,7 @@ class LoginViewModel(
                 errorMessage = null
             )
 
+            _uiState.value = _uiState.value.copy(pendingLoginMethod = "google")
             repository.loginWithGoogle(idToken)
                 .onSuccess { response ->
                     handleLoginSuccess(
@@ -133,6 +136,10 @@ class LoginViewModel(
                     authLocalStorage.saveAccessToken(accessToken)
                     if (refreshToken != null) {
                         authLocalStorage.saveRefreshToken(refreshToken)
+                    }
+                    val loginMethod = _uiState.value.pendingLoginMethod
+                    if (loginMethod.isNotEmpty()) {
+                        authLocalStorage.saveLoginMethod(loginMethod)
                     }
 
                     // 비로그인 온보딩에서 로컬에만 저장된 관심사를 서버에 동기화

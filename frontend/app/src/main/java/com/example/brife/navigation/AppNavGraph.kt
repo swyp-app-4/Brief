@@ -192,7 +192,7 @@ fun AppNavGraph() {
 
         composable(NavRoutes.SETTING) {
             SettingScreen(
-                uiState = SettingUiState(loginMethod = "Google", appVersion = "1.0.0"),
+                uiState = SettingUiState(loginMethod = authLocalStorage.getLoginMethod() ?: "", appVersion = "1.0.0"),
                 isLoggedIn = authLocalStorage.isLoggedIn(),
                 onBackClick = { navController.popBackStack() },
                 onLoginClick = { navController.navigate(NavRoutes.LOGIN) },
