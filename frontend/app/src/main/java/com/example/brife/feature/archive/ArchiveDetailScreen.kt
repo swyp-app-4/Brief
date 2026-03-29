@@ -58,7 +58,7 @@ fun ArchiveDetailScreen(
     val sortedItems = when (sortType) {
         SortType.LATEST -> newsItems
         SortType.OLDEST -> newsItems.reversed()
-        SortType.NAME -> newsItems.sortedBy { it.summary }
+        SortType.NAME -> newsItems.sortedBy { it.title }
     }
 
     Scaffold(

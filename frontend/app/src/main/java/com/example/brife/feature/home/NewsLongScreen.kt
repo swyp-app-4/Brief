@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import com.example.brife.data.local.BookmarkFolderUiModel
 import com.example.brife.feature.archive.component.CreateFolderBottomSheet
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.platform.LocalDensity
 
@@ -63,6 +64,9 @@ fun NewsLongScreen(
     item: HomeNewsCardItem,
     onBackClick: () -> Unit,
     isLoggedIn: Boolean = false,
+    folders: List<BookmarkFolderUiModel> = emptyList(),
+    onSaveToFolders: (selectedFolders: List<BookmarkFolderUiModel>) -> Unit = {},
+    onCreateFolder: (folderName: String) -> Unit = {},
     onShareClick: () -> Unit = {},
     onNavigateToArchive: () -> Unit = {},
     onLoginRequired: () -> Unit = {},
@@ -91,16 +95,21 @@ fun NewsLongScreen(
     var showCreateFolderSheet by remember { mutableStateOf(false) }
 
     // 확정된 북마크 상태 (저장 버튼 클릭 시에만 반영)
-    var folderItems by remember {
-        mutableStateOf(
-            listOf(
-                BookmarkFolderUiModel(id = 1L, name = "즐겨찾기", newsCount = 12, isSelected = false),
-            )
-        )
-    }
+    // API에서 받아온 실제 폴더 목록으로 초기화
+    var folderItems by remember { mutableStateOf(folders) }
 
     // 바텀시트 내 임시 선택 상태 — 취소 시 folderItems에 반영되지 않음
-    var tempFolders by remember { mutableStateOf(folderItems) }
+    var tempFolders by remember { mutableStateOf(folders) }
+
+    // ViewModel이 새 폴더를 추가하면 (폴더 생성 API 성공) 로컬 목록에 반영
+    LaunchedEffect(folders) {
+        val existingIds = folderItems.map { it.id }.toSet()
+        val newlyAdded = folders.filter { it.id !in existingIds }
+        if (newlyAdded.isNotEmpty()) {
+            folderItems = folderItems + newlyAdded
+            tempFolders = tempFolders + newlyAdded
+        }
+    }
 
     Box(
         modifier = modifier
@@ -188,7 +197,10 @@ fun NewsLongScreen(
                     }
                 },
                 onSaveClick = {
-                    // 저장 확정 — tempFolders를 folderItems에 반영
+                    // 선택된 폴더에 실제 저장 API 호출
+                    val selectedFolders = tempFolders.filter { it.isSelected }
+                    onSaveToFolders(selectedFolders)
+                    // 로컬 상태도 확정 반영
                     folderItems = tempFolders
                     showBookmarkSheet = false
                 }
@@ -199,15 +211,9 @@ fun NewsLongScreen(
             CreateFolderBottomSheet(
                 onDismissRequest = { showCreateFolderSheet = false },
                 onSave = { newFolderName ->
-                    val newFolder = BookmarkFolderUiModel(
-                        id = (folderItems.maxOfOrNull { it.id } ?: 0L) + 1L,
-                        name = newFolderName,
-                        newsCount = 1,
-                        isSelected = true
-                    )
-                    // 확정 목록과 임시 목록 모두에 즉시 반영
-                    folderItems = folderItems + newFolder
-                    tempFolders = tempFolders + newFolder
+                    // API로 폴더 생성 → ViewModel이 성공 시 folders StateFlow 업데이트
+                    // → LaunchedEffect(folders)가 감지하여 folderItems/tempFolders에 반영
+                    onCreateFolder(newFolderName)
                     showCreateFolderSheet = false
                 },
                 currentFolderCount = folderItems.size,

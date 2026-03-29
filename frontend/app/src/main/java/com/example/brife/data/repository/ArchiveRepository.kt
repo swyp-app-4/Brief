@@ -1,5 +1,6 @@
 package com.example.brife.data.repository
 
+import android.util.Log
 import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.model.AddArchiveItemRequest
 import com.example.brife.data.model.ArchiveItemResponse
@@ -105,13 +106,30 @@ class ArchiveRepository(
         }
     }
 
-    suspend fun addToFavorites(newsId: Long): Result<Unit> {
+    suspend fun addToFavorites(contentId: Long): Result<Unit> {
         val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
         return try {
-            val response = api.addToFavorites(token, AddArchiveItemRequest(newsId))
+            Log.d("ArchiveRepository", "addToFavorites: contentId=$contentId")
+            val response = api.addToFavorites(token, AddArchiveItemRequest(contentId))
+            Log.d("ArchiveRepository", "addToFavorites: code=${response.code()}")
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception("즐겨찾기 추가 실패: ${response.code()}"))
         } catch (e: Exception) {
+            Log.e("ArchiveRepository", "addToFavorites: exception=${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun addToFolder(archiveId: Long, contentId: Long): Result<Unit> {
+        val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
+        return try {
+            Log.d("ArchiveRepository", "addToFolder: archiveId=$archiveId, contentId=$contentId")
+            val response = api.addToArchive(token, archiveId, AddArchiveItemRequest(contentId))
+            Log.d("ArchiveRepository", "addToFolder: code=${response.code()}")
+            if (response.isSuccessful) Result.success(Unit)
+            else Result.failure(Exception("폴더 저장 실패: ${response.code()}"))
+        } catch (e: Exception) {
+            Log.e("ArchiveRepository", "addToFolder: exception=${e.message}")
             Result.failure(e)
         }
     }

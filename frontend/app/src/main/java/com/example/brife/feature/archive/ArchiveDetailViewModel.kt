@@ -29,11 +29,11 @@ class ArchiveDetailViewModel(
             _isLoading.value = true
             repository.getItems(archiveId, sort)
                 .onSuccess { items ->
-                    // TODO: 2차 연동 시 GET /news/{id} 호출로 실제 제목/요약 채우기
+                    // TODO: 2차 연동 시 GET /news/{id} 호출로 실제 제목/카테고리 채우기
                     _newsItems.value = items.map { item ->
                         ArchiveNewsItem(
-                            title = "",
-                            summary = "뉴스 #${item.contentId}",
+                            title = "뉴스 #${item.contentId}",
+                            summary = "",
                             time = item.savedAt,
                             company = "",
                             imageUrl = R.drawable.homescreen_bg,

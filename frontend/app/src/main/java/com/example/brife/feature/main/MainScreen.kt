@@ -7,6 +7,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -26,8 +28,11 @@ import com.example.brife.feature.archive.ArchiveDetailRoute
 import com.example.brife.feature.archive.ArchiveRoute
 import com.example.brife.feature.archive.component.ArchiveMoreBottomSheet
 import com.example.brife.feature.explore.ExploreRoute
+import com.example.brife.data.repository.ArchiveRepository
 import com.example.brife.feature.home.HomeNewsCardItem
 import com.example.brife.feature.home.HomeRoute
+import com.example.brife.feature.home.NewsLongViewModel
+import com.example.brife.feature.home.NewsLongViewModelFactory
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
 import com.example.brife.feature.profile.categoryItemFromId
@@ -264,9 +269,30 @@ fun MainScreen(
                 val item = selectedNewsItem
 
                 if (item != null) {
+                    val archiveRepository = remember {
+                        ArchiveRepository(NetworkModule.archiveApiService, authStorage)
+                    }
+                    val newsLongViewModel: NewsLongViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                        key = "newslong_$newsId",
+                        factory = NewsLongViewModelFactory(archiveRepository)
+                    )
+                    val newsLongFolders by newsLongViewModel.folders.collectAsState()
+
+                    // 로그인 상태일 때만 폴더 목록 로드
+                    LaunchedEffect(newsId) {
+                        if (isLoggedIn) newsLongViewModel.loadFolders()
+                    }
+
                     NewsLongScreen(
                         item = item,
                         isLoggedIn = isLoggedIn,
+                        folders = newsLongFolders,
+                        onSaveToFolders = { selectedFolders ->
+                            newsLongViewModel.saveToFolders(item.newsId, selectedFolders)
+                        },
+                        onCreateFolder = { folderName ->
+                            newsLongViewModel.createFolder(folderName)
+                        },
                         onBackClick = { navController.popBackStack() },
                         onNavigateToArchive = {
                             navController.popBackStack()

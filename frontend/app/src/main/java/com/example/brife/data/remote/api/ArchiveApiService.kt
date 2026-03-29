@@ -40,6 +40,13 @@ interface ArchiveApiService {
         @Body request: AddArchiveItemRequest
     ): Response<ArchiveItemResponse>
 
+    @POST("archives/{archiveId}/items")
+    suspend fun addToArchive(
+        @Header("Authorization") authorization: String,
+        @Path("archiveId") archiveId: Long,
+        @Body request: AddArchiveItemRequest
+    ): Response<ArchiveItemResponse>
+
     @PATCH("archives/{archiveId}")
     suspend fun renameArchive(
         @Header("Authorization") authorization: String,
