@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -100,76 +101,95 @@ fun HomeScreen(
                     .offset(y = 30.dp)
             )
 
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 36.dp),
-                pageSpacing = 12.dp,
-                beyondViewportPageCount = 1
-            ) { page ->
-                val pageOffset =
-                    (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-                val absOffset = pageOffset.absoluteValue
-
-                Card(
+            // 빈 상태: 로딩 완료 후 뉴스가 없으면 디버깅용 메시지 표시
+            // (카드 자체를 숨기거나 fallback 데이터를 넣지 않음 — 백엔드 문제 확인용)
+            if (!isLoading && newsList.isEmpty()) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
-                        .zIndex(1f - absOffset.coerceIn(0f, 1f))
-                        .graphicsLayer {
-                            val scale = lerp(
-                                start = 0.89f,
-                                stop = 0.99f,
-                                fraction = 1f - absOffset.coerceIn(0f, 1f)
-                            )
-                            scaleX = scale
-                            scaleY = scale
-                            alpha = lerp(
-                                start = 0.6f,
-                                stop = 1f,
-                                fraction = 1f - absOffset.coerceIn(0f, 1f)
-                            )
-                        },
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                        .height(220.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    if (isLoading) {
-                        HomeNewsCardSkeleton()
-                    } else {
-                        HomeNewsCardContent(
-                            item = newsList[page],
-                            modifier = Modifier.fillMaxWidth(),
-                            onShareClick = { onShareClick(newsList[page]) },
-                            onDetailClick = { onDetailClick(newsList[page]) }
+                    Text(
+                        text = "추천 뉴스를 불러오지 못했습니다\n[DEBUG] isLoading=$isLoading, newsList=0",
+                        color = Color.White.copy(alpha = 0.8f),
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Spacer(modifier = Modifier.height(42.dp))
+            } else {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 36.dp),
+                    pageSpacing = 12.dp,
+                    beyondViewportPageCount = 1
+                ) { page ->
+                    val pageOffset =
+                        (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                    val absOffset = pageOffset.absoluteValue
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .zIndex(1f - absOffset.coerceIn(0f, 1f))
+                            .graphicsLayer {
+                                val scale = lerp(
+                                    start = 0.89f,
+                                    stop = 0.99f,
+                                    fraction = 1f - absOffset.coerceIn(0f, 1f)
+                                )
+                                scaleX = scale
+                                scaleY = scale
+                                alpha = lerp(
+                                    start = 0.6f,
+                                    stop = 1f,
+                                    fraction = 1f - absOffset.coerceIn(0f, 1f)
+                                )
+                            },
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        if (isLoading) {
+                            HomeNewsCardSkeleton()
+                        } else {
+                            HomeNewsCardContent(
+                                item = newsList[page],
+                                modifier = Modifier.fillMaxWidth(),
+                                onShareClick = { onShareClick(newsList[page]) },
+                                onDetailClick = { onDetailClick(newsList[page]) }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // 페이지 인디케이터
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(pageCount) { index ->
+                        val color =
+                            if (pagerState.currentPage == index) Color.White
+                            else Color.White.copy(alpha = 0.5f)
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(color)
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
             }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // 페이지 인디케이터
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                repeat(pageCount) { index ->
-                    val color =
-                        if (pagerState.currentPage == index) Color.White
-                        else Color.White.copy(alpha = 0.5f)
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(color)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

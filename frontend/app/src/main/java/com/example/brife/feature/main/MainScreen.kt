@@ -1,5 +1,6 @@
 package com.example.brife.feature.main
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -80,6 +81,9 @@ fun MainScreen(
     //롱폼 관련
     var selectedNewsItem by remember { mutableStateOf<HomeNewsCardItem?>(null) }
 
+    // 관심사 재설정 완료 시 증가 → HomeRoute에서 감지하여 홈 뉴스 재로드
+    var homeReloadVersion by remember { mutableStateOf(0) }
+
 
     var profileInterests by remember {
         mutableStateOf(
@@ -154,6 +158,7 @@ fun MainScreen(
             composable(NavRoutes.HOME) {
                 HomeRoute(
                     isLoggedIn = isLoggedIn,
+                    reloadVersion = homeReloadVersion,
                     onLoginRequired = { showLoginBottomSheet = true },
                     onDetailClick = { item ->
                         selectedNewsItem = item
@@ -230,15 +235,22 @@ fun MainScreen(
                 OnboardingSubInterestRoute(
                     selectedParentCategoryIds = selectedIds,
                     onNextClick = {
-                        // 로컬 관심사 갱신 (homeNewsList에 반영)
+                        // 로컬 관심사 갱신
                         profileInterests = onboardingStorage.getSelectedCategoryIds()
                             .mapNotNull { categoryItemFromId(it) }
                         // PUT /users/me/interests — 서버에 관심사 재설정
+                        // 성공 시에만 홈 뉴스 재로드 트리거
                         scope.launch {
-                            userRepository.updateInterests(
+                            val result = userRepository.updateInterests(
                                 categoryIds = onboardingStorage.getSelectedSubCategoryIds(),
                                 groupIds = onboardingStorage.getSelectedCategoryIds()
                             )
+                            if (result.isSuccess) {
+                                Log.d("MainScreen", "관심사 재설정 PUT 성공 → 홈 뉴스 재로드")
+                                homeReloadVersion++
+                            } else {
+                                Log.w("MainScreen", "관심사 재설정 PUT 실패: ${result.exceptionOrNull()?.message}")
+                            }
                         }
                         navController.popBackStack(NavRoutes.PROFILE, false)
                     }

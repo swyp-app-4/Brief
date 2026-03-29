@@ -1,5 +1,6 @@
 package com.example.brife.feature.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.brife.data.local.AuthLocalStorage
@@ -139,7 +140,18 @@ class LoginViewModel(
                     val categoryIds = onboardingLocalStorage.getSelectedCategoryIds()
                     val groupIds = onboardingLocalStorage.getSelectedSubCategoryIds()
                     if (categoryIds.isNotEmpty() || groupIds.isNotEmpty()) {
-                        userRepository.updateInterests(categoryIds, groupIds)
+                        val interestResult = userRepository.updateInterests(categoryIds, groupIds)
+                        if (interestResult.isFailure) {
+                            // PUT 실패 → 관심사 없이 추천 API가 호출되는 것을 막기 위해 홈 이동 차단
+                            val errMsg = interestResult.exceptionOrNull()?.message ?: "알 수 없는 오류"
+                            Log.e("LoginViewModel", "관심사 저장 실패: $errMsg")
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                errorMessage = "관심사 저장 실패 ($errMsg)"
+                            )
+                            return@onSuccess  // isTermsSuccess 설정 없이 리턴 → 홈 이동 안 함
+                        }
+                        Log.d("LoginViewModel", "관심사 저장 성공: categoryIds=$categoryIds, groupIds=$groupIds")
                     }
 
                     _uiState.value = _uiState.value.copy(
