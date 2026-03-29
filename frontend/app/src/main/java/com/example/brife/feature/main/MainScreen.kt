@@ -64,7 +64,9 @@ fun MainScreen(
     val backgroundColor =
         if (currentRoute == NavRoutes.HOME) Color.Transparent else Color.White
 
-    val isLoggedIn = remember { authStorage.isLoggedIn() }
+    // remember {} 없이 직접 읽어 항상 최신 로그인 상태 반영
+    // SharedPreferences는 메모리 캐시 기반이므로 재구성 시 호출해도 부담 없음
+    val isLoggedIn = authStorage.isLoggedIn()
     var showLoginBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 

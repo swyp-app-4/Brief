@@ -2,7 +2,6 @@ package com.example.brife.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-//import com.example.brife.data.local.shortsampleHomeNews
 import com.example.brife.data.repository.HomeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,20 +16,24 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        loadRecommendedNews()
+        loadHomeNews()
     }
 
-    fun loadRecommendedNews() {
+    fun loadHomeNews() {
         viewModelScope.launch {
             _uiState.value = HomeUiState(isLoading = true)
-            homeRepository.getRecommendedNews()
+            homeRepository.getHomeNews()
                 .onSuccess { newsList ->
                     _uiState.value = HomeUiState(newsList = newsList, isLoading = false)
                 }
-//                .onFailure {
-//                    // API 실패 시 mock 데이터로 fallback (비로그인 또는 네트워크 오류)
-//                    _uiState.value = HomeUiState(newsList = shortsampleHomeNews, isLoading = false)
-//                }
+                .onFailure { e ->
+                    // 실패 시 isLoading = false 보장 (무한 로딩 방지)
+                    _uiState.value = HomeUiState(
+                        newsList = emptyList(),
+                        isLoading = false,
+                        errorMessage = e.message
+                    )
+                }
         }
     }
 }
