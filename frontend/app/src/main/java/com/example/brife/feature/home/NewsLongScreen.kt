@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -322,19 +321,11 @@ private fun NewsLongContent(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                item.relatedArticles.forEachIndexed { index, article ->
-                    RelatedArticleItem(
-                        title = article.title,
-                        content = article.content
-                    )
-
-                    if (index != item.relatedArticles.lastIndex) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 20.dp),
-                            color = Color(0xFFE9EDF2)
-                        )
-                    }
-                }
+                AppText(
+                    text = item.insight,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF5F6368)
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
             } else {
@@ -396,27 +387,6 @@ private fun SummaryCard(
     }
 }
 
-@Composable
-private fun RelatedArticleItem(
-    title: String,
-    content: String
-) {
-    Column {
-        AppText(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = Color.Black
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        AppText(
-            text = content,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF5F6368)
-        )
-    }
-}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NewsLongTopBar(
