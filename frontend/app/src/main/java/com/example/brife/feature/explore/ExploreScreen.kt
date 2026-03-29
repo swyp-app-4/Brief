@@ -1,5 +1,6 @@
 package com.example.brife.feature.explore
 
+import android.R.attr.start
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.brife.R
 import com.example.brife.feature.archive.ArchiveNewsCard
 import com.example.brife.feature.archive.ArchiveNewsItem
@@ -104,18 +106,27 @@ fun ExploreScreen(
             )
             is ExploreUiState.Empty -> ExploreStateBody(
                 text = "앗, 검색 결과가 없어요.\n다른 키워드로 검색해볼까요?",
-                leftImageRes = R.drawable.img_explore_empty,
-                rightImageRes = R.drawable.img_explore_empty_character
+                backgroundImageRes = R.drawable.img_explore_empty,
+                characterImageRes = R.drawable.img_explore_empty_character,
+                backgroundModifier = Modifier
+                    .size(60.dp)
+                    .offset(x = (-60).dp, y = (-10).dp) // 여기서 상하좌우 위치 조절
             )
             is ExploreUiState.NetworkError -> ExploreStateBody(
                 text = "연결이 원활하지 않아요.\n잠시 후 다시 시도해주세요.",
-                leftImageRes = R.drawable.img_explore_network_error_character,
-                rightImageRes = R.drawable.img_explore_network_error
+                characterImageRes = R.drawable.img_explore_network_error_character,
+                backgroundImageRes = R.drawable.img_explore_network_error,
+                backgroundModifier = Modifier
+                    .size(100.dp)
+                    .offset(x = (60).dp, y = (-40).dp) // 여기서 상하좌우 위치 조절
             )
             is ExploreUiState.SpecialCharError -> ExploreStateBody(
                 text = "특수문자를 제외한\n키워드로 검색해주세요.",
-                leftImageRes = R.drawable.img_explore_error_character,
-                rightImageRes = R.drawable.img_explore_error
+                characterImageRes = R.drawable.img_explore_error_character,
+                backgroundImageRes = R.drawable.img_explore_error,
+                backgroundModifier = Modifier
+                    .size(75.dp)
+                    .offset(x = (70).dp, y = (-50).dp) // 여기서 상하좌우 위치 조절
             )
         }
     }
@@ -257,21 +268,21 @@ private fun ExploreDefaultBody(
 @Composable
 private fun RecentNewsHeader(lastUpdatedTime: String, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier,
+        modifier = modifier.padding(start = 16.dp, bottom = 16.dp, end = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
 
         AppText(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = CtaActive)) { append("    최근 ") }
+                withStyle(SpanStyle(color = CtaActive)) { append("최근 ") }
                 append("뉴스")
             },
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
             color = TextSubtitle
         )
         AppText(
-            text = "$lastUpdatedTime 기준    ",
+            text = "$lastUpdatedTime 기준",
             style = MaterialTheme.typography.labelSmall,
             color = TextCaption
         )
@@ -358,6 +369,7 @@ private fun ExploreResultsBody(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         item {
+
             AppText(
                 text = buildAnnotatedString {
                     withStyle(SpanStyle(color = CtaActive)) { append(query) }
@@ -367,7 +379,7 @@ private fun ExploreResultsBody(
                 color = TextSubtitle,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 4.dp)
+                    .padding(start = 16.dp, bottom = 4.dp)
             )
         }
         items(items) { item ->
@@ -381,42 +393,47 @@ private fun ExploreResultsBody(
 @Composable
 private fun ExploreStateBody(
     text: String,
-    leftImageRes: Int,
-    rightImageRes: Int
+    backgroundImageRes: Int,
+    characterImageRes: Int,
+    // 배경 이미지의 위치나 크기를 조절하기 위한 파라미터
+    backgroundModifier: Modifier = Modifier.size(100.dp)
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 100.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center // 모든 요소를 기본적으로 중앙 정렬
         ) {
-            Box(
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = leftImageRes),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .height(100.dp)
-                        .offset(x = (-20).dp) // 왼쪽 이미지를 중앙에서 왼쪽으로 15dp 이동
-                )
-                Image(
-                    painter = painterResource(id = rightImageRes),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .height(100.dp)
-                        .offset(x = 20.dp)  // 오른쪽 이미지를 중앙에서 오른쪽으로 15dp 이동
-                )
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-            AppText(
-                text = text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextCaption,
-                textAlign = TextAlign.Center
+            // 1. 배경 이미지: 파라미터로 받은 modifier를 통해 상하좌우 offset이나 size 조절 가능
+            Image(
+                painter = painterResource(id = backgroundImageRes),
+                contentDescription = null,
+                modifier = backgroundModifier
+            )
+
+            // 2. 캐릭터 이미지: 무조건 Horizontal Center 고정
+            Image(
+                painter = painterResource(id = characterImageRes),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp) // 캐릭터 사이즈 고정 혹은 필요시 파라미터화
+                // 가로 중앙은 Box의 Alignment.Center에 의해 고정됨
             )
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        AppText(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
+            color = TextSubtitle,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

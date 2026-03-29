@@ -55,18 +55,19 @@ data class RecommendedNewsResponse(
 
 
 // GET /news/latest, GET /news/search 공통 응답 아이템
+// 서버가 일부 필드를 반환하지 않을 경우 NPE 방지를 위해 모든 필드에 기본값 설정
 data class NewsListItem(
-    @SerializedName("id") val id: Long,
-    @SerializedName("categoryName") val categoryName: String,
-    @SerializedName("title") val title: String,
-    @SerializedName("publishedDate") val publishedDate: String
+    @SerializedName("id") val id: Long = 0L,
+    @SerializedName("categoryName") val categoryName: String = "",
+    @SerializedName("title") val title: String = "",
+    @SerializedName("publishedDate") val publishedDate: String = ""
 )
 
 // 페이지네이션 응답 래퍼 (content만 사용, 1차)
 data class NewsPageResponse(
-    @SerializedName("content") val content: List<NewsListItem>,
-    @SerializedName("last") val last: Boolean,
-    @SerializedName("empty") val empty: Boolean
+    @SerializedName("content") val content: List<NewsListItem> = emptyList(),
+    @SerializedName("last") val last: Boolean = false,
+    @SerializedName("empty") val empty: Boolean = true
 )
 
 // Archive 폴더 응답

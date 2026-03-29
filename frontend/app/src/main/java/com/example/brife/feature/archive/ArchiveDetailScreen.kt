@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -222,9 +223,11 @@ fun ArchiveNewsCard(item: ArchiveNewsItem) {
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 AppText(
-                    text = item.summary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black
+                    text = item.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Black,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -232,6 +235,12 @@ fun ArchiveNewsCard(item: ArchiveNewsItem) {
                 ) {
                     AppText(
                         text = item.time,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextCaption
+                    )
+                    // 가운데 구분 점 추가
+                    AppText(
+                        text = "·",
                         style = MaterialTheme.typography.labelSmall,
                         color = TextCaption
                     )

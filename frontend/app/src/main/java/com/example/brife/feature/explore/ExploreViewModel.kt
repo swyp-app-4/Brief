@@ -1,5 +1,6 @@
 package com.example.brife.feature.explore
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.brife.data.local.SearchHistoryLocalStorage
@@ -36,12 +37,13 @@ class ExploreViewModel(
         viewModelScope.launch {
             exploreRepository.getLatestNews()
                 .onSuccess { items ->
+                    Log.d("ExploreViewModel", "loadLatestNews: ${items.size}개 수신")
                     val archiveItems = items.mapIndexed { index, item -> item.toArchiveNewsItem(index) }
                     cachedLatestNews = archiveItems
                     _uiState.value = ExploreUiState.Default(recentNewsList = archiveItems)
                 }
-                .onFailure {
-                    // API 실패 시 mock 데이터 유지
+                .onFailure { e ->
+                    Log.e("ExploreViewModel", "loadLatestNews 실패: ${e.message} → mock 데이터 사용")
                     _uiState.value = ExploreUiState.Default(recentNewsList = exploreMockNewsList)
                 }
         }
@@ -80,6 +82,7 @@ class ExploreViewModel(
         viewModelScope.launch {
             exploreRepository.searchNews(trimmed)
                 .onSuccess { items ->
+                    Log.d("ExploreViewModel", "searchNews '${trimmed}': ${items.size}개 수신")
                     val archiveItems = items.mapIndexed { index, item -> item.toArchiveNewsItem(index) }
                     _uiState.value = if (archiveItems.isEmpty()) {
                         ExploreUiState.Empty(trimmed)
@@ -87,7 +90,8 @@ class ExploreViewModel(
                         ExploreUiState.Results(trimmed, archiveItems)
                     }
                 }
-                .onFailure {
+                .onFailure { e ->
+                    Log.e("ExploreViewModel", "searchNews '${trimmed}' 실패: ${e.message}")
                     _uiState.value = ExploreUiState.NetworkError(trimmed)
                 }
         }
