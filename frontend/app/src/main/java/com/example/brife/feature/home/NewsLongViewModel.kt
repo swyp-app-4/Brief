@@ -21,6 +21,12 @@ class NewsLongViewModel(
     private val _sections = MutableStateFlow<List<NewsDetailSection>>(emptyList())
     val sections: StateFlow<List<NewsDetailSection>> = _sections.asStateFlow()
 
+    private val _groupName = MutableStateFlow("")
+    val groupName: StateFlow<String> = _groupName.asStateFlow()
+
+    private val _categoryName = MutableStateFlow("")
+    val categoryName: StateFlow<String> = _categoryName.asStateFlow()
+
     fun loadFolders() {
         viewModelScope.launch {
             Log.d("NewsLongViewModel", "폴더 목록 로드 시작")
@@ -64,6 +70,8 @@ class NewsLongViewModel(
             archiveRepository.getNewsDetail(newsId)
                 .onSuccess { detail ->
                     _sections.value = detail.sections
+                    _groupName.value = detail.groupName
+                    _categoryName.value = detail.categoryName
                 }
                 .onFailure { e ->
                     Log.e("NewsLongViewModel", "섹션 로드 실패: ${e.message}")

@@ -314,6 +314,8 @@ fun MainScreen(
                     )
                     val newsLongFolders by newsLongViewModel.folders.collectAsState()
                     val newsLongSections by newsLongViewModel.sections.collectAsState()
+                    val newsLongGroupName by newsLongViewModel.groupName.collectAsState()
+                    val newsLongCategoryName by newsLongViewModel.categoryName.collectAsState()
 
                     // 로그인 상태일 때만 폴더 목록 로드, 섹션은 항상 로드
                     LaunchedEffect(newsId) {
@@ -321,8 +323,15 @@ fun MainScreen(
                         newsLongViewModel.loadSections(newsId)
                     }
 
+                    // API에서 받은 groupName/categoryName으로 칩 데이터 보정
+                    // (Home 진입 시에는 item에 이미 값이 있으므로 fallback만 동작)
+                    val resolvedItem = item.copy(
+                        category = if (newsLongGroupName.isNotBlank()) newsLongGroupName else item.category,
+                        subCategory = if (newsLongCategoryName.isNotBlank()) newsLongCategoryName else item.subCategory
+                    )
+
                     NewsLongScreen(
-                        item = item,
+                        item = resolvedItem,
                         isLoggedIn = isLoggedIn,
                         folders = newsLongFolders,
                         sections = newsLongSections,
