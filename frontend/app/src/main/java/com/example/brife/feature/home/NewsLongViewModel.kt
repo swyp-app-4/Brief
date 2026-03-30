@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.brife.data.local.BookmarkFolderUiModel
+import com.example.brife.data.model.NewsDetailSection
 import com.example.brife.data.repository.ArchiveRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +17,9 @@ class NewsLongViewModel(
 
     private val _folders = MutableStateFlow<List<BookmarkFolderUiModel>>(emptyList())
     val folders: StateFlow<List<BookmarkFolderUiModel>> = _folders.asStateFlow()
+
+    private val _sections = MutableStateFlow<List<NewsDetailSection>>(emptyList())
+    val sections: StateFlow<List<NewsDetailSection>> = _sections.asStateFlow()
 
     fun loadFolders() {
         viewModelScope.launch {
@@ -30,7 +34,7 @@ class NewsLongViewModel(
                                 id = folder.archiveId,
                                 name = folder.folderName,
                                 newsCount = folder.itemCount,
-                                isSelected = folder.isFavorite,
+                                isSelected = false,
                                 isFavorite = folder.isFavorite
                             )
                         }
@@ -41,7 +45,7 @@ class NewsLongViewModel(
                                 id = 0L,
                                 name = "즐겨찾기",
                                 newsCount = 0,
-                                isSelected = true,
+                                isSelected = false,
                                 isFavorite = true
                             )
                         ) + mapped
@@ -51,6 +55,18 @@ class NewsLongViewModel(
                 }
                 .onFailure { e ->
                     Log.e("NewsLongViewModel", "폴더 목록 로드 실패: ${e.message}")
+                }
+        }
+    }
+
+    fun loadSections(newsId: Long) {
+        viewModelScope.launch {
+            archiveRepository.getNewsDetail(newsId)
+                .onSuccess { detail ->
+                    _sections.value = detail.sections
+                }
+                .onFailure { e ->
+                    Log.e("NewsLongViewModel", "섹션 로드 실패: ${e.message}")
                 }
         }
     }

@@ -44,10 +44,13 @@ import com.example.brife.R
 //import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.CategoryChip
-import com.example.brife.ui.component.PrimaryButton
+import androidx.compose.ui.text.font.FontWeight
+import com.example.brife.data.model.NewsDetailSection
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.PrimaryNormal
+import com.example.brife.ui.theme.TextBody
 import com.example.brife.ui.theme.TextCaption
+import com.example.brife.ui.theme.TextSubtitle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.text.style.TextAlign
 import com.example.brife.data.local.BookmarkFolderUiModel
@@ -64,6 +67,7 @@ fun NewsLongScreen(
     onBackClick: () -> Unit,
     isLoggedIn: Boolean = false,
     folders: List<BookmarkFolderUiModel> = emptyList(),
+    sections: List<NewsDetailSection> = emptyList(),
     onSaveToFolders: (selectedFolders: List<BookmarkFolderUiModel>) -> Unit = {},
     onCreateFolder: (folderName: String) -> Unit = {},
     onShareClick: () -> Unit = {},
@@ -113,7 +117,8 @@ fun NewsLongScreen(
         ) {
             NewsLongContent(
                 item = item,
-                imageRes = imageRes
+                imageRes = imageRes,
+                sections = sections
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -176,7 +181,8 @@ fun NewsLongScreen(
 @Composable
 private fun NewsLongContent(
     item: HomeNewsCardItem,
-    imageRes: Int
+    imageRes: Int,
+    sections: List<NewsDetailSection> = emptyList()
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -259,23 +265,28 @@ private fun NewsLongContent(
                 summaryPoints = item.summaryPoints
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
-
-            AppText(
-                text = "살펴보기",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Black
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AppText(
-                text = item.insight,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF5F6368)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
+            if (sections.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(28.dp))
+                sections.take(3).forEachIndexed { index, section ->
+                    if (index > 0) Spacer(modifier = Modifier.height(24.dp))
+                    LongFormSectionBlock(index = index, section = section)
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            } else if (item.insight.isNotBlank()) {
+                Spacer(modifier = Modifier.height(28.dp))
+                AppText(
+                    text = "살펴보기",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                AppText(
+                    text = item.insight,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF5F6368)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }
@@ -327,6 +338,44 @@ private fun SummaryCard(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LongFormSectionBlock(
+    index: Int,
+    section: NewsDetailSection
+) {
+    val iconRes = when (index) {
+        0 -> R.drawable.ic_longform_number1
+        1 -> R.drawable.ic_longform_number2
+        else -> R.drawable.ic_longform_number3
+    }
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                tint = Color.Unspecified
+            )
+            AppText(
+                text = section.heading,
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = TextSubtitle
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        section.contentList.forEach { line ->
+            AppText(
+                text = line,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextBody,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
         }
     }
 }

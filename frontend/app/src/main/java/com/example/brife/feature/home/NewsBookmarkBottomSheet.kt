@@ -196,11 +196,7 @@ private fun FolderBookmarkRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val folderLabel = when {
-            folder.isFavorite -> "${folder.name}(${folder.newsCount})"
-            folder.newsCount > 0 -> "${folder.name} (${folder.newsCount})"
-            else -> folder.name
-        }
+        val folderLabel = if (folder.newsCount > 0) "${folder.name} (${folder.newsCount})" else folder.name
 
         AppText(
             text = folderLabel,

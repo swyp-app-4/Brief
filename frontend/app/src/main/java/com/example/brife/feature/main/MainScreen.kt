@@ -287,16 +287,19 @@ fun MainScreen(
                         factory = NewsLongViewModelFactory(archiveRepository)
                     )
                     val newsLongFolders by newsLongViewModel.folders.collectAsState()
+                    val newsLongSections by newsLongViewModel.sections.collectAsState()
 
-                    // 로그인 상태일 때만 폴더 목록 로드
+                    // 로그인 상태일 때만 폴더 목록 로드, 섹션은 항상 로드
                     LaunchedEffect(newsId) {
                         if (isLoggedIn) newsLongViewModel.loadFolders()
+                        newsLongViewModel.loadSections(newsId)
                     }
 
                     NewsLongScreen(
                         item = item,
                         isLoggedIn = isLoggedIn,
                         folders = newsLongFolders,
+                        sections = newsLongSections,
                         onSaveToFolders = { selectedFolders ->
                             newsLongViewModel.saveToFolders(item.newsId, selectedFolders)
                         },

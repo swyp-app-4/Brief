@@ -40,7 +40,8 @@ class ExploreViewModel(
                     Log.d("ExploreViewModel", "loadLatestNews: ${items.size}개 수신")
                     val archiveItems = items.mapIndexed { index, item -> item.toArchiveNewsItem(index) }
                     cachedLatestNews = archiveItems
-                    val lastUpdatedDate = archiveItems.firstOrNull()?.time ?: ""
+                    val rawDate = items.firstOrNull()?.publishedDate ?: ""
+                    val lastUpdatedDate = if (rawDate.length >= 10) rawDate.take(10) else rawDate
                     _uiState.value = ExploreUiState.Default(recentNewsList = archiveItems, lastUpdatedTime = lastUpdatedDate)
                 }
                 .onFailure { e ->
