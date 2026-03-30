@@ -7,7 +7,7 @@ sealed class ExploreUiState {
     /** 기본 화면 — 검색창 비활성화, 최근 뉴스 리스트 노출 */
     data class Default(
         val recentNewsList: List<ArchiveNewsItem>,
-        val lastUpdatedTime: String = "09:00"
+        val lastUpdatedTime: String = ""
     ) : ExploreUiState()
 
     /** 검색어 입력 중 — 검색창 활성화, 최근 검색어 리스트 노출 */

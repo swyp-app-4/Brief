@@ -23,7 +23,7 @@ class NewsLongViewModel(
             archiveRepository.getFolders()
                 .onSuccess { archiveFolders ->
                     Log.d("NewsLongViewModel", "폴더 목록 로드 성공: ${archiveFolders.size}개")
-                    _folders.value = archiveFolders
+                    val mapped = archiveFolders
                         .sortedByDescending { it.isFavorite }
                         .map { folder ->
                             BookmarkFolderUiModel(
@@ -34,6 +34,20 @@ class NewsLongViewModel(
                                 isFavorite = folder.isFavorite
                             )
                         }
+                    // 즐겨찾기 폴더가 없으면 최상단에 폴백으로 추가
+                    _folders.value = if (mapped.none { it.isFavorite }) {
+                        listOf(
+                            BookmarkFolderUiModel(
+                                id = 0L,
+                                name = "즐겨찾기",
+                                newsCount = 0,
+                                isSelected = true,
+                                isFavorite = true
+                            )
+                        ) + mapped
+                    } else {
+                        mapped
+                    }
                 }
                 .onFailure { e ->
                     Log.e("NewsLongViewModel", "폴더 목록 로드 실패: ${e.message}")

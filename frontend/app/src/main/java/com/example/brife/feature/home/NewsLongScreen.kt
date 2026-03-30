@@ -71,11 +71,8 @@ fun NewsLongScreen(
     onLoginRequired: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
-    // 이미지 높이(260dp) - white 영역 오프셋(20dp) = 240dp가 white 시작 지점
-    // TopBar 높이 약 56dp를 제외한 180dp 지점부터 white 영역이 TopBar에 닿음
     val density = LocalDensity.current
     val topBarColorThreshold = remember(density) { with(density) { 180.dp.toPx() } }
     val isTopBarWhite by remember { derivedStateOf { scrollState.value > topBarColorThreshold } }
@@ -84,8 +81,6 @@ fun NewsLongScreen(
         label = "newsLongTopBarColor"
     )
 
-    // isExpanded 변화(if/else 분기 교체)로 NewsLongContent 인스턴스가 달라져도
-    // 동일 item에 대해 이미지가 바뀌지 않도록 이 레벨에서 고정
     val imageRes = remember(item.category) {
         LongFormImageProvider.getRandomImageRes(item.category)
     }
@@ -93,14 +88,9 @@ fun NewsLongScreen(
     var showBookmarkSheet by remember { mutableStateOf(false) }
     var showCreateFolderSheet by remember { mutableStateOf(false) }
 
-    // 확정된 북마크 상태 (저장 버튼 클릭 시에만 반영)
-    // API에서 받아온 실제 폴더 목록으로 초기화
     var folderItems by remember { mutableStateOf(folders) }
-
-    // 바텀시트 내 임시 선택 상태 — 취소 시 folderItems에 반영되지 않음
     var tempFolders by remember { mutableStateOf(folders) }
 
-    // ViewModel이 새 폴더를 추가하면 (폴더 생성 API 성공) 로컬 목록에 반영
     LaunchedEffect(folders) {
         val existingIds = folderItems.map { it.id }.toSet()
         val newlyAdded = folders.filter { it.id !in existingIds }
@@ -115,33 +105,18 @@ fun NewsLongScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        if (isExpanded) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(scrollState)
-                    .navigationBarsPadding()
-            ) {
-                NewsLongContent(
-                    item = item,
-                    isExpanded = true,
-                    imageRes = imageRes
-                )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(scrollState)
+                .navigationBarsPadding()
+        ) {
+            NewsLongContent(
+                item = item,
+                imageRes = imageRes
+            )
 
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .navigationBarsPadding()
-            ) {
-                NewsLongContent(
-                    item = item,
-                    isExpanded = false,
-                    imageRes = imageRes
-                )
-            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         NewsLongTopBar(
@@ -150,7 +125,7 @@ fun NewsLongScreen(
             onBackClick = onBackClick,
             onBookmarkClick = {
                 if (isLoggedIn) {
-                    tempFolders = folderItems  // 시트 열 때 확정 상태를 임시 상태로 동기화
+                    tempFolders = folderItems
                     showBookmarkSheet = true
                 } else {
                     onLoginRequired()
@@ -159,47 +134,26 @@ fun NewsLongScreen(
             onShareClick = onShareClick
         )
 
-        if (!isExpanded) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
-                    .navigationBarsPadding()
-            ) {
-                PrimaryButton(
-                    text = "관련 내용 보기",
-                    enabled = true,
-                    onClick = { isExpanded = true }
-                )
-            }
-        }
-
         if (showBookmarkSheet) {
             NewsBookmarkBottomSheet(
                 folders = tempFolders,
-                onDismissRequest = { showBookmarkSheet = false },  // 취소 — tempFolders 버려짐
+                onDismissRequest = { showBookmarkSheet = false },
                 onMyFolderClick = {
                     showBookmarkSheet = false
                     onNavigateToArchive()
                 },
                 onAddFolderClick = {
-                    // BookmarkSheet를 닫지 않고 CreateFolderSheet를 위에 띄움
                     showCreateFolderSheet = true
                 },
                 onFolderBookmarkClick = { clickedFolder ->
-                    // 임시 상태만 변경 — 저장 전까지 folderItems에 반영되지 않음
                     tempFolders = tempFolders.map { folder ->
                         if (folder.id == clickedFolder.id) folder.copy(isSelected = !folder.isSelected)
                         else folder
                     }
                 },
                 onSaveClick = {
-                    // 선택된 폴더에 실제 저장 API 호출
                     val selectedFolders = tempFolders.filter { it.isSelected }
                     onSaveToFolders(selectedFolders)
-                    // 로컬 상태도 확정 반영
                     folderItems = tempFolders
                     showBookmarkSheet = false
                 }
@@ -210,8 +164,6 @@ fun NewsLongScreen(
             CreateFolderBottomSheet(
                 onDismissRequest = { showCreateFolderSheet = false },
                 onSave = { newFolderName ->
-                    // API로 폴더 생성 → ViewModel이 성공 시 folders StateFlow 업데이트
-                    // → LaunchedEffect(folders)가 감지하여 folderItems/tempFolders에 반영
                     onCreateFolder(newFolderName)
                     showCreateFolderSheet = false
                 },
@@ -221,11 +173,9 @@ fun NewsLongScreen(
         }
     }
 }
-
 @Composable
 private fun NewsLongContent(
     item: HomeNewsCardItem,
-    isExpanded: Boolean,
     imageRes: Int
 ) {
     Column(
@@ -294,7 +244,6 @@ private fun NewsLongContent(
                     .background(Color.White)
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
-
             ) {
                 AppText(
                     text = "본 요약은 ${item.articleCount}개 언론사의 보도를\n교차 검증하여 AI가 재구성한 내용입니다.",
@@ -310,31 +259,26 @@ private fun NewsLongContent(
                 summaryPoints = item.summaryPoints
             )
 
-            if (isExpanded) {
-                Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-                AppText(
-                    text = "살펴보기",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.Black
-                )
+            AppText(
+                text = "살펴보기",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.Black
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                AppText(
-                    text = item.insight,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF5F6368)
-                )
+            AppText(
+                text = item.insight,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF5F6368)
+            )
 
-                Spacer(modifier = Modifier.height(24.dp))
-            } else {
-                Spacer(modifier = Modifier.height(90.dp))
-            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
-
 @Composable
 private fun SummaryCard(
     summaryPoints: List<String>
