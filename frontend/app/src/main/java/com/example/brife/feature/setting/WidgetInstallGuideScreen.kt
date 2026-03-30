@@ -72,7 +72,7 @@ fun WidgetInstallGuideScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(220.dp) // 1. 높이를 조금 더 키워 범위를 넓힘
+                        .height(200.dp) // 1. 높이를 조금 더 키워 범위를 넓힘
                         .align(Alignment.BottomCenter)
                         .background(
                             brush = Brush.verticalGradient(
@@ -85,7 +85,7 @@ fun WidgetInstallGuideScreen(
                         )
                 )
             }
-            Spacer(modifier = Modifier.height(22.dp))
+//            Spacer(modifier = Modifier.height(22.dp))
 
             AppText(
                 text = "위젯을 설치하여\n홈 화면에서 뉴스를 확인 하세요",
@@ -95,7 +95,7 @@ fun WidgetInstallGuideScreen(
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
 
-            Spacer(modifier = Modifier.height(33.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             AppText(
                 text = "위젯을 설치하고 홈 화면에서 빠르게 뉴스를 확인하세요",

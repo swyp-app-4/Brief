@@ -51,7 +51,7 @@ class UserRepository(
         }
     }
 
-    // DELETE /users/me — 회원 탈퇴 (30일 후 완전 삭제, 응답 204)
+    // DELETE /users/me — 회원 탈퇴
     suspend fun deleteUser(): Result<Unit> {
         val token = bearerToken()
             ?: return Result.failure(Exception("로그인이 필요합니다."))
