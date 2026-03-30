@@ -272,7 +272,6 @@ private fun RecentNewsHeader(lastUpdatedTime: String, modifier: Modifier = Modif
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         AppText(
             text = buildAnnotatedString {
                 withStyle(SpanStyle(color = CtaActive)) { append("최근 ") }
@@ -281,11 +280,14 @@ private fun RecentNewsHeader(lastUpdatedTime: String, modifier: Modifier = Modif
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
             color = TextSubtitle
         )
-        AppText(
-            text = "$lastUpdatedTime 기준",
-            style = MaterialTheme.typography.labelSmall,
-            color = TextCaption
-        )
+
+        if (lastUpdatedTime.isNotBlank()) {
+            AppText(
+                text = "$lastUpdatedTime 기준",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextCaption
+            )
+        }
     }
 }
 

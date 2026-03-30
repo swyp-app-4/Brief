@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class ExploreViewModel(
     private val searchHistoryStorage: SearchHistoryLocalStorage,
-    private val exploreRepository: ExploreRepository
+    private val exploreRepository: ExploreRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ExploreUiState>(
@@ -40,11 +40,12 @@ class ExploreViewModel(
                     Log.d("ExploreViewModel", "loadLatestNews: ${items.size}개 수신")
                     val archiveItems = items.mapIndexed { index, item -> item.toArchiveNewsItem(index) }
                     cachedLatestNews = archiveItems
-                    _uiState.value = ExploreUiState.Default(recentNewsList = archiveItems)
+                    val lastUpdatedDate = archiveItems.firstOrNull()?.time ?: ""
+                    _uiState.value = ExploreUiState.Default(recentNewsList = archiveItems, lastUpdatedTime = lastUpdatedDate)
                 }
                 .onFailure { e ->
                     Log.e("ExploreViewModel", "loadLatestNews 실패: ${e.message} → mock 데이터 사용")
-                    _uiState.value = ExploreUiState.Default(recentNewsList = exploreMockNewsList)
+                    _uiState.value = ExploreUiState.Default(recentNewsList = exploreMockNewsList, lastUpdatedTime = "")
                 }
         }
     }
