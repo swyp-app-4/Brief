@@ -12,28 +12,15 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval: 10s
-      retries: 5
 
-  app:
-    build: .
-    container_name: brife-app
+  redis:
+    image: redis:8-alpine
+    container_name: brife-redis
     ports:
-      - "8080:8085"
-    env_file:
-      - .env
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DB_HOST: postgres
-      GOOGLE_APPLICATION_CREDENTIALS: /app/google-credentials.json
+      - "6379:6379"
     volumes:
-      - ${GOOGLE_CREDENTIALS_PATH}:/app/google-credentials.json:ro
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
+      - redis_data:/data
 
 volumes:
   postgres_data:
+  redis_data:

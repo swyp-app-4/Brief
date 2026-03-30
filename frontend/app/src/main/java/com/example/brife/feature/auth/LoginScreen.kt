@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,21 +36,16 @@ import com.example.brife.R
 import com.example.brife.ui.theme.BgDefault
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.TextBody
-import com.example.brife.ui.component.AppText
 
 private val SulphurPoint = FontFamily(
     Font(R.font.sulphur_point_bold, FontWeight.Bold)
 )
 
-
 @Composable
 fun LoginScreen(
-    uiState: LoginUiState,
     onKakaoClick: () -> Unit = {},
     onNaverClick: () -> Unit = {},
     onGoogleClick: () -> Unit = {},
-    onDismissTerms: () -> Unit = {},
-    onAgreeTerms: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -77,21 +71,17 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             SocialLoginButton(
-                text = if (uiState.isLoading) "로그인 중..." else "카카오로 로그인",
+                text = "카카오로 로그인",
                 backgroundColor = Color(0xFFFEE500),
                 contentColor = Color(0xFF191919),
                 iconRes = R.drawable.ic_kakao,
-                onClick = {
-                    if (!uiState.isLoading) {
-                        onKakaoClick()
-                    }
-                }
+                onClick = onKakaoClick
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             SocialLoginButton(
-                text = if (uiState.isLoading) "로그인 중..." else "네이버로 로그인",
+                text = "네이버로 로그인",
                 backgroundColor = Color(0xFF03C75A),
                 contentColor = Color.White,
                 iconRes = R.drawable.ic_naver,
@@ -101,26 +91,17 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             SocialLoginButton(
-                text = if (uiState.isLoading) "로그인 중..." else "Google로 로그인",
+                text = "Google로 로그인",
                 backgroundColor = Color.White,
                 contentColor = Color(0xFF464646),
                 borderColor = Color(0xFFE3E5E8),
                 iconRes = R.drawable.ic_google,
                 onClick = onGoogleClick
             )
-
-            uiState.errorMessage?.let {
-                Spacer(modifier = Modifier.height(16.dp))
-                AppText(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
         }
     }
 }
+
 
 
 @Composable
@@ -150,10 +131,11 @@ private fun LogoSection() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        AppText(
+        Text(
             text = "간편한 지식 습득을 경험해요",
-            style = MaterialTheme.typography.titleSmall,
-            color = TextBody
+            color = TextBody,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Normal
         )
     }
 }
@@ -172,10 +154,11 @@ private fun SocialLoginDivider() {
                 .background(Color(0xFFCCCCCC))
         )
 
-        AppText(
+        Text(
             text = " 소셜 로그인 ",
-            style = MaterialTheme.typography.bodyMedium,
             color = Color(0xFF767676),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
 
@@ -227,10 +210,10 @@ private fun SocialLoginButton(
                 )
             }
 
-            AppText(
+            Text(
                 text = text,
-                style = MaterialTheme.typography.labelLarge,
-                color = contentColor,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
@@ -241,9 +224,6 @@ private fun SocialLoginButton(
 @Composable
 private fun LoginScreenPreview() {
     BrifeTheme {
-        LoginScreen(
-            uiState = LoginUiState()
-
-        )
+        LoginScreen()
     }
 }
