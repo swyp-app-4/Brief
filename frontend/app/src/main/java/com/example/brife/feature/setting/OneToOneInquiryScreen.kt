@@ -1,5 +1,8 @@
 package com.example.brife.feature.setting
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -35,6 +39,45 @@ private val INQUIRY_TYPES = listOf(
     "기타"
 )
 
+// 문의 유형별 수신 이메일 매핑 — 이 곳에서만 관리
+private val INQUIRY_EMAIL_MAP = mapOf(
+    "뉴스 / 콘텐츠 관련" to "a",
+    "계정 / 로그인 문제" to "b",
+    "앱 기능 / 사용 문의" to "c",
+    "제안 / 피드백" to "d",
+    "기타" to "d"
+)
+
+private fun inquiryEmailFor(inquiryType: String): String =
+    INQUIRY_EMAIL_MAP[inquiryType] ?: "d"
+
+private fun sendInquiryEmail(
+    context: Context,
+    inquiryType: String,
+    name: String,
+    senderEmail: String,
+    subject: String,
+    content: String
+) {
+    val targetEmail = inquiryEmailFor(inquiryType)
+    val body = buildString {
+        appendLine("문의 유형: $inquiryType")
+        appendLine("이름: $name")
+        appendLine("이메일: $senderEmail")
+        appendLine()
+        appendLine(content)
+    }
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:")
+        putExtra(Intent.EXTRA_EMAIL, arrayOf(targetEmail))
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, body)
+    }
+    runCatching {
+        context.startActivity(Intent.createChooser(intent, "이메일 앱 선택"))
+    }
+}
+
 // ─────────────────────────────────────────────────────────────
 // 메인 화면
 // ─────────────────────────────────────────────────────────────
@@ -48,6 +91,7 @@ fun OneToOneInquiryScreen(
     initialEmail: String = "",
     onBackClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     var selectedInquiryType by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -238,6 +282,14 @@ fun OneToOneInquiryScreen(
         InquiryCompletedBottomSheet(
             onDismissRequest = { showCompletedSheet = false },
             onConfirmClick = {
+                sendInquiryEmail(
+                    context = context,
+                    inquiryType = selectedInquiryType,
+                    name = name,
+                    senderEmail = email,
+                    subject = subject,
+                    content = content
+                )
                 showCompletedSheet = false
                 onBackClick()
             }
