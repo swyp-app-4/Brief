@@ -7,8 +7,6 @@ import com.brife.user.dto.TermsRequest;
 import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
 import com.brife.user.security.JwtProvider;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,7 +24,6 @@ public class OAuthService {
     private final AppUserRepository appUserRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
-    private final ObjectMapper objectMapper;
 
     @Value("${jwt.refresh-expiration-days}")
     private long refreshExpirationDays;
@@ -71,20 +67,24 @@ public class OAuthService {
         return generateAuthResponse(email, nickname, "naver", providerId);
     }
 
+    @SuppressWarnings("unchecked")
     @Transactional
     public AuthResponse loginWithGoogle(String idToken) {
-        try {
-            String payload = new String(Base64.getUrlDecoder().decode(idToken.split("\\.")[1]));
-            Map<String, Object> claims = objectMapper.readValue(payload, new TypeReference<>() {});
+        Map<String, Object> claims = RestClient.create()
+                .get()
+                .uri("https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken)
+                .retrieve()
+                .body(Map.class);
 
-            String providerId = (String) claims.get("sub");
-            String email = (String) claims.get("email");
-            String nickname = (String) claims.get("name");
-
-            return generateAuthResponse(email, nickname, "google", providerId);
-        } catch (Exception e) {
+        if (claims == null || claims.get("sub") == null) {
             throw new IllegalArgumentException("유효하지 않은 Google ID Token입니다.");
         }
+
+        String providerId = (String) claims.get("sub");
+        String email = (String) claims.get("email");
+        String nickname = (String) claims.get("name");
+
+        return generateAuthResponse(email, nickname, "google", providerId);
     }
 
     @Transactional
