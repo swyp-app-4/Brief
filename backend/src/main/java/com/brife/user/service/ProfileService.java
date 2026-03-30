@@ -79,9 +79,9 @@ public class ProfileService {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
+        userInterestRepository.deleteByUserId(userId);
         refreshTokenRepository.deleteByUserId(userId);
-        user.delete();
-        appUserRepository.save(user);
+        appUserRepository.delete(user);
     }
 
     private List<UserInterest> buildInterests(AppUser user, InterestRequest request) {
