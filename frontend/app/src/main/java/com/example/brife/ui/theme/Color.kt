@@ -43,7 +43,7 @@ val CtaActive = Color(0xFF6AA6FF)
 val Dimmer = Color(0x99000000) // black 60%
 
 //관심사 버튼 활성화
-val InterestSelectedLight = Color(0xFFEEF3FF)
+val InterestSelected = Color(0xFFB8D4FF)
 
 // Primary Palette
 val Blue100 = Color(0xFFD8ECFF)
