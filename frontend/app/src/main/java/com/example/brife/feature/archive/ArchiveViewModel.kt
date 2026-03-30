@@ -29,6 +29,7 @@ class ArchiveViewModel(
                     _uiState.value = _uiState.value.copy(
                         folders = regular,
                         favoriteArchiveId = favorite?.archiveId ?: 0L,
+                        favoriteItemCount = favorite?.itemCount ?: 0,
                         isLoading = false
                     )
                 }

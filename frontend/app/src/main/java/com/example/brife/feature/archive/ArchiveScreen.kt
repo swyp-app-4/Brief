@@ -40,12 +40,14 @@ import com.example.brife.feature.archive.component.CreateFolderBottomSheet
 import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
 import com.example.brife.ui.theme.InterestSelectedLight
+import com.example.brife.ui.theme.TextBody
 
 @Composable
 fun ArchiveScreen(
     modifier: Modifier = Modifier,
     folders: List<ArchiveFolderUiModel>,
     favoriteArchiveId: Long = 0L,
+    favoriteItemCount: Int = 0,
     onFolderAdd: (String) -> Unit,
     onNavigateToDetail: (archiveId: Long, folderName: String) -> Unit,
     isDeleteMode: Boolean = false,
@@ -125,11 +127,20 @@ fun ArchiveScreen(
                             .fillMaxSize()
                             .padding(16.dp)
                     ) {
-                        AppText(
-                            text = "즐겨찾기",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.align(Alignment.TopStart)
-                        )
+                        Column(
+                            modifier = Modifier.align(Alignment.TopStart),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            AppText(
+                                text = "즐겨찾기",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            AppText(
+                                text = "${favoriteItemCount}개",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextBody
+                            )
+                        }
                         Image(
                             painter = painterResource(id = R.drawable.ic_star),
                             contentDescription = "즐겨찾기",
@@ -169,11 +180,20 @@ fun ArchiveScreen(
                                     .fillMaxSize()
                                     .padding(16.dp)
                             ) {
-                                AppText(
-                                    text = folder.folderName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.align(Alignment.TopStart)
-                                )
+                                Column(
+                                    modifier = Modifier.align(Alignment.TopStart),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    AppText(
+                                        text = folder.folderName,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                    AppText(
+                                        text = "${folder.itemCount}개",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = TextBody
+                                    )
+                                }
                             }
                         }
                     }

@@ -48,6 +48,7 @@ fun ArchiveRoute(
         modifier = modifier,
         folders = uiState.folders,
         favoriteArchiveId = uiState.favoriteArchiveId,
+        favoriteItemCount = uiState.favoriteItemCount,
         onFolderAdd = { name -> viewModel.createFolder(name) },
         onNavigateToDetail = onNavigateToDetail,
         isDeleteMode = isDeleteMode,
