@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,7 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
 import com.example.brife.ui.theme.ComponentDefault
-import com.example.brife.ui.theme.InterestSelected
+import com.example.brife.ui.theme.InterestSelectedLight
 import com.example.brife.ui.theme.PrimaryNormal
 
 @Composable
@@ -39,23 +38,17 @@ fun InterestCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(120.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-
         colors = CardDefaults.cardColors(
-            containerColor =
-                if (selected) InterestSelected
-                else ComponentDefault
+            containerColor = if (selected) InterestSelectedLight else ComponentDefault
         ),
-
-        border =
-            if (selected) BorderStroke(2.dp, PrimaryNormal)
-            else null
+        border = if (selected) BorderStroke(2.dp, PrimaryNormal) else null
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .height(120.dp)
                 .padding(12.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -76,6 +69,7 @@ fun InterestCard(
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun InterestCardSelectedPreview() {

@@ -1,19 +1,69 @@
+server:
+  port: 8085
+  servlet:
+    context-path: /api/v1
+
 spring:
   application:
     name: brife
 
-  # default: 로컬 개발 환경
   profiles:
     active: local
 
+  sql:
+    init:
+      mode: always  # schema.sql로 익스텐션 먼저 설치
+
   jpa:
+    defer-datasource-initialization: true  # schema.sql → Hibernate DDL 순서 보장
+    hibernate:
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Seoul
+
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
 
 # 네이버 뉴스 API
-external:
-  naver:
+naver:
+  api:
     client-id: ${NAVER_CLIENT_ID}
     client-secret: ${NAVER_CLIENT_SECRET}
-    base-url: https://openapi.naver.com/v1/search/news.json
+    news-url: https://openapi.naver.com/v1/search/news.json
+
+# Vertex AI (뉴스 요약 전용) - GOOGLE_APPLICATION_CREDENTIALS 환경변수 필요
+vertex:
+  ai:
+    project-id: ${VERTEX_PROJECT_ID}
+    region: ${VERTEX_REGION:us-central1}
+    model: ${VERTEX_MODEL:gemini-2.5-flash}
+
+resilience4j:
+  ratelimiter:
+    instances:
+      gemini:
+        limit-for-period: 30
+        limit-refresh-period: 60s
+        timeout-duration: 120s
+  retry:
+    instances:
+      naver:
+        max-attempts: 3
+        wait-duration: 2s
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException
+
+logging:
+  level:
+    com.brife: DEBUG

@@ -1,0 +1,31 @@
+jwt:
+  secret: brife-secret-key-must-be-at-least-32-characters-long
+  access-expiration-ms: 3600000    # 1시간
+  refresh-expiration-days: 30      # 30일
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/brifedb
+    username: brifeuser
+    password: brifepass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  autoconfigure:
+    exclude:
+#      - org.springframework.ai.model.vertex.autoconfigure.gemini.VertexAiGeminiAutoConfiguration
+#      - org.springframework.ai.model.vertex.autoconfigure.embedding.VertexAiEmbeddingAutoConfiguration
+      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+
