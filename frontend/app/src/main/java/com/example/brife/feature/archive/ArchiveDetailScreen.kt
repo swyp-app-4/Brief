@@ -408,18 +408,7 @@ fun ArchiveNewsCard(item: ArchiveNewsItem) {
                         style = MaterialTheme.typography.labelSmall,
                         color = TextCaption
                     )
-                    if (item.company.isNotBlank()) {
-                        AppText(
-                            text = "·",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = TextCaption
-                        )
-                        AppText(
-                            text = item.company,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = TextCaption
-                        )
-                    }
+
                 }
             }
 
