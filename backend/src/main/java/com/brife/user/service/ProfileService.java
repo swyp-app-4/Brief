@@ -88,7 +88,7 @@ public class ProfileService {
         List<UserInterest> result = new ArrayList<>();
 
         if (request.getCategoryIds() != null) {
-            request.getCategoryIds().forEach(categoryId -> {
+            request.getCategoryIds().stream().distinct().forEach(categoryId -> {
                 Category category = categoryRepository.findById(categoryId)
                         .orElseThrow(() -> new RuntimeException("카테고리 없음: " + categoryId));
                 result.add(UserInterest.builder().user(user).category(category).build());
@@ -96,7 +96,7 @@ public class ProfileService {
         }
 
         if (request.getGroupIds() != null) {
-            request.getGroupIds().forEach(groupId -> {
+            request.getGroupIds().stream().distinct().forEach(groupId -> {
                 CategoryGroup group = categoryGroupRepository.findById(groupId)
                         .orElseThrow(() -> new RuntimeException("대분류 없음: " + groupId));
                 result.add(UserInterest.builder().user(user).categoryGroup(group).build());
