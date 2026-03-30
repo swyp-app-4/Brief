@@ -22,18 +22,18 @@ public interface SummarizedNewsRepository extends JpaRepository<SummarizedNews, 
     @Query("SELECT MAX(s.createdAt) FROM SummarizedNews s")
     Optional<LocalDateTime> findMaxCreatedAt();
 
-    @EntityGraph(attributePaths = {"category"})
+    @EntityGraph(attributePaths = {"category", "category.categoryGroup"})
     List<SummarizedNews> findTop5ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
             List<Long> categoryIds, LocalDateTime since);
 
-    @EntityGraph(attributePaths = {"category"})
+    @EntityGraph(attributePaths = {"category", "category.categoryGroup"})
     List<SummarizedNews> findTop5ByCategoryIdInOrderBySourceCountDesc(List<Long> categoryIds);
 
     @NativeQuery(value = """
             SELECT * FROM summarized_news
             WHERE title ILIKE CONCAT('%%', :keyword, '%%')
             OR summary ILIKE CONCAT('%%', :keyword, '%%')
-            ORDER BY published_at DESC
+            ORDER BY published_date DESC
             """)
     Slice<SummarizedNews> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 

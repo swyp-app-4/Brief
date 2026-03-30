@@ -28,14 +28,14 @@ public class SearchController {
     @GetMapping("/search")
     public ResponseEntity<Slice<NewsSearchResponse>> searchNews(
             @Parameter(description = "검색어") @RequestParam String keyword,
-            @ParameterObject @SortDefault(sort = "publishedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @SortDefault(sort = "publishedDate", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(searchService.getSummarizedNewsByKeyword(keyword, pageable));
     }
 
     @Operation(summary = "전체 뉴스 조회", description = "탐색 탭에서 최근 검색어가 생기기 전 초기 상태에서 전체 뉴스 조회")
     @GetMapping("/latest")
     public ResponseEntity<Slice<NewsSearchResponse>> getLatestNews(
-            @ParameterObject @SortDefault(sort = "publishedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @SortDefault(sort = "publishedDate", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(searchService.getAllSummarizedNewsByPublishedDesc(pageable));
     }
 }

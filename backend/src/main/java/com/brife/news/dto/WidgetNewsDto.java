@@ -14,6 +14,7 @@ public class WidgetNewsDto {
 
     private Long id;
     private String categoryName;
+    private String groupName;
     private String title;
     private List<String> summaryList;
     private String bodyPreview;
@@ -32,6 +33,7 @@ public class WidgetNewsDto {
         return WidgetNewsDto.builder()
                 .id(news.getId())
                 .categoryName(news.getCategory().getName())
+                .groupName(news.getCategory().getCategoryGroup().getName())
                 .title(news.getTitle())
                 .summaryList(summaryList)
                 .bodyPreview(bodyPreview)
