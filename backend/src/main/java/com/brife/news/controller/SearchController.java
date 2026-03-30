@@ -28,7 +28,7 @@ public class SearchController {
     @GetMapping("/search")
     public ResponseEntity<Slice<NewsSearchResponse>> searchNews(
             @Parameter(description = "검색어") @RequestParam String keyword,
-            @ParameterObject @SortDefault(sort = "publishedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @SortDefault(sort = "publishedDate", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(searchService.getSummarizedNewsByKeyword(keyword, pageable));
     }
 
