@@ -41,15 +41,15 @@ private val INQUIRY_TYPES = listOf(
 
 // 문의 유형별 수신 이메일 매핑 — 이 곳에서만 관리
 private val INQUIRY_EMAIL_MAP = mapOf(
-    "뉴스 / 콘텐츠 관련" to "a",
-    "계정 / 로그인 문제" to "b",
-    "앱 기능 / 사용 문의" to "c",
-    "제안 / 피드백" to "d",
-    "기타" to "d"
+    "뉴스 / 콘텐츠 관련" to "kki05230523@gmail.com",
+    "계정 / 로그인 문제" to "mwl0118@gmail.com",
+    "앱 기능 / 사용 문의" to "a23782089@gmail.com",
+    "제안 / 피드백" to "w030w58@gmail.com",
+    "기타" to "w030w58@gmail.com"
 )
 
 private fun inquiryEmailFor(inquiryType: String): String =
-    INQUIRY_EMAIL_MAP[inquiryType] ?: "d"
+    INQUIRY_EMAIL_MAP[inquiryType] ?: "a23782089@gmail.com"
 
 private fun sendInquiryEmail(
     context: Context,
