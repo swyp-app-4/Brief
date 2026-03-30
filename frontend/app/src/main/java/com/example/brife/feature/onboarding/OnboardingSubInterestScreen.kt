@@ -225,18 +225,11 @@ private fun SubCategorySectionView(
                 )
             }
 
-            // +N 버튼 (접힘 상태에서만 표시)
-            if (needsCollapse && !expanded) {
+            // +N 토글 버튼 (항상 표시, 펼침/접힘 상태에 따라 스타일 변경)
+            if (needsCollapse) {
                 MoreChip(
-                    text = "+$hiddenCount",
-                    onClick = onExpandToggle
-                )
-            }
-
-            // 접기 버튼 (펼침 상태에서만 표시)
-            if (needsCollapse && expanded) {
-                MoreChip(
-                    text = "접기",
+                    text = "+N",
+                    expanded = expanded,
                     onClick = onExpandToggle
                 )
             }
@@ -269,10 +262,11 @@ private fun SubCategoryChip(
     }
 }
 
-// +N / 접기 버튼 — SubCategoryChip과 동일한 크기, 비선택 스타일
+// +N 토글 버튼 — 접힘: ComponentDefault 배경 / 펼침: PrimaryNormal 배경(활성)
 @Composable
 private fun MoreChip(
     text: String,
+    expanded: Boolean = false,
     onClick: () -> Unit
 ) {
     Surface(
@@ -280,13 +274,16 @@ private fun MoreChip(
             .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        color = ComponentDefault,
-        border = BorderStroke(width = 0.dp, color = Color.Transparent)
+        color = if (expanded) PrimaryNormal else ComponentDefault,
+        border = BorderStroke(
+            width = if (expanded) 0.dp else 0.dp,
+            color = Color.Transparent
+        )
     ) {
         AppText(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = PrimaryNormal,
+            color = if (expanded) Color.White else PrimaryNormal,
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
         )
     }
