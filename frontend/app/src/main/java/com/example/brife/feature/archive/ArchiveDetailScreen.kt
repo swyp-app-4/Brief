@@ -52,7 +52,8 @@ fun ArchiveDetailScreen(
     folderName: String,
     newsItems: List<ArchiveNewsItem>,
     onBackClick: () -> Unit,
-    onDeleteItems: (Set<Long>) -> Unit ,
+    onDeleteItems: (Set<Long>) -> Unit,
+    onNewsClick: ((ArchiveNewsItem) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var sortType by remember { mutableStateOf(SortType.LATEST) }
@@ -152,7 +153,10 @@ fun ArchiveDetailScreen(
                                 }
                             )
                         } else {
-                            ArchiveNewsCard(item = item)
+                            ArchiveNewsCard(
+                                item = item,
+                                onClick = onNewsClick?.let { { it(item) } }
+                            )
                         }
                     }
                 }
@@ -370,11 +374,15 @@ private fun EditableArchiveNewsCard(
 }
 
 @Composable
-fun ArchiveNewsCard(item: ArchiveNewsItem) {
+fun ArchiveNewsCard(
+    item: ArchiveNewsItem,
+    onClick: (() -> Unit)? = null
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(110.dp),
+            .height(110.dp)
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)

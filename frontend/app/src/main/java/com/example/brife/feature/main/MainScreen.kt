@@ -183,7 +183,20 @@ fun MainScreen(
 
             composable(NavRoutes.EXPLORE) {
                 ExploreRoute(
-                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
+                    onNewsClick = { archiveItem ->
+                        selectedNewsItem = com.example.brife.feature.home.HomeNewsCardItem(
+                            newsId = archiveItem.newsId,
+                            category = "",
+                            title = archiveItem.title,
+                            notice = "",
+                            summaryPoints = emptyList(),
+                            insight = "",
+                            updatedAt = archiveItem.time,
+                            articleCount = 0
+                        )
+                        navController.navigate("${NavRoutes.NEWS_LONG}/${archiveItem.newsId}")
+                    }
                 )
             }
 
@@ -223,7 +236,20 @@ fun MainScreen(
                 ArchiveDetailRoute(
                     archiveId = archiveId,
                     folderName = folderName,
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    onNewsClick = { archiveItem ->
+                        selectedNewsItem = com.example.brife.feature.home.HomeNewsCardItem(
+                            newsId = archiveItem.newsId,
+                            category = "",
+                            title = archiveItem.title,
+                            notice = "",
+                            summaryPoints = emptyList(),
+                            insight = "",
+                            updatedAt = archiveItem.time,
+                            articleCount = 0
+                        )
+                        navController.navigate("${NavRoutes.NEWS_LONG}/${archiveItem.newsId}")
+                    }
                 )
             }
 

@@ -70,6 +70,7 @@ fun ExploreScreen(
     onDeleteRecentQuery: (String) -> Unit,
     onClearAllRecentQueries: () -> Unit,
     onRecentQueryClick: (String) -> Unit,
+    onNewsClick: ((ArchiveNewsItem) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val isSearchActive = uiState !is ExploreUiState.Default
@@ -92,7 +93,8 @@ fun ExploreScreen(
         when (uiState) {
             is ExploreUiState.Default -> ExploreDefaultBody(
                 recentNewsList = uiState.recentNewsList,
-                lastUpdatedTime = uiState.lastUpdatedTime
+                lastUpdatedTime = uiState.lastUpdatedTime,
+                onNewsClick = onNewsClick
             )
             is ExploreUiState.Searching -> ExploreSearchingBody(
                 recentQueries = uiState.recentQueries,
@@ -102,7 +104,8 @@ fun ExploreScreen(
             )
             is ExploreUiState.Results -> ExploreResultsBody(
                 query = uiState.query,
-                items = uiState.items
+                items = uiState.items,
+                onNewsClick = onNewsClick
             )
             is ExploreUiState.Empty -> ExploreStateBody(
                 text = "앗, 검색 결과가 없어요.\n다른 키워드로 검색해볼까요?",
@@ -245,7 +248,8 @@ private fun ExploreTopBar(
 @Composable
 private fun ExploreDefaultBody(
     recentNewsList: List<ArchiveNewsItem>,
-    lastUpdatedTime: String
+    lastUpdatedTime: String,
+    onNewsClick: ((ArchiveNewsItem) -> Unit)? = null
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
@@ -260,7 +264,10 @@ private fun ExploreDefaultBody(
             )
         }
         items(recentNewsList) { item ->
-            ArchiveNewsCard(item = item)
+            ArchiveNewsCard(
+                item = item,
+                onClick = onNewsClick?.let { { it(item) } }
+            )
         }
     }
 }
@@ -364,7 +371,8 @@ private fun ExploreSearchingBody(
 @Composable
 private fun ExploreResultsBody(
     query: String,
-    items: List<ArchiveNewsItem>
+    items: List<ArchiveNewsItem>,
+    onNewsClick: ((ArchiveNewsItem) -> Unit)? = null
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
@@ -385,7 +393,10 @@ private fun ExploreResultsBody(
             )
         }
         items(items) { item ->
-            ArchiveNewsCard(item = item)
+            ArchiveNewsCard(
+                item = item,
+                onClick = onNewsClick?.let { { it(item) } }
+            )
         }
     }
 }

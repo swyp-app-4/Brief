@@ -16,6 +16,7 @@ fun ArchiveDetailRoute(
     archiveId: Long,
     folderName: String,
     onBackClick: () -> Unit,
+    onNewsClick: ((ArchiveNewsItem) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -23,7 +24,7 @@ fun ArchiveDetailRoute(
     val repository = remember {
         ArchiveRepository(
             api = NetworkModule.archiveApiService,
-            newsApi = NetworkModule.newsApiService, // 이 인자를 추가하세요
+            newsApi = NetworkModule.newsApiService,
             authLocalStorage = AuthLocalStorage(context)
         )
     }
@@ -40,6 +41,7 @@ fun ArchiveDetailRoute(
         onDeleteItems = { selectedIds ->
             viewModel.deleteItems(selectedIds)
         },
+        onNewsClick = onNewsClick,
         modifier = modifier
     )
 }
