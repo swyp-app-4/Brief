@@ -9,6 +9,7 @@ import com.brife.user.domain.UserInterest;
 import com.brife.user.dto.InterestRequest;
 import com.brife.user.dto.UserProfileResponse;
 import com.brife.user.dto.UserProfileUpdate;
+import com.brife.archive.repository.ArchiveRepository;
 import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
 import com.brife.user.repository.UserInterestRepository;
@@ -28,6 +29,7 @@ public class ProfileService {
     private final CategoryRepository categoryRepository;
     private final CategoryGroupRepository categoryGroupRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final ArchiveRepository archiveRepository;
 
     public UserProfileResponse getProfile(Long userId) {
         AppUser user = appUserRepository.findById(userId)
@@ -79,6 +81,7 @@ public class ProfileService {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
+        archiveRepository.deleteByUserId(userId);
         userInterestRepository.deleteByUserId(userId);
         refreshTokenRepository.deleteByUserId(userId);
         appUserRepository.delete(user);

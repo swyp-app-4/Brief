@@ -19,4 +19,7 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
 
     // 폴더명 중복 확인 (즐겨찾기 이름으로 생성 못하게)
     boolean existsByUserIdAndFolderName(Long userId, String folderName);
+
+    // 회원탈퇴 시 아카이브 전체 삭제
+    void deleteByUserId(Long userId);
 }

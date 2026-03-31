@@ -13,7 +13,7 @@ public interface UserInterestRepository extends JpaRepository<UserInterest, Long
     @EntityGraph(attributePaths = {"category", "categoryGroup"})
     List<UserInterest> findByUserId(Long userId);
 
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Modifying
     @Query("DELETE FROM UserInterest ui WHERE ui.user.id = :userId")
     void deleteByUserId(Long userId);
 
