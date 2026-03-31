@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -215,10 +217,17 @@ private fun SubCategorySectionView(
             }
 
             if (needsCollapse) {
-                MoreChip(
-                    text = "+N",
-                    expanded = expanded,
-                    onClick = onExpandToggle
+                val arrowScaleY = if (expanded) 1f else -1f
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_setting_arrow_up),
+                    contentDescription = if (expanded) "접기" else "펼치기",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable { onExpandToggle() }
+                        .graphicsLayer {
+                            scaleY = arrowScaleY
+                        }
                 )
             }
         }
@@ -264,32 +273,6 @@ private fun SubCategoryChip(
     }
 }
 
-// +N 토글 버튼 — 접힘: ComponentDefault 배경 / 펼침: PrimaryNormal 배경(활성)
-@Composable
-private fun MoreChip(
-    text: String,
-    expanded: Boolean = false,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
-        color = if (expanded) PrimaryNormal else ComponentDefault,
-        border = BorderStroke(
-            width = if (expanded) 0.dp else 0.dp,
-            color = Color.Transparent
-        )
-    ) {
-        AppText(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (expanded) Color.White else PrimaryNormal,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
-        )
-    }
-}
 
 private fun getInterestIconRes(groupName: String): Int {
     return when (groupName) {

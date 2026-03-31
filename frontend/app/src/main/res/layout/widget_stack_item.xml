@@ -4,9 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingTop="4dp">
+    android:background="@drawable/widget_card_bg"
+    android:padding="12dp"
+    android:gravity="center_horizontal">
 
-    <!-- 제목 + 북마크: 카드 밖, 가운데 정렬 -->
+    <!-- 제목 + 북마크: 카드 안 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,49 +39,38 @@
 
     </LinearLayout>
 
-    <!-- 하늘색 카드 영역 (#f5f9ff) — 요약 가운데 정렬, dots 제거 -->
-    <LinearLayout
+    <!-- 요약 영역 -->
+    <TextView
+        android:id="@+id/widget_tv_summary_1"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="6dp"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:background="@drawable/widget_card_bg"
-        android:padding="10dp">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="#4A5568"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:gravity="center" />
 
-        <TextView
-            android:id="@+id/widget_tv_summary_1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#4A5568"
-            android:textSize="11sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:gravity="center" />
+    <TextView
+        android:id="@+id/widget_tv_summary_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#4A5568"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:gravity="center" />
 
-        <TextView
-            android:id="@+id/widget_tv_summary_2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="#4A5568"
-            android:textSize="11sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:gravity="center" />
-
-        <TextView
-            android:id="@+id/widget_tv_summary_3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="#4A5568"
-            android:textSize="11sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:gravity="center" />
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/widget_tv_summary_3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#4A5568"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:gravity="center" />
 
 </LinearLayout>
