@@ -13,9 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.brife.R
 import com.example.brife.ui.component.AppText
@@ -95,68 +97,73 @@ fun ArchiveDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                // 기사 개수 + 정렬 필터 (편집 모드 아닐 때만)
-                if (!isEditMode) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        AppText(
-                            text = "총 ${sortedItems.size}개",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = TextCaption
-                        )
+            if (sortedItems.isEmpty() && !isEditMode) {
+                ArchiveEmptyState(modifier = Modifier.fillMaxSize())
+            } else {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // 기사 개수 + 정렬 필터 (편집 모드 아닐 때만)
+                    if (!isEditMode) {
                         Row(
-                            modifier = Modifier.clickable { showFilterSheet = true },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_archive_filter_detail),
-                                contentDescription = "정렬",
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
                             AppText(
-                                text = sortType.label,
+                                text = "총 ${sortedItems.size}개",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextCaption
                             )
+                            Row(
+                                modifier = Modifier.clickable { showFilterSheet = true },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_archive_filter_detail),
+                                    contentDescription = "정렬",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                AppText(
+                                    text = sortType.label,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextCaption
+                                )
+                            }
                         }
                     }
-                }
 
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(start = 16.dp,   // horizontal 대신 start 사용
-                            end = 16.dp,     // horizontal 대신 end 사용
-                            top = 8.dp,
-                            bottom = if (isEditMode) 88.dp else 8.dp
-                        ),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    items(sortedItems) { item ->
-                        if (isEditMode) {
-                            EditableArchiveNewsCard(
-                                item = item,
-                                isSelected = item.archiveItemId in selectedItemIds,
-                                onToggle = { id ->
-                                    selectedItemIds = if (id in selectedItemIds)
-                                        selectedItemIds - id
-                                    else
-                                        selectedItemIds + id
-                                }
-                            )
-                        } else {
-                            ArchiveNewsCard(
-                                item = item,
-                                onClick = onNewsClick?.let { { it(item) } }
-                            )
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 8.dp,
+                                bottom = if (isEditMode) 88.dp else 8.dp
+                            ),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(sortedItems) { item ->
+                            if (isEditMode) {
+                                EditableArchiveNewsCard(
+                                    item = item,
+                                    isSelected = item.archiveItemId in selectedItemIds,
+                                    onToggle = { id ->
+                                        selectedItemIds = if (id in selectedItemIds)
+                                            selectedItemIds - id
+                                        else
+                                            selectedItemIds + id
+                                    }
+                                )
+                            } else {
+                                ArchiveNewsCard(
+                                    item = item,
+                                    onClick = onNewsClick?.let { { it(item) } }
+                                )
+                            }
                         }
                     }
                 }
@@ -219,6 +226,48 @@ fun ArchiveDetailScreen(
                 showFilterSheet = false
             },
             onDismissRequest = { showFilterSheet = false }
+        )
+    }
+}
+
+@Composable
+private fun ArchiveEmptyState(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.img_nonews_in_archive),
+            contentDescription = null
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        AppText(
+            text = "뉴스를 추가하여\n보고싶은 소식을 모아보세요",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextCaption,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Empty State")
+@Composable
+private fun ArchiveEmptyStatePreview() {
+    BrifeTheme {
+        ArchiveEmptyState(modifier = Modifier.fillMaxSize())
+    }
+}
+
+@Preview(showBackground = true, name = "Archive Detail - Empty")
+@Composable
+private fun ArchiveDetailScreenEmptyPreview() {
+    BrifeTheme {
+        ArchiveDetailScreen(
+            folderName = "내 폴더",
+            newsItems = emptyList(),
+            onBackClick = {},
+            onDeleteItems = {}
         )
     }
 }
