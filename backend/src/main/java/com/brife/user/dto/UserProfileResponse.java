@@ -10,11 +10,13 @@ public class UserProfileResponse {
     private final String nickname;
     private final String email;
     private final String profileImageUrl;
+    private final String provider;
 
     public UserProfileResponse(AppUser user) {
         this.id = user.getId();
         this.nickname = user.getNickname();
         this.email = user.getEmail();
         this.profileImageUrl = user.getProfileImageUrl();
+        this.provider = user.getProvider();
     }
 }
