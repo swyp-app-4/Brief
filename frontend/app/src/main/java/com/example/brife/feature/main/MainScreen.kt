@@ -354,9 +354,10 @@ fun MainScreen(
                     val newsLongArticleCount by newsLongViewModel.articleCount.collectAsState()
 
                     // 로그인 상태일 때만 폴더 목록 로드, 섹션은 항상 로드
-                    // ArchiveDetail 진입 시 preselectedArchiveId 전달 → 해당 폴더 isSelected=true
+                    // ArchiveDetail 진입: preselectedArchiveId로 해당 폴더 isSelected=true
+                    // Home/Explore 진입: newsId로 이미 저장된 폴더 자동 감지
                     LaunchedEffect(newsId) {
-                        if (isLoggedIn) newsLongViewModel.loadFolders(preselectedArchiveId)
+                        if (isLoggedIn) newsLongViewModel.loadFolders(preselectedArchiveId, newsId)
                         newsLongViewModel.loadSections(newsId)
                     }
 

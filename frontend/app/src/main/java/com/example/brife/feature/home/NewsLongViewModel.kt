@@ -34,12 +34,28 @@ class NewsLongViewModel(
     val articleCount: StateFlow<Int> = _articleCount.asStateFlow()
 
     // preselectedArchiveId: ArchiveDetail에서 진입 시 해당 폴더를 isSelected=true로 초기화
-    fun loadFolders(preselectedArchiveId: Long? = null) {
+    // newsId: Home/Explore 진입 시 이미 저장된 폴더를 자동 감지하여 isSelected=true로 설정
+    fun loadFolders(preselectedArchiveId: Long? = null, newsId: Long? = null) {
         viewModelScope.launch {
-            Log.d("NewsLongViewModel", "폴더 목록 로드 시작 (preselect=$preselectedArchiveId)")
+            Log.d("NewsLongViewModel", "폴더 목록 로드 시작 (preselect=$preselectedArchiveId, newsId=$newsId)")
             archiveRepository.getFolders()
                 .onSuccess { archiveFolders ->
                     Log.d("NewsLongViewModel", "폴더 목록 로드 성공: ${archiveFolders.size}개")
+
+                    // 이미 저장된 폴더 ID 집합 결정
+                    val savedArchiveIds: Set<Long> = when {
+                        // ArchiveDetail 진입: 바로 해당 폴더 ID 사용
+                        preselectedArchiveId != null -> setOf(preselectedArchiveId)
+                        // Home/Explore 진입: 각 폴더 아이템을 조회하여 해당 newsId 포함 여부 확인
+                        newsId != null -> archiveFolders.mapNotNull { folder ->
+                            val result = archiveRepository.getItems(folder.archiveId)
+                            if (result.isSuccess && result.getOrNull()?.any { it.contentId == newsId } == true) {
+                                folder.archiveId
+                            } else null
+                        }.toSet()
+                        else -> emptySet()
+                    }
+
                     val mapped = archiveFolders
                         .sortedByDescending { it.isFavorite }
                         .map { folder ->
@@ -47,7 +63,7 @@ class NewsLongViewModel(
                                 id = folder.archiveId,
                                 name = folder.folderName,
                                 newsCount = folder.itemCount,
-                                isSelected = preselectedArchiveId != null && folder.archiveId == preselectedArchiveId,
+                                isSelected = folder.archiveId in savedArchiveIds,
                                 isFavorite = folder.isFavorite
                             )
                         }
