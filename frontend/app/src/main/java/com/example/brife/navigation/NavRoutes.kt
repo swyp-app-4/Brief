@@ -32,4 +32,5 @@ object NavRoutes {
     const val SETTING = "setting"
     const val WIDGET_INSTALL_GUIDE = "widget_install_guide"
     const val WEB_VIEW = "web_view"
+    const val INQUIRY = "inquiry"
 }

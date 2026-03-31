@@ -1,11 +1,14 @@
 package com.example.brife.feature.main
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -25,8 +28,11 @@ import com.example.brife.feature.archive.ArchiveDetailRoute
 import com.example.brife.feature.archive.ArchiveRoute
 import com.example.brife.feature.archive.component.ArchiveMoreBottomSheet
 import com.example.brife.feature.explore.ExploreRoute
+import com.example.brife.data.repository.ArchiveRepository
 import com.example.brife.feature.home.HomeNewsCardItem
 import com.example.brife.feature.home.HomeRoute
+import com.example.brife.feature.home.NewsLongViewModel
+import com.example.brife.feature.home.NewsLongViewModelFactory
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
 import com.example.brife.feature.profile.categoryItemFromId
@@ -79,6 +85,12 @@ fun MainScreen(
 
     //롱폼 관련
     var selectedNewsItem by remember { mutableStateOf<HomeNewsCardItem?>(null) }
+
+    // 관심사 재설정 완료 시 증가 → HomeRoute에서 감지하여 홈 뉴스 재로드
+    var homeReloadVersion by remember { mutableStateOf(0) }
+
+    // 보관함 탭 재진입 또는 뉴스 저장 후 ArchiveRoute가 폴더 목록을 재로드하도록 하는 버전 카운터
+    var archiveReloadVersion by remember { mutableStateOf(0) }
 
 
     var profileInterests by remember {
@@ -134,8 +146,10 @@ fun MainScreen(
                             0 -> navigateTo(NavRoutes.HOME)
                             1 -> navigateTo(NavRoutes.EXPLORE)
                             2 -> {
-                                if (isLoggedIn) navigateTo(NavRoutes.ARCHIVE)
-                                else showLoginBottomSheet = true
+                                if (isLoggedIn) {
+                                    archiveReloadVersion++
+                                    navigateTo(NavRoutes.ARCHIVE)
+                                } else showLoginBottomSheet = true
                             }
                             3 -> navigateTo(NavRoutes.PROFILE)
                         }
@@ -154,6 +168,7 @@ fun MainScreen(
             composable(NavRoutes.HOME) {
                 HomeRoute(
                     isLoggedIn = isLoggedIn,
+                    reloadVersion = homeReloadVersion,
                     onLoginRequired = { showLoginBottomSheet = true },
                     onDetailClick = { item ->
                         selectedNewsItem = item
@@ -175,6 +190,7 @@ fun MainScreen(
             composable(NavRoutes.ARCHIVE) {
                 ArchiveRoute(
                     modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
+                    reloadVersion = archiveReloadVersion,
                     isDeleteMode = isArchiveDeleteMode,
                     isRenameMode = isArchiveRenameMode,
                     onDeleteModeExit = { isArchiveDeleteMode = false },
@@ -230,15 +246,22 @@ fun MainScreen(
                 OnboardingSubInterestRoute(
                     selectedParentCategoryIds = selectedIds,
                     onNextClick = {
-                        // 로컬 관심사 갱신 (homeNewsList에 반영)
+                        // 로컬 관심사 갱신
                         profileInterests = onboardingStorage.getSelectedCategoryIds()
                             .mapNotNull { categoryItemFromId(it) }
                         // PUT /users/me/interests — 서버에 관심사 재설정
+                        // 성공 시에만 홈 뉴스 재로드 트리거
                         scope.launch {
-                            userRepository.updateInterests(
+                            val result = userRepository.updateInterests(
                                 categoryIds = onboardingStorage.getSelectedSubCategoryIds(),
                                 groupIds = onboardingStorage.getSelectedCategoryIds()
                             )
+                            if (result.isSuccess) {
+                                Log.d("MainScreen", "관심사 재설정 PUT 성공 → 홈 뉴스 재로드")
+                                homeReloadVersion++
+                            } else {
+                                Log.w("MainScreen", "관심사 재설정 PUT 실패: ${result.exceptionOrNull()?.message}")
+                            }
                         }
                         navController.popBackStack(NavRoutes.PROFILE, false)
                     }
@@ -252,11 +275,37 @@ fun MainScreen(
                 val item = selectedNewsItem
 
                 if (item != null) {
+                    val archiveRepository = remember {
+                        ArchiveRepository(
+                            api = NetworkModule.archiveApiService,
+                            newsApi = NetworkModule.newsApiService, // 이 인자를 추가하세요
+                            authLocalStorage = authStorage
+                        )
+                    }
+                    val newsLongViewModel: NewsLongViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                        key = "newslong_$newsId",
+                        factory = NewsLongViewModelFactory(archiveRepository)
+                    )
+                    val newsLongFolders by newsLongViewModel.folders.collectAsState()
+
+                    // 로그인 상태일 때만 폴더 목록 로드
+                    LaunchedEffect(newsId) {
+                        if (isLoggedIn) newsLongViewModel.loadFolders()
+                    }
+
                     NewsLongScreen(
                         item = item,
                         isLoggedIn = isLoggedIn,
+                        folders = newsLongFolders,
+                        onSaveToFolders = { selectedFolders ->
+                            newsLongViewModel.saveToFolders(item.newsId, selectedFolders)
+                        },
+                        onCreateFolder = { folderName ->
+                            newsLongViewModel.createFolder(folderName)
+                        },
                         onBackClick = { navController.popBackStack() },
                         onNavigateToArchive = {
+                            archiveReloadVersion++
                             navController.popBackStack()
                             navigateTo(NavRoutes.ARCHIVE)
                         },

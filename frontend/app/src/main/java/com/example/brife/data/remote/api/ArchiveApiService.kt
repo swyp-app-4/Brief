@@ -40,6 +40,13 @@ interface ArchiveApiService {
         @Body request: AddArchiveItemRequest
     ): Response<ArchiveItemResponse>
 
+    @POST("archives/{archiveId}/items")
+    suspend fun addToArchive(
+        @Header("Authorization") authorization: String,
+        @Path("archiveId") archiveId: Long,
+        @Body request: AddArchiveItemRequest
+    ): Response<ArchiveItemResponse>
+
     @PATCH("archives/{archiveId}")
     suspend fun renameArchive(
         @Header("Authorization") authorization: String,
@@ -51,5 +58,12 @@ interface ArchiveApiService {
     suspend fun deleteArchive(
         @Header("Authorization") authorization: String,
         @Path("archiveId") archiveId: Long
+    ): Response<Unit>
+
+    @DELETE("archives/{archiveId}/items/{itemId}")
+    suspend fun deleteArchiveItem(
+        @Header("Authorization") authorization: String,
+        @Path("archiveId") archiveId: Long,
+        @Path("itemId") itemId: Long
     ): Response<Unit>
 }

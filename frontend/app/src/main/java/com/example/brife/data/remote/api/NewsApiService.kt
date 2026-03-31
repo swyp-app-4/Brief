@@ -3,6 +3,7 @@ package com.example.brife.data.remote.api
 import com.example.brife.data.model.NewsDetailResponse
 import com.example.brife.data.model.RecommendedNewsResponse
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -18,9 +19,15 @@ interface NewsApiService {
         @Query("groupIds") groupIds: List<Long>
     ): Call<List<RecommendedNewsResponse>>
 
-    // GET /news/{id} — 뉴스 상세 조회 (2차 연동 예정)
+    // GET /news/{id} — 뉴스 상세 조회 (위젯용 blocking 버전)
     @GET("news/{id}")
     fun getNewsDetail(
         @Path("id") id: Long
     ): Call<NewsDetailResponse>
+
+    // GET /news/{id} — 뉴스 상세 조회 (coroutine suspend 버전)
+    @GET("news/{id}")
+    suspend fun getNewsDetailAsync(
+        @Path("id") id: Long
+    ): Response<NewsDetailResponse>
 }

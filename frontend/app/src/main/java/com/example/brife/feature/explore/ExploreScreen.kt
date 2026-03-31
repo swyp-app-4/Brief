@@ -1,5 +1,6 @@
 package com.example.brife.feature.explore
 
+import android.R.attr.start
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.brife.R
 import com.example.brife.feature.archive.ArchiveNewsCard
 import com.example.brife.feature.archive.ArchiveNewsItem
@@ -104,18 +106,27 @@ fun ExploreScreen(
             )
             is ExploreUiState.Empty -> ExploreStateBody(
                 text = "앗, 검색 결과가 없어요.\n다른 키워드로 검색해볼까요?",
-                leftImageRes = R.drawable.img_explore_empty,
-                rightImageRes = R.drawable.img_explore_empty_character
+                backgroundImageRes = R.drawable.img_explore_empty,
+                characterImageRes = R.drawable.img_explore_empty_character,
+                backgroundModifier = Modifier
+                    .size(60.dp)
+                    .offset(x = (-60).dp, y = (-10).dp) // 여기서 상하좌우 위치 조절
             )
             is ExploreUiState.NetworkError -> ExploreStateBody(
                 text = "연결이 원활하지 않아요.\n잠시 후 다시 시도해주세요.",
-                leftImageRes = R.drawable.img_explore_network_error_character,
-                rightImageRes = R.drawable.img_explore_network_error
+                characterImageRes = R.drawable.img_explore_network_error_character,
+                backgroundImageRes = R.drawable.img_explore_network_error,
+                backgroundModifier = Modifier
+                    .size(100.dp)
+                    .offset(x = (60).dp, y = (-40).dp) // 여기서 상하좌우 위치 조절
             )
             is ExploreUiState.SpecialCharError -> ExploreStateBody(
                 text = "특수문자를 제외한\n키워드로 검색해주세요.",
-                leftImageRes = R.drawable.img_explore_error_character,
-                rightImageRes = R.drawable.img_explore_error
+                characterImageRes = R.drawable.img_explore_error_character,
+                backgroundImageRes = R.drawable.img_explore_error,
+                backgroundModifier = Modifier
+                    .size(75.dp)
+                    .offset(x = (70).dp, y = (-50).dp) // 여기서 상하좌우 위치 조절
             )
         }
     }
@@ -257,10 +268,11 @@ private fun ExploreDefaultBody(
 @Composable
 private fun RecentNewsHeader(lastUpdatedTime: String, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier,
+        modifier = modifier.padding(start = 16.dp, bottom = 16.dp, end = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         AppText(
             text = buildAnnotatedString {
                 withStyle(SpanStyle(color = CtaActive)) { append("최근 ") }
@@ -357,6 +369,7 @@ private fun ExploreResultsBody(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         item {
+
             AppText(
                 text = buildAnnotatedString {
                     withStyle(SpanStyle(color = CtaActive)) { append(query) }
@@ -366,7 +379,7 @@ private fun ExploreResultsBody(
                 color = TextSubtitle,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 4.dp)
+                    .padding(start = 16.dp, bottom = 4.dp)
             )
         }
         items(items) { item ->
@@ -380,141 +393,46 @@ private fun ExploreResultsBody(
 @Composable
 private fun ExploreStateBody(
     text: String,
-    leftImageRes: Int,
-    rightImageRes: Int
+    backgroundImageRes: Int,
+    characterImageRes: Int,
+    // 배경 이미지의 위치나 크기를 조절하기 위한 파라미터
+    backgroundModifier: Modifier = Modifier.size(100.dp)
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 100.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center // 모든 요소를 기본적으로 중앙 정렬
         ) {
-            Box(
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = leftImageRes),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .height(100.dp)
-                        .offset(x = (-20).dp) // 왼쪽 이미지를 중앙에서 왼쪽으로 15dp 이동
-                )
-                Image(
-                    painter = painterResource(id = rightImageRes),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .height(100.dp)
-                        .offset(x = 20.dp)  // 오른쪽 이미지를 중앙에서 오른쪽으로 15dp 이동
-                )
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-            AppText(
-                text = text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextCaption,
-                textAlign = TextAlign.Center
+            // 1. 배경 이미지: 파라미터로 받은 modifier를 통해 상하좌우 offset이나 size 조절 가능
+            Image(
+                painter = painterResource(id = backgroundImageRes),
+                contentDescription = null,
+                modifier = backgroundModifier
+            )
+
+            // 2. 캐릭터 이미지: 무조건 Horizontal Center 고정
+            Image(
+                painter = painterResource(id = characterImageRes),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp) // 캐릭터 사이즈 고정 혹은 필요시 파라미터화
+                // 가로 중앙은 Box의 Alignment.Center에 의해 고정됨
             )
         }
-    }
-}
 
-// ── Preview ───────────────────────────────────────────────────────────────────
+        Spacer(modifier = Modifier.height(24.dp))
 
-@Preview(showBackground = true, showSystemUi = true, name = "탐색 - 기본 화면")
-@Composable
-private fun ExploreDefaultPreview() {
-    BrifeTheme {
-        ExploreScreen(
-            uiState = ExploreUiState.Default(
-                recentNewsList = listOf(
-                    ArchiveNewsItem("미국 연준, 기준금리 동결 결정", "연방준비제도가 이번 FOMC 회의에서 기준금리를 현 수준에서 동결하기로 결정했다.", "2시간 전", "한국경제", R.drawable.homescreen_bg),
-                    ArchiveNewsItem("애플, AI 기능 탑재한 아이폰 17 공개", "애플이 차세대 아이폰에 온디바이스 AI 기능을 전면 탑재한다고 발표했다.", "4시간 전", "조선일보", R.drawable.homescreen_bg),
-                    ArchiveNewsItem("국내 부동산 시장 안정세 지속", "수도권 아파트 가격이 3개월 연속 보합세를 유지하며 안정세를 이어가고 있다.", "6시간 전", "매일경제", R.drawable.homescreen_bg)
-                )
-            ),
-            searchQuery = "",
-            onSearchBarClick = {}, onQueryChange = {}, onSearch = {},
-            onBackFromSearch = {}, onClearQuery = {}, onDeleteRecentQuery = {},
-            onClearAllRecentQueries = {}, onRecentQueryClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "탐색 - 검색어 입력 중")
-@Composable
-private fun ExploreSearchingPreview() {
-    BrifeTheme {
-        ExploreScreen(
-            uiState = ExploreUiState.Searching(
-                query = "경제",
-                recentQueries = listOf("연준", "아이폰", "부동산")
-            ),
-            searchQuery = "경제",
-            onSearchBarClick = {}, onQueryChange = {}, onSearch = {},
-            onBackFromSearch = {}, onClearQuery = {}, onDeleteRecentQuery = {},
-            onClearAllRecentQueries = {}, onRecentQueryClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "탐색 - 검색 결과")
-@Composable
-private fun ExploreResultsPreview() {
-    BrifeTheme {
-        ExploreScreen(
-            uiState = ExploreUiState.Results(
-                query = "경제",
-                items = listOf(
-                    ArchiveNewsItem("미국 연준, 기준금리 동결 결정", "연방준비제도가 기준금리를 동결하기로 결정했다.", "2시간 전", "한국경제", R.drawable.homescreen_bg)
-                )
-            ),
-            searchQuery = "경제",
-            onSearchBarClick = {}, onQueryChange = {}, onSearch = {},
-            onBackFromSearch = {}, onClearQuery = {}, onDeleteRecentQuery = {},
-            onClearAllRecentQueries = {}, onRecentQueryClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "탐색 - 결과 없음")
-@Composable
-private fun ExploreEmptyPreview() {
-    BrifeTheme {
-        ExploreScreen(
-            uiState = ExploreUiState.Empty(query = "알수없는키워드"),
-            searchQuery = "알수없는키워드",
-            onSearchBarClick = {}, onQueryChange = {}, onSearch = {},
-            onBackFromSearch = {}, onClearQuery = {}, onDeleteRecentQuery = {},
-            onClearAllRecentQueries = {}, onRecentQueryClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "탐색 - 네트워크 오류")
-@Composable
-private fun ExploreNetworkErrorPreview() {
-    BrifeTheme {
-        ExploreScreen(
-            uiState = ExploreUiState.NetworkError(query = "경제"),
-            searchQuery = "경제",
-            onSearchBarClick = {}, onQueryChange = {}, onSearch = {},
-            onBackFromSearch = {}, onClearQuery = {}, onDeleteRecentQuery = {},
-            onClearAllRecentQueries = {}, onRecentQueryClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "탐색 - 특수문자 오류")
-@Composable
-private fun ExploreSpecialCharErrorPreview() {
-    BrifeTheme {
-        ExploreScreen(
-            uiState = ExploreUiState.SpecialCharError(query = "경제!@#"),
-            searchQuery = "경제!@#",
-            onSearchBarClick = {}, onQueryChange = {}, onSearch = {},
-            onBackFromSearch = {}, onClearQuery = {}, onDeleteRecentQuery = {},
-            onClearAllRecentQueries = {}, onRecentQueryClick = {}
+        AppText(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
+            color = TextSubtitle,
+            textAlign = TextAlign.Center
         )
     }
 }

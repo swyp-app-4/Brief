@@ -13,12 +13,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.AuthRepository
 import com.example.brife.data.repository.UserRepository
 import com.example.brife.feature.auth.LoginRoute
+import com.example.brife.feature.auth.kakaoUnlink
+import com.example.brife.feature.auth.googleClearCredentialState
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
@@ -33,6 +38,7 @@ import com.example.brife.feature.webview.WebViewScreen
 import com.example.brife.feature.auth.LoginViewModel
 import com.example.brife.feature.auth.LoginViewModelFactory
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
+import com.example.brife.feature.setting.OneToOneInquiryRoute
 import com.example.brife.navigation.NavRoutes
 
 
@@ -45,6 +51,10 @@ fun AppNavGraph() {
     val onboardingLocalStorage = remember { OnboardingLocalStorage(context) }
     val userRepository = remember { UserRepository(NetworkModule.userApiService, authLocalStorage) }
     val scope = rememberCoroutineScope()
+
+    // 회원탈퇴 상태 — SettingScreen에 전달
+    var isWithdrawing by remember { mutableStateOf(false) }
+    var withdrawErrorMessage by remember { mutableStateOf<String?>(null) }
 
 //    val context = LocalContext.current
 //    val hasCompletedOnboarding = OnboardingLocalStorage(context).hasCompletedOnboarding()
@@ -191,11 +201,15 @@ fun AppNavGraph() {
 
         composable(NavRoutes.SETTING) {
             SettingScreen(
-                uiState = SettingUiState(loginMethod = "Google", appVersion = "1.0.0"),
+                uiState = SettingUiState(loginMethod = authLocalStorage.getLoginMethod() ?: "", appVersion = "1.0.0"),
                 isLoggedIn = authLocalStorage.isLoggedIn(),
+                isWithdrawing = isWithdrawing,
+                withdrawErrorMessage = withdrawErrorMessage,
+                onWithdrawErrorDismiss = { withdrawErrorMessage = null },
                 onBackClick = { navController.popBackStack() },
                 onLoginClick = { navController.navigate(NavRoutes.LOGIN) },
                 onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) },
+                onInquiryClick = { navController.navigate(NavRoutes.INQUIRY) },
                 onTermsClick = {
                     val encodedUrl = Uri.encode("https://buttered-palm-c4c.notion.site/32e4778e859280eca570ce215e9ee048")
                     val encodedTitle = Uri.encode("서비스 이용약관")
@@ -220,8 +234,42 @@ fun AppNavGraph() {
                 },
                 onWithdrawClick = {
                     scope.launch {
-                        userRepository.deleteUser()
+                        isWithdrawing = true
+                        withdrawErrorMessage = null
+
+                        val loginMethod = authLocalStorage.getLoginMethod()
+
+                        // 1. 카카오 사용자면 SDK unlink 먼저
+                        if (loginMethod == "kakao") {
+                            val unlinkResult = kakaoUnlink()
+                            if (unlinkResult.isFailure) {
+                                isWithdrawing = false
+                                withdrawErrorMessage = "카카오 연결 해제에 실패했습니다.\n잠시 후 다시 시도해주세요."
+                                return@launch
+                            }
+                        }
+
+                        // 2. 구글 사용자면 Credential Manager credential state 초기화
+                        if (loginMethod == "google") {
+                            val clearResult = googleClearCredentialState(context)
+                            if (clearResult.isFailure) {
+                                isWithdrawing = false
+                                withdrawErrorMessage = "구글 인증 초기화에 실패했습니다.\n잠시 후 다시 시도해주세요."
+                                return@launch
+                            }
+                        }
+
+                        // 3. DELETE /users/me 호출 — 결과 반드시 확인
+                        val deleteResult = userRepository.deleteUser()
+                        if (deleteResult.isFailure) {
+                            isWithdrawing = false
+                            withdrawErrorMessage = "회원탈퇴에 실패했습니다.\n잠시 후 다시 시도해주세요."
+                            return@launch
+                        }
+
+                        // 4. 성공 시에만 로컬 초기화 + 로그인 화면 이동
                         authLocalStorage.clear()
+                        isWithdrawing = false
                         navController.navigate(NavRoutes.LOGIN) {
                             popUpTo(0) { inclusive = true }
                         }
@@ -232,6 +280,12 @@ fun AppNavGraph() {
 
         composable(NavRoutes.WIDGET_INSTALL_GUIDE) {
             WidgetInstallGuideScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(NavRoutes.INQUIRY) {
+            OneToOneInquiryRoute(
                 onBackClick = { navController.popBackStack() }
             )
         }

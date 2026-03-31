@@ -20,8 +20,13 @@ fun ArchiveDetailRoute(
 ) {
     val context = LocalContext.current
     val authStorage = remember { AuthLocalStorage(context) }
-    val repository = remember { ArchiveRepository(NetworkModule.archiveApiService, authStorage) }
-
+    val repository = remember {
+        ArchiveRepository(
+            api = NetworkModule.archiveApiService,
+            newsApi = NetworkModule.newsApiService, // 이 인자를 추가하세요
+            authLocalStorage = AuthLocalStorage(context)
+        )
+    }
     val viewModel: ArchiveDetailViewModel = viewModel(
         key = "archive_detail_$archiveId",
         factory = ArchiveDetailViewModelFactory(archiveId, repository)
@@ -32,6 +37,9 @@ fun ArchiveDetailRoute(
         folderName = folderName,
         newsItems = newsItems,
         onBackClick = onBackClick,
+        onDeleteItems = { selectedIds ->
+            viewModel.deleteItems(selectedIds)
+        },
         modifier = modifier
     )
 }

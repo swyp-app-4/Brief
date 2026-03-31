@@ -55,34 +55,36 @@ data class RecommendedNewsResponse(
 
 
 // GET /news/latest, GET /news/search 공통 응답 아이템
+// 서버가 일부 필드를 반환하지 않을 경우 NPE 방지를 위해 모든 필드에 기본값 설정
 data class NewsListItem(
-    @SerializedName("id") val id: Long,
-    @SerializedName("categoryName") val categoryName: String,
-    @SerializedName("title") val title: String,
-    @SerializedName("publishedDate") val publishedDate: String
+    @SerializedName("id") val id: Long = 0L,
+    @SerializedName("categoryName") val categoryName: String = "",
+    @SerializedName("title") val title: String = "",
+    @SerializedName("publishedDate") val publishedDate: String = ""
 )
 
 // 페이지네이션 응답 래퍼 (content만 사용, 1차)
 data class NewsPageResponse(
-    @SerializedName("content") val content: List<NewsListItem>,
-    @SerializedName("last") val last: Boolean,
-    @SerializedName("empty") val empty: Boolean
+    @SerializedName("content") val content: List<NewsListItem> = emptyList(),
+    @SerializedName("last") val last: Boolean = false,
+    @SerializedName("empty") val empty: Boolean = true
 )
 
 // Archive 폴더 응답
+// 서버가 일부 필드를 반환하지 않을 경우 NPE 방지를 위해 모든 필드에 기본값 설정
 data class ArchiveFolderResponse(
-    @SerializedName("id") val id: Long,
-    @SerializedName("folderName") val folderName: String,
-    @SerializedName("itemCount") val itemCount: Int,
-    @SerializedName("createdAt") val createdAt: String,
-    @SerializedName("favorite") val favorite: Boolean
+    @SerializedName("id") val id: Long = 0L,
+    @SerializedName("folderName") val folderName: String = "",
+    @SerializedName("itemCount") val itemCount: Int = 0,
+    @SerializedName("createdAt") val createdAt: String = "",
+    @SerializedName("favorite") val favorite: Boolean = false
 )
 
 // Archive 아이템 응답
 data class ArchiveItemResponse(
-    @SerializedName("id") val id: Long,
-    @SerializedName("contentId") val contentId: Long,
-    @SerializedName("savedAt") val savedAt: String
+    @SerializedName("id") val id: Long = 0L,
+    @SerializedName("contentId") val contentId: Long = 0L,
+    @SerializedName("savedAt") val savedAt: String = ""
 )
 
 // Archive 요청 바디
@@ -96,17 +98,17 @@ data class AddArchiveItemRequest(
 
 // GET /news/{id} 응답 — 2차 연동 예정
 data class NewsDetailSection(
-    @SerializedName("heading") val heading: String,
-    @SerializedName("contentList") val contentList: List<String>
+    @SerializedName("heading") val heading: String = "",
+    @SerializedName("contentList") val contentList: List<String> = emptyList()
 )
 
 data class NewsDetailResponse(
-    @SerializedName("id") val id: Long,
-    @SerializedName("groupName") val groupName: String,
-    @SerializedName("categoryName") val categoryName: String,
-    @SerializedName("title") val title: String,
-    @SerializedName("summaryList") val summaryList: List<String>,
-    @SerializedName("sections") val sections: List<NewsDetailSection>,
-    @SerializedName("sourceCount") val sourceCount: Int,
-    @SerializedName("publishedDate") val publishedDate: String
+    @SerializedName("id") val id: Long = 0L,
+    @SerializedName("groupName") val groupName: String = "",
+    @SerializedName("categoryName") val categoryName: String = "",
+    @SerializedName("title") val title: String = "",
+    @SerializedName("summaryList") val summaryList: List<String> = emptyList(),
+    @SerializedName("sections") val sections: List<NewsDetailSection> = emptyList(),
+    @SerializedName("sourceCount") val sourceCount: Int = 0,
+    @SerializedName("publishedDate") val publishedDate: String = ""
 )

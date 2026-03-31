@@ -4,5 +4,6 @@ data class BookmarkFolderUiModel(
     val id: Long,
     val name: String,
     val newsCount: Int = 0,
-    val isSelected: Boolean = false
+    val isSelected: Boolean = false,
+    val isFavorite: Boolean = false
 )

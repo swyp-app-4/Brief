@@ -20,6 +20,12 @@ class AuthLocalStorage(context: Context) {
 
     fun isLoggedIn(): Boolean = getAccessToken() != null
 
+    fun saveLoginMethod(method: String) {
+        prefs.edit().putString("login_method", method).apply()
+    }
+
+    fun getLoginMethod(): String? = prefs.getString("login_method", null)
+
     fun clear() {
         prefs.edit().clear().apply()
     }

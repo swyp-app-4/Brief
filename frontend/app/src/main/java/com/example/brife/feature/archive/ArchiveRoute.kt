@@ -1,6 +1,7 @@
 package com.example.brife.feature.archive
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +17,7 @@ import com.example.brife.data.repository.ArchiveRepository
 @Composable
 fun ArchiveRoute(
     modifier: Modifier = Modifier,
+    reloadVersion: Int = 0,
     isDeleteMode: Boolean,
     isRenameMode: Boolean,
     onDeleteModeExit: () -> Unit,
@@ -24,12 +26,21 @@ fun ArchiveRoute(
 ) {
     val context = LocalContext.current
     val authStorage = remember { AuthLocalStorage(context) }
-    val repository = remember { ArchiveRepository(NetworkModule.archiveApiService, authStorage) }
-
+    val repository = remember {
+        ArchiveRepository(
+            api = NetworkModule.archiveApiService,
+            newsApi = NetworkModule.newsApiService, // 이 인자를 추가하세요
+            authLocalStorage = authStorage
+        )
+    }
     val viewModel: ArchiveViewModel = viewModel(
         factory = ArchiveViewModelFactory(repository)
     )
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(reloadVersion) {
+        if (reloadVersion > 0) viewModel.loadFolders()
+    }
 
     var selectedFolderIds by remember { mutableStateOf(setOf<Long>()) }
 
@@ -37,6 +48,7 @@ fun ArchiveRoute(
         modifier = modifier,
         folders = uiState.folders,
         favoriteArchiveId = uiState.favoriteArchiveId,
+        favoriteItemCount = uiState.favoriteItemCount,
         onFolderAdd = { name -> viewModel.createFolder(name) },
         onNavigateToDetail = onNavigateToDetail,
         isDeleteMode = isDeleteMode,

@@ -24,6 +24,8 @@ import com.example.brife.R
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.AppTopBar2
 import com.example.brife.ui.theme.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 data class SettingUiState(
     val loginMethod: String = "Google",  // "Google" | "Naver" | "Kakao"
@@ -35,6 +37,9 @@ fun SettingScreen(
     uiState: SettingUiState,
     onBackClick: () -> Unit,
     isLoggedIn: Boolean = true,
+    isWithdrawing: Boolean = false,
+    withdrawErrorMessage: String? = null,
+    onWithdrawErrorDismiss: () -> Unit = {},
     onLoginClick: () -> Unit = {},
     onWidgetSettingClick: () -> Unit = {},
     onTermsClick: () -> Unit = {},
@@ -87,7 +92,11 @@ fun SettingScreen(
                 if (isLoggedIn) {
                     SettingInfoItem(label = "로그인 방식", trailingText = uiState.loginMethod)
                     SettingTextItem(label = "로그아웃", onClick = { showLogoutSheet = true }, color = TextSubtitle)
-                    SettingTextItem(label = "회원탈퇴", onClick = { showWithdrawSheet = true }, color = Negative)
+                    SettingTextItem(
+                        label = if (isWithdrawing) "탈퇴 처리 중..." else "회원탈퇴",
+                        onClick = { if (!isWithdrawing) showWithdrawSheet = true },
+                        color = if (isWithdrawing) TextCaption else Negative
+                    )
                 } else {
                     SettingTextItem(
                         label = "로그인",
@@ -125,6 +134,37 @@ fun SettingScreen(
                     onWithdrawClick()
                 },
                 onDismissRequest = { showWithdrawSheet = false }
+            )
+        }
+
+        // 탈퇴 실패 에러 다이얼로그
+        if (withdrawErrorMessage != null) {
+            AlertDialog(
+                onDismissRequest = onWithdrawErrorDismiss,
+                title = {
+                    AppText(
+                        text = "회원탈퇴 실패",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = TextTitle
+                    )
+                },
+                text = {
+                    AppText(
+                        text = withdrawErrorMessage,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSubtitle
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = onWithdrawErrorDismiss) {
+                        AppText(
+                            text = "확인",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = PrimaryNormal
+                        )
+                    }
+                },
+                containerColor = Color.White
             )
         }
     }

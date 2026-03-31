@@ -196,10 +196,10 @@ private fun FolderBookmarkRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val folderLabel = if (folder.newsCount > 0) {
-            "${folder.name} (${folder.newsCount})"
-        } else {
-            folder.name
+        val folderLabel = when {
+            folder.isFavorite -> "${folder.name}(${folder.newsCount})"
+            folder.newsCount > 0 -> "${folder.name} (${folder.newsCount})"
+            else -> folder.name
         }
 
         AppText(
@@ -219,101 +219,6 @@ private fun FolderBookmarkRow(
                 ),
                 contentDescription = if (folder.isSelected) "즐겨찾기 해제" else "즐겨찾기 추가",
                 tint = Color.Unspecified
-            )
-        }
-    }
-}
-
-// ────────────────────────────────────────────
-// Preview 4종
-// ────────────────────────────────────────────
-
-private val previewFoldersSingle = listOf(
-    BookmarkFolderUiModel(id = 1L, name = "즐겨찾기", newsCount = 0, isSelected = false)
-)
-
-private val previewFoldersMultiple = listOf(
-    BookmarkFolderUiModel(id = 1L, name = "즐겨찾기", newsCount = 12, isSelected = false),
-    BookmarkFolderUiModel(id = 2L, name = "전쟁", newsCount = 3, isSelected = false),
-    BookmarkFolderUiModel(id = 3L, name = "경제 공부", newsCount = 7, isSelected = false),
-    BookmarkFolderUiModel(id = 4L, name = "IT 트렌드", newsCount = 2, isSelected = false),
-    BookmarkFolderUiModel(id = 5L, name = "사회 이슈", newsCount = 0, isSelected = false),
-)
-
-private val previewFoldersSelected = listOf(
-    BookmarkFolderUiModel(id = 1L, name = "즐겨찾기", newsCount = 12, isSelected = true),
-    BookmarkFolderUiModel(id = 2L, name = "전쟁", newsCount = 3, isSelected = false),
-    BookmarkFolderUiModel(id = 3L, name = "경제 공부", newsCount = 7, isSelected = true),
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true, name = "1. 기본 상태")
-@Composable
-private fun NewsBookmarkBottomSheetBasicPreview() {
-    BrifeTheme {
-        NewsBookmarkBottomSheet(
-            folders = previewFoldersSingle,
-            onDismissRequest = {},
-            onMyFolderClick = {},
-            onAddFolderClick = {},
-            onFolderBookmarkClick = {},
-            onSaveClick = {}
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true, name = "2. 폴더 여러 개 상태")
-@Composable
-private fun NewsBookmarkBottomSheetMultiplePreview() {
-    BrifeTheme {
-        NewsBookmarkBottomSheet(
-            folders = previewFoldersMultiple,
-            onDismissRequest = {},
-            onMyFolderClick = {},
-            onAddFolderClick = {},
-            onFolderBookmarkClick = {},
-            onSaveClick = {}
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true, name = "3. 폴더 선택된 상태")
-@Composable
-private fun NewsBookmarkBottomSheetSelectedPreview() {
-    BrifeTheme {
-        NewsBookmarkBottomSheet(
-            folders = previewFoldersSelected,
-            onDismissRequest = {},
-            onMyFolderClick = {},
-            onAddFolderClick = {},
-            onFolderBookmarkClick = {},
-            onSaveClick = {}
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true, name = "4. 새 폴더 추가 바텀시트 열린 상태")
-@Composable
-private fun NewsBookmarkWithCreateFolderPreview() {
-    BrifeTheme {
-        // BookmarkSheet 위에 CreateFolderSheet가 올라온 상태를 보여주는 Preview
-        Box {
-            NewsBookmarkBottomSheet(
-                folders = previewFoldersSingle,
-                onDismissRequest = {},
-                onMyFolderClick = {},
-                onAddFolderClick = {},
-                onFolderBookmarkClick = {},
-                onSaveClick = {}
-            )
-            CreateFolderBottomSheet(
-                onDismissRequest = {},
-                onSave = {},
-                currentFolderCount = 1,
-                existingFolders = listOf("즐겨찾기")
             )
         }
     }

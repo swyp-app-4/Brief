@@ -4,6 +4,7 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val pendingAccessToken: String? = null,
     val pendingRefreshToken: String? = null,
+    val pendingLoginMethod: String = "",
     val isLoginSuccess: Boolean = false,
     val isNewUser: Boolean = false,
     val errorMessage: String? = null,
