@@ -4,16 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/widget_card_bg"
-    android:padding="12dp"
-    android:gravity="center_horizontal">
+    android:padding="4dp">
 
-    <!-- 제목 + 북마크: 카드 안 -->
+    <!-- 타이틀 + 북마크: 카드 영역 바깥 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
 
         <TextView
             android:id="@+id/widget_tv_title"
@@ -24,53 +23,59 @@
             android:textSize="13sp"
             android:textStyle="bold"
             android:maxLines="2"
-            android:ellipsize="end"
-            android:gravity="center" />
+            android:ellipsize="end" />
 
         <TextView
             android:id="@+id/widget_btn_bookmark"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="8dp"
-            android:text="☆"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="6dp"
+            android:text="&#9734;"
             android:textColor="#2060E8"
             android:textSize="16sp"
             android:gravity="center" />
 
     </LinearLayout>
 
-    <!-- 요약 영역 -->
-    <TextView
-        android:id="@+id/widget_tv_summary_1"
+    <!-- 요약 카드 영역 (파란 배경) -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:textColor="#4A5568"
-        android:textSize="11sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:gravity="center" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:background="@drawable/widget_card_bg"
+        android:padding="10dp"
+        android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/widget_tv_summary_2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textColor="#4A5568"
-        android:textSize="11sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:gravity="center" />
+        <TextView
+            android:id="@+id/widget_tv_summary_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#4A5568"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
-    <TextView
-        android:id="@+id/widget_tv_summary_3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textColor="#4A5568"
-        android:textSize="11sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:gravity="center" />
+        <TextView
+            android:id="@+id/widget_tv_summary_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#4A5568"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/widget_tv_summary_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#4A5568"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+    </LinearLayout>
 
 </LinearLayout>

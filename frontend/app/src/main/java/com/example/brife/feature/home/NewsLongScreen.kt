@@ -68,6 +68,7 @@ fun NewsLongScreen(
     item: HomeNewsCardItem,
     onBackClick: () -> Unit,
     isLoggedIn: Boolean = false,
+    autoOpenBookmark: Boolean = false,
     folders: List<BookmarkFolderUiModel> = emptyList(),
     sections: List<NewsDetailSection> = emptyList(),
     onSaveToFolders: (selectedFolders: List<BookmarkFolderUiModel>) -> Unit = {},
@@ -96,6 +97,13 @@ fun NewsLongScreen(
 
     var showBookmarkSheet by remember { mutableStateOf(false) }
     var showCreateFolderSheet by remember { mutableStateOf(false) }
+
+    // 위젯 북마크 버튼 클릭 시 화면 진입과 동시에 북마크 시트 자동 오픈
+    LaunchedEffect(autoOpenBookmark) {
+        if (autoOpenBookmark) {
+            showBookmarkSheet = true
+        }
+    }
 
     var folderItems by remember { mutableStateOf(folders) }
     var tempFolders by remember { mutableStateOf(folders) }

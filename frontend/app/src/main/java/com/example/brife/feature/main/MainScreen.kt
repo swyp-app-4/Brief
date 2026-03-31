@@ -51,7 +51,8 @@ fun MainScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToNewsLong: (String) -> Unit,
     onNavigateToSetting: () -> Unit = {},
-    initialDeepLinkNewsId: Long? = null
+    initialDeepLinkNewsId: Long? = null,
+    initialOpenBookmark: Boolean = false
 ) {
     val context = LocalContext.current
     val onboardingStorage = remember { OnboardingLocalStorage(context) }
@@ -100,7 +101,12 @@ fun MainScreen(
                 insight = "",
                 articleCount = 0
             )
-            navController.navigate("${NavRoutes.NEWS_LONG}/$initialDeepLinkNewsId")
+            val newsLongRoute = if (initialOpenBookmark) {
+                "${NavRoutes.NEWS_LONG}/$initialDeepLinkNewsId?openBookmark=true"
+            } else {
+                "${NavRoutes.NEWS_LONG}/$initialDeepLinkNewsId"
+            }
+            navController.navigate(newsLongRoute)
         }
     }
 
@@ -310,10 +316,17 @@ fun MainScreen(
                 )
             }
             composable(
-                route = "${NavRoutes.NEWS_LONG}/{newsId}",
-                arguments = listOf(navArgument("newsId") { type = NavType.LongType })
+                route = "${NavRoutes.NEWS_LONG}/{newsId}?openBookmark={openBookmark}",
+                arguments = listOf(
+                    navArgument("newsId") { type = NavType.LongType },
+                    navArgument("openBookmark") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    }
+                )
             ) { backStackEntry ->
                 val newsId = backStackEntry.arguments?.getLong("newsId") ?: 0L
+                val openBookmark = backStackEntry.arguments?.getBoolean("openBookmark") ?: false
                 val item = selectedNewsItem
 
                 if (item != null) {
@@ -349,6 +362,7 @@ fun MainScreen(
                     NewsLongScreen(
                         item = resolvedItem,
                         isLoggedIn = isLoggedIn,
+                        autoOpenBookmark = openBookmark && isLoggedIn,
                         folders = newsLongFolders,
                         sections = newsLongSections,
                         onSaveToFolders = { selectedFolders ->

@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#FFFFFF"
-    android:padding="12dp">
+    android:padding="8dp">
 
     <TextView
         android:layout_width="wrap_content"
@@ -14,12 +14,42 @@
         android:textStyle="bold"
         android:textSize="14sp" />
 
-    <!-- StackView: 세로 스와이프로 카드 전환 -->
-    <StackView
-        android:id="@+id/widget_stack_view"
+    <!-- AdapterViewFlipper: 카드 1개씩 표시, 버튼으로 전환 -->
+    <AdapterViewFlipper
+        android:id="@+id/widget_flipper"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="6dp" />
+        android:layout_marginTop="6dp"
+        android:flipInterval="0"
+        android:autoStart="false" />
+
+    <!-- 이전 / 다음 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:id="@+id/widget_btn_prev"
+            android:layout_width="48dp"
+            android:layout_height="32dp"
+            android:text="◀"
+            android:textColor="#2060E8"
+            android:textSize="14sp"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/widget_btn_next"
+            android:layout_width="48dp"
+            android:layout_height="32dp"
+            android:text="▶"
+            android:textColor="#2060E8"
+            android:textSize="14sp"
+            android:gravity="center" />
+
+    </LinearLayout>
 
 </LinearLayout>

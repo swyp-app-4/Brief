@@ -19,12 +19,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.local.OnboardingLocalStorage
+import com.example.brife.data.local.SearchHistoryLocalStorage
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.AuthRepository
 import com.example.brife.data.repository.UserRepository
 import com.example.brife.feature.auth.LoginRoute
 import com.example.brife.feature.auth.kakaoUnlink
 import com.example.brife.feature.auth.googleClearCredentialState
+import com.example.brife.feature.auth.naverDisconnect
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
@@ -45,13 +47,15 @@ import com.example.brife.navigation.NavRoutes
 
 @Composable
 fun AppNavGraph(
-    initialNewsId: Long? = null
+    initialNewsId: Long? = null,
+    initialOpenBookmark: Boolean = false
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val authLocalStorage = remember { AuthLocalStorage(context) }
     val authRepository = remember { AuthRepository(NetworkModule.authApiService) }
     val onboardingLocalStorage = remember { OnboardingLocalStorage(context) }
+    val searchHistoryLocalStorage = remember { SearchHistoryLocalStorage(context) }
     val userRepository = remember { UserRepository(NetworkModule.userApiService, authLocalStorage) }
     val scope = rememberCoroutineScope()
 
@@ -186,6 +190,7 @@ fun AppNavGraph(
         composable(NavRoutes.MAIN) {
             MainScreen(
                 initialDeepLinkNewsId = initialNewsId,
+                initialOpenBookmark = initialOpenBookmark,
                 onLogout = {
                     navController.navigate(NavRoutes.LOGIN) {
                         popUpTo(NavRoutes.MAIN) { inclusive = true }
@@ -253,7 +258,17 @@ fun AppNavGraph(
                             }
                         }
 
-                        // 2. 구글 사용자면 Credential Manager credential state 초기화
+                        // 2. 네이버 사용자면 NidOAuth.logout()으로 토큰 폐기
+                        if (loginMethod == "naver") {
+                            val disconnectResult = naverDisconnect()
+                            if (disconnectResult.isFailure) {
+                                isWithdrawing = false
+                                withdrawErrorMessage = "네이버 연결 해제에 실패했습니다.\n잠시 후 다시 시도해주세요."
+                                return@launch
+                            }
+                        }
+
+                        // 3. 구글 사용자면 Credential Manager credential state 초기화
                         if (loginMethod == "google") {
                             val clearResult = googleClearCredentialState(context)
                             if (clearResult.isFailure) {
@@ -274,6 +289,7 @@ fun AppNavGraph(
                         // 4. 성공 시에만 로컬 초기화 + 로그인 화면 이동
                         authLocalStorage.clear()
                         onboardingLocalStorage.clearOnboarding()  // 재가입 시 구 관심사 재전송 방지
+                        searchHistoryLocalStorage.clearAll()       // 탈퇴 사용자의 검색 기록 삭제
                         isWithdrawing = false
                         navController.navigate(NavRoutes.LOGIN) {
                             popUpTo(0) { inclusive = true }

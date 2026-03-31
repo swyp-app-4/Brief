@@ -25,6 +25,10 @@ class MainActivity : ComponentActivity() {
     // setContent 바깥 Activity 수준 state → onNewIntent에서도 업데이트 가능
     // 위젯 클릭 등으로 앱이 이미 실행 중일 때 onNewIntent 가 호출되어도 Compose 가 재구성됨
     private var deepLinkNewsId by mutableStateOf<Long?>(null)
+    private var deepLinkOpenBookmark by mutableStateOf(false)
+
+    private fun extractBookmarkFromIntent(intent: Intent?): Boolean =
+        intent?.getBooleanExtra("open_bookmark", false) ?: false
 
     private fun extractNewsIdFromIntent(intent: Intent?): Long? {
         val data: Uri = intent?.data ?: return null
@@ -48,6 +52,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         deepLinkNewsId = extractNewsIdFromIntent(intent)
+        deepLinkOpenBookmark = extractBookmarkFromIntent(intent)
 
         setContent {
             BrifeTheme {
@@ -59,7 +64,8 @@ class MainActivity : ComponentActivity() {
                         )
                 ) {
                     AppNavGraph(
-                        initialNewsId = deepLinkNewsId
+                        initialNewsId = deepLinkNewsId,
+                        initialOpenBookmark = deepLinkOpenBookmark
                     )
                 }
             }
@@ -69,8 +75,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        // 위젯에서 카드 클릭 시 앱이 이미 실행 중이면 onNewIntent 로 진입
-        // deepLinkNewsId 업데이트 → AppNavGraph 재구성 → MainScreen LaunchedEffect 트리거
         deepLinkNewsId = extractNewsIdFromIntent(intent)
+        deepLinkOpenBookmark = extractBookmarkFromIntent(intent)
     }
 }
