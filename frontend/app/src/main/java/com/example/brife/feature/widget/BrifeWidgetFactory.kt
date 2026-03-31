@@ -2,6 +2,7 @@ package com.example.brife.feature.widget
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.example.brife.R
@@ -67,18 +68,13 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
 
     private var currentData: List<WidgetNews> = mockData
 
-    private val dotIds = listOf(
-        R.id.widget_dot_0,
-        R.id.widget_dot_1,
-        R.id.widget_dot_2,
-        R.id.widget_dot_3,
-        R.id.widget_dot_4
-    )
-
-    override fun onCreate() {}
+    override fun onCreate() {
+        Log.d("BrifeWidgetFactory", "onCreate")
+    }
 
     // background thread에서 호출됨 — 블로킹 API 호출 가능
     override fun onDataSetChanged() {
+        Log.d("BrifeWidgetFactory", "onDataSetChanged 시작")
         val apiResult = repository.fetchTop5()
         currentData = if (apiResult.isNotEmpty()) {
             apiResult.map { news ->
@@ -93,6 +89,7 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         } else {
             mockData
         }
+        Log.d("BrifeWidgetFactory", "onDataSetChanged 끝: itemCount=${currentData.size}")
     }
 
     override fun onDestroy() {}
@@ -112,23 +109,11 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         rv.setTextViewText(R.id.widget_tv_summary_2, news.summary2)
         rv.setTextViewText(R.id.widget_tv_summary_3, news.summary3)
 
-        // ── 페이지 인디케이터 ──────────────────────────────────────────────────
-        dotIds.forEachIndexed { index, dotId ->
-            rv.setImageViewResource(
-                dotId,
-                if (index == position) R.drawable.widget_dot_active
-                else R.drawable.widget_dot_inactive
-            )
-        }
-
-        // ── 북마크 아이콘 상태 (로컬 SharedPreferences 기준) ───────────────────
+        // ── 북마크 상태 (★/☆ 문자 — VectorDrawable은 RemoteViews 미지원) ────────
         val bookmarked = WidgetActionReceiver.getBookmarkedIds(context)
-        rv.setImageViewResource(
+        rv.setTextViewText(
             R.id.widget_btn_bookmark,
-            if (news.newsId != 0L && news.newsId in bookmarked)
-                R.drawable.ic_longform_bookmark_active
-            else
-                R.drawable.ic_longform_bookmark_inactive
+            if (news.newsId != 0L && news.newsId in bookmarked) "★" else "☆"
         )
 
         // ── 카드 본문 클릭 → 뉴스 상세 이동 ──────────────────────────────────
