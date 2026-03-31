@@ -1,7 +1,9 @@
 package com.example.brife.feature.widget
 
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.widget.RemoteViews
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -28,7 +30,6 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 import com.example.brife.R
 
 class BrifeWidget : GlanceAppWidget() {
@@ -46,12 +47,24 @@ private fun BrifeWidgetContent() {
     val blackColor = androidx.glance.color.ColorProvider(day = Color.Black, night = Color.Black)
     val whiteColor = androidx.glance.color.ColorProvider(day = Color.White, night = Color.White)
 
-    // StackView RemoteViews 구성
+    // ── StackView RemoteViews 구성 ──────────────────────────────────────────
     val stackRootViews = RemoteViews(context.packageName, R.layout.widget_stack_root)
     stackRootViews.setRemoteAdapter(
         R.id.widget_stack_view,
         Intent(context, BrifeWidgetService::class.java)
     )
+
+    // ── PendingIntentTemplate 설정 ───────────────────────────────────────────
+    // BrifeWidgetFactory.getViewAt() 에서 setOnClickFillInIntent() 로 설정된
+    // fill-in Intent 와 이 template 이 합쳐져 WidgetActionReceiver 가 호출됨
+    val templateIntent = Intent(context, WidgetActionReceiver::class.java)
+    val pendingFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+    } else {
+        PendingIntent.FLAG_UPDATE_CURRENT
+    }
+    val pendingTemplate = PendingIntent.getBroadcast(context, 0, templateIntent, pendingFlags)
+    stackRootViews.setPendingIntentTemplate(R.id.widget_stack_view, pendingTemplate)
 
     Column(
         modifier = GlanceModifier
@@ -59,7 +72,7 @@ private fun BrifeWidgetContent() {
             .background(whiteColor)
             .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 10.dp)
     ) {
-        // ── 상단 Row: 로고 + "Brife" + 북마크 ────────────────────────────────
+        // ── 상단 Row: 로고 + "Brife" ──────────────────────────────────────────
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -77,20 +90,11 @@ private fun BrifeWidgetContent() {
                     fontWeight = FontWeight.Bold
                 )
             )
-            Spacer(modifier = GlanceModifier.defaultWeight())
-            Image(
-                provider = ImageProvider(R.drawable.ic_longform_bookmark_inactive),
-                contentDescription = "즐겨찾기",
-                modifier = GlanceModifier.size(20.dp)
-            )
         }
 
         Spacer(modifier = GlanceModifier.height(8.dp))
 
         // ── 스와이프 카드 영역 (RemoteViews StackView) ────────────────────────
-        // 사용자가 좌우로 스와이프하면 카드가 전환됩니다.
-        // 각 카드 하단의 인디케이터는 HomeScreen과 동일한 색상을 사용합니다.
-        // active=White(#FFFFFF), inactive=White 50%(#80FFFFFF)
         AndroidRemoteViews(
             remoteViews = stackRootViews,
             modifier = GlanceModifier

@@ -1,15 +1,18 @@
 package com.example.brife.feature.widget
 
 import android.content.Context
+import android.content.Intent
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.example.brife.R
+import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.remote.NetworkModule
 
 class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.RemoteViewsFactory {
 
     private data class WidgetNews(
+        val newsId: Long,
         val title: String,
         val summary1: String,
         val summary2: String,
@@ -19,30 +22,35 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
     // API 실패 또는 관심사 미설정 시 표시할 fallback mock 데이터
     private val mockData = listOf(
         WidgetNews(
+            newsId = 0L,
             title = "미국 연준, 기준금리 동결 결정",
             summary1 = "• 연방준비제도 FOMC 기준금리 동결",
             summary2 = "• 소비자물가지수 2.3% 유지",
             summary3 = "• 연내 1~2회 인하 가능성 시사"
         ),
         WidgetNews(
+            newsId = 0L,
             title = "애플, AI 탑재 아이폰 17 공개",
             summary1 = "• 온디바이스 AI 기능 전면 탑재",
             summary2 = "• 새로운 카메라 시스템 업그레이드",
             summary3 = "• 국내 출시 9월 예정"
         ),
         WidgetNews(
+            newsId = 0L,
             title = "국내 부동산 시장 안정세 지속",
             summary1 = "• 수도권 아파트 3개월 연속 보합",
             summary2 = "• 전세가율 완만한 하락 추세",
             summary3 = "• 금리 인하 기대감에 매수 심리 개선"
         ),
         WidgetNews(
+            newsId = 0L,
             title = "국내 전기차 판매량 30% 증가",
             summary1 = "• 상반기 신규 등록 전년비 30% 상승",
             summary2 = "• 보조금 정책 효과 본격화",
             summary3 = "• 충전 인프라 확대가 성장 견인"
         ),
         WidgetNews(
+            newsId = 0L,
             title = "정부, 청년 주거 지원 정책 발표",
             summary1 = "• 청년 전세 대출 한도 상향",
             summary2 = "• 공공임대 물량 2만 호 추가 공급",
@@ -51,14 +59,14 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
     )
 
     private val repository = WidgetNewsRepository(
-        api = NetworkModule.newsApiService,
-        onboardingLocalStorage = OnboardingLocalStorage(context)
+        newsApi = NetworkModule.newsApiService,
+        homeApi = NetworkModule.homeApiService,
+        onboardingLocalStorage = OnboardingLocalStorage(context),
+        authLocalStorage = AuthLocalStorage(context)
     )
 
-    // 현재 표시할 데이터 (onDataSetChanged에서 갱신)
     private var currentData: List<WidgetNews> = mockData
 
-    // 인디케이터 dot View ID 목록
     private val dotIds = listOf(
         R.id.widget_dot_0,
         R.id.widget_dot_1,
@@ -75,6 +83,7 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         currentData = if (apiResult.isNotEmpty()) {
             apiResult.map { news ->
                 WidgetNews(
+                    newsId = news.id,
                     title = news.title,
                     summary1 = "• ${news.summaryList.getOrElse(0) { "" }}",
                     summary2 = "• ${news.summaryList.getOrElse(1) { "" }}",
@@ -82,7 +91,6 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
                 )
             }
         } else {
-            // 관심사 미설정 또는 API 실패 시 mock 유지
             mockData
         }
     }
@@ -98,13 +106,13 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         val news = currentData[position]
         val rv = RemoteViews(context.packageName, R.layout.widget_stack_item)
 
-        // 텍스트 세팅
+        // ── 텍스트 바인딩 ─────────────────────────────────────────────────────
         rv.setTextViewText(R.id.widget_tv_title, news.title)
         rv.setTextViewText(R.id.widget_tv_summary_1, news.summary1)
         rv.setTextViewText(R.id.widget_tv_summary_2, news.summary2)
         rv.setTextViewText(R.id.widget_tv_summary_3, news.summary3)
 
-        // 인디케이터: 현재 위치만 active (White), 나머지 inactive (White 50%)
+        // ── 페이지 인디케이터 ──────────────────────────────────────────────────
         dotIds.forEachIndexed { index, dotId ->
             rv.setImageViewResource(
                 dotId,
@@ -112,6 +120,31 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
                 else R.drawable.widget_dot_inactive
             )
         }
+
+        // ── 북마크 아이콘 상태 (로컬 SharedPreferences 기준) ───────────────────
+        val bookmarked = WidgetActionReceiver.getBookmarkedIds(context)
+        rv.setImageViewResource(
+            R.id.widget_btn_bookmark,
+            if (news.newsId != 0L && news.newsId in bookmarked)
+                R.drawable.ic_longform_bookmark_active
+            else
+                R.drawable.ic_longform_bookmark_inactive
+        )
+
+        // ── 카드 본문 클릭 → 뉴스 상세 이동 ──────────────────────────────────
+        // setPendingIntentTemplate(BrifeWidget) + setOnClickFillInIntent(여기) 패턴
+        val cardFillIn = Intent().apply {
+            putExtra(WidgetActionReceiver.EXTRA_ACTION, WidgetActionReceiver.ACTION_OPEN_NEWS)
+            putExtra(WidgetActionReceiver.EXTRA_NEWS_ID, news.newsId)
+        }
+        rv.setOnClickFillInIntent(R.id.widget_card_root, cardFillIn)
+
+        // ── 북마크 버튼 클릭 → 즐겨찾기 저장 ────────────────────────────────
+        val bookmarkFillIn = Intent().apply {
+            putExtra(WidgetActionReceiver.EXTRA_ACTION, WidgetActionReceiver.ACTION_BOOKMARK)
+            putExtra(WidgetActionReceiver.EXTRA_NEWS_ID, news.newsId)
+        }
+        rv.setOnClickFillInIntent(R.id.widget_btn_bookmark, bookmarkFillIn)
 
         return rv
     }

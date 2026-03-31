@@ -13,14 +13,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.brife.navigation.AppNavGraph
 import com.example.brife.ui.theme.BrifeTheme
 
 class MainActivity : ComponentActivity() {
 
+    // setContent 바깥 Activity 수준 state → onNewIntent에서도 업데이트 가능
+    // 위젯 클릭 등으로 앱이 이미 실행 중일 때 onNewIntent 가 호출되어도 Compose 가 재구성됨
+    private var deepLinkNewsId by mutableStateOf<Long?>(null)
 
     private fun extractNewsIdFromIntent(intent: Intent?): Long? {
         val data: Uri = intent?.data ?: return null
@@ -43,13 +47,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val initialNewsId = extractNewsIdFromIntent(intent)
-
+        deepLinkNewsId = extractNewsIdFromIntent(intent)
 
         setContent {
             BrifeTheme {
-                val deepLinkNewsIdState = remember { mutableStateOf(initialNewsId) }
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -58,14 +59,18 @@ class MainActivity : ComponentActivity() {
                         )
                 ) {
                     AppNavGraph(
-                        initialNewsId = deepLinkNewsIdState.value
+                        initialNewsId = deepLinkNewsId
                     )
                 }
             }
         }
     }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        // 위젯에서 카드 클릭 시 앱이 이미 실행 중이면 onNewIntent 로 진입
+        // deepLinkNewsId 업데이트 → AppNavGraph 재구성 → MainScreen LaunchedEffect 트리거
+        deepLinkNewsId = extractNewsIdFromIntent(intent)
     }
 }

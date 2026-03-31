@@ -59,11 +59,8 @@ fun AppNavGraph(
     var isWithdrawing by remember { mutableStateOf(false) }
     var withdrawErrorMessage by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(initialNewsId) {
-        if (initialNewsId != null) {
-            navController.navigate("${NavRoutes.NEWS_LONG}/$initialNewsId")
-        }
-    }
+    // NEWS_LONG 은 MainScreen 내부 NavHost 에 있으므로 AppNavGraph 의 navController 로는
+    // 직접 navigate 불가. initialNewsId 를 MainScreen 에 파라미터로 전달하여 처리.
 
     NavHost(
         navController = navController,
@@ -188,6 +185,7 @@ fun AppNavGraph(
         // 하단 바가 있는 전체 메인 화면
         composable(NavRoutes.MAIN) {
             MainScreen(
+                initialDeepLinkNewsId = initialNewsId,
                 onLogout = {
                     navController.navigate(NavRoutes.LOGIN) {
                         popUpTo(NavRoutes.MAIN) { inclusive = true }

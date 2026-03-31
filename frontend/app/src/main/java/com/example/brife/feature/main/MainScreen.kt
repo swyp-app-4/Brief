@@ -50,7 +50,8 @@ fun MainScreen(
     onLogout: () -> Unit,
     onNavigateToLogin: () -> Unit,
     onNavigateToNewsLong: (String) -> Unit,
-    onNavigateToSetting: () -> Unit = {}
+    onNavigateToSetting: () -> Unit = {},
+    initialDeepLinkNewsId: Long? = null
 ) {
     val context = LocalContext.current
     val onboardingStorage = remember { OnboardingLocalStorage(context) }
@@ -85,6 +86,23 @@ fun MainScreen(
 
     //롱폼 관련
     var selectedNewsItem by remember { mutableStateOf<HomeNewsCardItem?>(null) }
+
+    // 위젯 또는 딥링크로 진입 시 뉴스 상세 화면으로 자동 이동
+    // initialDeepLinkNewsId 가 변경될 때마다 재실행 (앱 실행 중 위젯 클릭 포함)
+    LaunchedEffect(initialDeepLinkNewsId) {
+        if (initialDeepLinkNewsId != null) {
+            selectedNewsItem = HomeNewsCardItem(
+                newsId = initialDeepLinkNewsId,
+                category = "",
+                title = "",
+                notice = "",
+                summaryPoints = emptyList(),
+                insight = "",
+                articleCount = 0
+            )
+            navController.navigate("${NavRoutes.NEWS_LONG}/$initialDeepLinkNewsId")
+        }
+    }
 
     // 관심사 재설정 완료 시 증가 → HomeRoute에서 감지하여 홈 뉴스 재로드
     var homeReloadVersion by remember { mutableStateOf(0) }
