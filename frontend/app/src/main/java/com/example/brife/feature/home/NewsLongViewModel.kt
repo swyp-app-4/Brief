@@ -27,9 +27,16 @@ class NewsLongViewModel(
     private val _categoryName = MutableStateFlow("")
     val categoryName: StateFlow<String> = _categoryName.asStateFlow()
 
-    fun loadFolders() {
+    private val _summaryPoints = MutableStateFlow<List<String>>(emptyList())
+    val summaryPoints: StateFlow<List<String>> = _summaryPoints.asStateFlow()
+
+    private val _articleCount = MutableStateFlow(0)
+    val articleCount: StateFlow<Int> = _articleCount.asStateFlow()
+
+    // preselectedArchiveId: ArchiveDetail에서 진입 시 해당 폴더를 isSelected=true로 초기화
+    fun loadFolders(preselectedArchiveId: Long? = null) {
         viewModelScope.launch {
-            Log.d("NewsLongViewModel", "폴더 목록 로드 시작")
+            Log.d("NewsLongViewModel", "폴더 목록 로드 시작 (preselect=$preselectedArchiveId)")
             archiveRepository.getFolders()
                 .onSuccess { archiveFolders ->
                     Log.d("NewsLongViewModel", "폴더 목록 로드 성공: ${archiveFolders.size}개")
@@ -40,7 +47,7 @@ class NewsLongViewModel(
                                 id = folder.archiveId,
                                 name = folder.folderName,
                                 newsCount = folder.itemCount,
-                                isSelected = false,
+                                isSelected = preselectedArchiveId != null && folder.archiveId == preselectedArchiveId,
                                 isFavorite = folder.isFavorite
                             )
                         }
@@ -72,6 +79,8 @@ class NewsLongViewModel(
                     _sections.value = detail.sections
                     _groupName.value = detail.groupName
                     _categoryName.value = detail.categoryName
+                    _summaryPoints.value = detail.summaryList
+                    _articleCount.value = detail.sourceCount
                 }
                 .onFailure { e ->
                     Log.e("NewsLongViewModel", "섹션 로드 실패: ${e.message}")

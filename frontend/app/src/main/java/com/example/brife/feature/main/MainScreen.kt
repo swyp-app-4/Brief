@@ -87,6 +87,8 @@ fun MainScreen(
 
     //롱폼 관련
     var selectedNewsItem by remember { mutableStateOf<HomeNewsCardItem?>(null) }
+    // ArchiveDetail에서 진입 시 해당 폴더 ID를 전달 → 북마크 아이콘 사전 활성화
+    var preselectedArchiveId by remember { mutableStateOf<Long?>(null) }
 
     // 위젯 또는 딥링크로 진입 시 뉴스 상세 화면으로 자동 이동
     // initialDeepLinkNewsId 가 변경될 때마다 재실행 (앱 실행 중 위젯 클릭 포함)
@@ -196,6 +198,7 @@ fun MainScreen(
                     onLoginRequired = { showLoginBottomSheet = true },
                     onDetailClick = { item ->
                         selectedNewsItem = item
+                        preselectedArchiveId = null
                         navController.navigate("${NavRoutes.NEWS_LONG}/${item.newsId}")
                     },
                     onShareClick = { /* 이미지 공유는 HomeScreen 내부에서 처리 */ },
@@ -217,6 +220,7 @@ fun MainScreen(
                             updatedAt = archiveItem.time,
                             articleCount = 0
                         )
+                        preselectedArchiveId = null
                         navController.navigate("${NavRoutes.NEWS_LONG}/${archiveItem.newsId}")
                     }
                 )
@@ -270,6 +274,7 @@ fun MainScreen(
                             updatedAt = archiveItem.time,
                             articleCount = 0
                         )
+                        preselectedArchiveId = archiveId  // 저장된 폴더 ID → 북마크 아이콘 활성화
                         navController.navigate("${NavRoutes.NEWS_LONG}/${archiveItem.newsId}")
                     }
                 )
@@ -345,18 +350,24 @@ fun MainScreen(
                     val newsLongSections by newsLongViewModel.sections.collectAsState()
                     val newsLongGroupName by newsLongViewModel.groupName.collectAsState()
                     val newsLongCategoryName by newsLongViewModel.categoryName.collectAsState()
+                    val newsLongSummaryPoints by newsLongViewModel.summaryPoints.collectAsState()
+                    val newsLongArticleCount by newsLongViewModel.articleCount.collectAsState()
 
                     // 로그인 상태일 때만 폴더 목록 로드, 섹션은 항상 로드
+                    // ArchiveDetail 진입 시 preselectedArchiveId 전달 → 해당 폴더 isSelected=true
                     LaunchedEffect(newsId) {
-                        if (isLoggedIn) newsLongViewModel.loadFolders()
+                        if (isLoggedIn) newsLongViewModel.loadFolders(preselectedArchiveId)
                         newsLongViewModel.loadSections(newsId)
                     }
 
-                    // API에서 받은 groupName/categoryName으로 칩 데이터 보정
-                    // (Home 진입 시에는 item에 이미 값이 있으므로 fallback만 동작)
+                    // API 응답으로 누락 필드 보정
+                    // Home 진입: item에 이미 완전한 데이터 → API 응답이 있으면 덮어씀(동일값)
+                    // Explore/Archive 진입: item의 summaryPoints/articleCount가 빈값 → API 로드 후 반영
                     val resolvedItem = item.copy(
                         category = if (newsLongGroupName.isNotBlank()) newsLongGroupName else item.category,
-                        subCategory = if (newsLongCategoryName.isNotBlank()) newsLongCategoryName else item.subCategory
+                        subCategory = if (newsLongCategoryName.isNotBlank()) newsLongCategoryName else item.subCategory,
+                        summaryPoints = if (newsLongSummaryPoints.isNotEmpty()) newsLongSummaryPoints else item.summaryPoints,
+                        articleCount = if (newsLongArticleCount > 0) newsLongArticleCount else item.articleCount
                     )
 
                     NewsLongScreen(
