@@ -15,6 +15,7 @@ public class ArticleClusteringService {
     private static final int MIN_CLUSTER_SIZE = 3;
     private static final int MIN_WORD_LENGTH = 2;
     private static final int MIN_INTERSECTION_SIZE = 2;
+    private static final int MAX_TOPICS_PER_BATCH = 3;
 
     private static final Set<String> BASE_STOP_WORDS = Set.of(
             "것", "수", "등", "및", "에서", "으로", "에게", "이번", "지난", "올해",
@@ -27,7 +28,7 @@ public class ArticleClusteringService {
         List<List<RawArticleDto>> result = new ArrayList<>();
         List<RawArticleDto> remaining = new ArrayList<>(articles);
 
-        while (remaining.size() >= MIN_CLUSTER_SIZE) {
+        while (remaining.size() >= MIN_CLUSTER_SIZE && result.size() < MAX_TOPICS_PER_BATCH) {
             List<RawArticleDto> best = cluster(remaining, keyword);
             if (best.isEmpty()) break;
             result.add(best);
