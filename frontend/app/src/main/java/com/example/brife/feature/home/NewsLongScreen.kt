@@ -37,13 +37,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
-//import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.CategoryChip
 import androidx.compose.ui.text.font.FontWeight
@@ -79,7 +77,7 @@ fun NewsLongScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val view = LocalView.current
+//    val view = LocalView.current
 
     val scrollState = rememberScrollState()
 
