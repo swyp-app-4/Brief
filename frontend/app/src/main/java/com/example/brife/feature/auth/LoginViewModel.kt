@@ -122,6 +122,8 @@ class LoginViewModel(
     }
 
     fun agreeTerms() {
+        // 코루틴 진입 전에 가드 — 연타 시 중복 요청 방지
+        if (_uiState.value.isLoading) return
         val accessToken = _uiState.value.pendingAccessToken ?: return
         val refreshToken = _uiState.value.pendingRefreshToken
 

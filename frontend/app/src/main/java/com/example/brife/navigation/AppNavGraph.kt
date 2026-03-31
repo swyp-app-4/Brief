@@ -273,6 +273,7 @@ fun AppNavGraph(
 
                         // 4. 성공 시에만 로컬 초기화 + 로그인 화면 이동
                         authLocalStorage.clear()
+                        onboardingLocalStorage.clearOnboarding()  // 재가입 시 구 관심사 재전송 방지
                         isWithdrawing = false
                         navController.navigate(NavRoutes.LOGIN) {
                             popUpTo(0) { inclusive = true }
