@@ -144,7 +144,7 @@ private suspend fun loginWithGoogle(
         val credentialManager = CredentialManager.create(context)
 
         val googleOption = GetSignInWithGoogleOption.Builder(
-            serverClientId = "411738653063-rv0rum9cu9ppsc0it3g37s3nbfdm9pap.apps.googleusercontent.com"
+            serverClientId = "657753524375-o8j7tmppjkk8pujad9e8um2fi2h8pk63.apps.googleusercontent.com"
         ).build()
 
         val request = GetCredentialRequest.Builder()
@@ -167,18 +167,14 @@ private suspend fun loginWithGoogle(
                     GoogleIdTokenCredential.createFrom(credential.data)
 
                 val idToken = googleIdTokenCredential.idToken
-                Log.d("GoogleLogin", "idToken: $idToken")
                 onResult(idToken)
             } catch (e: GoogleIdTokenParsingException) {
-                Log.e("GoogleLogin", "Google ID Token 파싱 실패", e)
                 onResult(null)
             }
         } else {
-            Log.e("GoogleLogin", "지원하지 않는 credential 타입")
             onResult(null)
         }
     } catch (e: Exception) {
-        Log.e("GoogleLogin", "구글 로그인 실패", e)
         onResult(null)
     }
 }
