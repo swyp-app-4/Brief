@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +39,7 @@ fun SettingScreen(
     onBackClick: () -> Unit,
     isLoggedIn: Boolean = true,
     isWithdrawing: Boolean = false,
+    isWithdrawn: Boolean = false,
     withdrawErrorMessage: String? = null,
     onWithdrawErrorDismiss: () -> Unit = {},
     onLoginClick: () -> Unit = {},
@@ -51,6 +53,11 @@ fun SettingScreen(
 ) {
     var showLogoutSheet by remember { mutableStateOf(false) }
     var showWithdrawSheet by remember { mutableStateOf(false) }
+    var showWithdrawnDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isWithdrawn) {
+        if (isWithdrawn) showWithdrawnDialog = true
+    }
 
     Scaffold(
         containerColor = Color.White,
@@ -157,6 +164,37 @@ fun SettingScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = onWithdrawErrorDismiss) {
+                        AppText(
+                            text = "확인",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = PrimaryNormal
+                        )
+                    }
+                },
+                containerColor = Color.White
+            )
+        }
+
+        // 탈퇴 완료 안내 다이얼로그
+        if (showWithdrawnDialog) {
+            AlertDialog(
+                onDismissRequest = { showWithdrawnDialog = false },
+                title = {
+                    AppText(
+                        text = "회원탈퇴 완료",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = TextTitle
+                    )
+                },
+                text = {
+                    AppText(
+                        text = "회원탈퇴가 완료되었습니다.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSubtitle
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { showWithdrawnDialog = false }) {
                         AppText(
                             text = "확인",
                             style = MaterialTheme.typography.bodyMedium,

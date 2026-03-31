@@ -63,6 +63,7 @@ fun AppNavGraph(
     // 회원탈퇴 상태 — SettingScreen에 전달
     var isWithdrawing by remember { mutableStateOf(false) }
     var withdrawErrorMessage by remember { mutableStateOf<String?>(null) }
+    var isWithdrawn by remember { mutableStateOf(false) }
 
     // NEWS_LONG 은 MainScreen 내부 NavHost 에 있으므로 AppNavGraph 의 navController 로는
     // 직접 navigate 불가. initialNewsId 를 MainScreen 에 파라미터로 전달하여 처리.
@@ -214,6 +215,7 @@ fun AppNavGraph(
                 uiState = SettingUiState(loginMethod = authLocalStorage.getLoginMethod() ?: "", appVersion = "1.0.0"),
                 isLoggedIn = authLocalStorage.isLoggedIn(),
                 isWithdrawing = isWithdrawing,
+                isWithdrawn = isWithdrawn,
                 withdrawErrorMessage = withdrawErrorMessage,
                 onWithdrawErrorDismiss = { withdrawErrorMessage = null },
                 onBackClick = { navController.popBackStack() },
@@ -285,14 +287,12 @@ fun AppNavGraph(
                             return@launch
                         }
 
-                        // 4. 성공 시에만 로컬 초기화 + 로그인 화면 이동
+                        // 4. 성공 시에만 로컬 초기화 — 화면 전환 없이 SettingScreen 유지
                         authLocalStorage.clear()
                         onboardingLocalStorage.clearOnboarding()  // 재가입 시 구 관심사 재전송 방지
                         searchHistoryLocalStorage.clearAll()       // 탈퇴 사용자의 검색 기록 삭제
                         isWithdrawing = false
-                        navController.navigate(NavRoutes.LOGIN) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        isWithdrawn = true
                     }
                 }
             )
