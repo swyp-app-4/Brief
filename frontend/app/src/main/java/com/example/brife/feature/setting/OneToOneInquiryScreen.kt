@@ -112,7 +112,6 @@ fun OneToOneInquiryScreen(
     var content by remember { mutableStateOf("") }
     var isPrivacyChecked by remember { mutableStateOf(false) }
     var showInquiryTypeSheet by remember { mutableStateOf(false) }
-    var showCompletedSheet by remember { mutableStateOf(false) }
     // 등록 버튼 클릭 후에만 에러 표시
     var showValidationErrors by remember { mutableStateOf(false) }
 
@@ -147,7 +146,15 @@ fun OneToOneInquiryScreen(
                     text = "문의 등록하기",
                     onClick = {
                         if (isFormValid) {
-                            showCompletedSheet = true
+                            sendInquiryEmail(
+                                context = context,
+                                inquiryType = selectedInquiryType,
+                                name = name,
+                                senderEmail = email,
+                                subject = subject,
+                                content = content
+                            )
+                            onBackClick()
                         } else {
                             showValidationErrors = true
                         }
@@ -275,24 +282,6 @@ fun OneToOneInquiryScreen(
             selectedType = selectedInquiryType,
             onTypeSelected = { selectedInquiryType = it },
             onDismissRequest = { showInquiryTypeSheet = false }
-        )
-    }
-
-    if (showCompletedSheet) {
-        InquiryCompletedBottomSheet(
-            onDismissRequest = { showCompletedSheet = false },
-            onConfirmClick = {
-                sendInquiryEmail(
-                    context = context,
-                    inquiryType = selectedInquiryType,
-                    name = name,
-                    senderEmail = email,
-                    subject = subject,
-                    content = content
-                )
-                showCompletedSheet = false
-                onBackClick()
-            }
         )
     }
 }
@@ -537,78 +526,6 @@ private fun InquiryTypeBottomSheet(
                     )
                 }
             }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────
-// 접수 완료 바텀시트
-// ─────────────────────────────────────────────────────────────
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun InquiryCompletedBottomSheet(
-    onDismissRequest: () -> Unit,
-    onConfirmClick: () -> Unit
-) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        sheetState = sheetState,
-        containerColor = Color.Transparent,
-        dragHandle = null
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 80.dp)
-                    .background(
-                        color = Color.White,
-                        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
-                    )
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 32.dp)
-                    .navigationBarsPadding(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(120.dp))
-
-                AppText(
-                    text = "1:1 문의가 정상적으로 접수되었습니다.",
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = TextTitle,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                AppText(
-                    text = "문의하신 내용은 이메일로 발송되며,\n답변까지 시간이 다소 소요될 수 있습니다.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSubtitle,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(25.dp))
-
-                PrimaryButton(
-                    text = "확인",
-                    onClick = onConfirmClick,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Image(
-                painter = painterResource(id = R.drawable.illust4_login),
-                contentDescription = null,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .size(200.dp)
-            )
         }
     }
 }
