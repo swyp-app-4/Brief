@@ -1,6 +1,7 @@
 package com.example.brife.navigation
 
 import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -220,14 +221,12 @@ fun AppNavGraph(
                 onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) },
                 onInquiryClick = { navController.navigate(NavRoutes.INQUIRY) },
                 onTermsClick = {
-                    val encodedUrl = Uri.encode("https://buttered-palm-c4c.notion.site/32e4778e859280eca570ce215e9ee048")
-                    val encodedTitle = Uri.encode("서비스 이용약관")
-                    navController.navigate("${NavRoutes.WEB_VIEW}?title=$encodedTitle&url=$encodedUrl")
+                    CustomTabsIntent.Builder().setShowTitle(true).build()
+                        .launchUrl(context, Uri.parse("https://buttered-palm-c4c.notion.site/32e4778e859280eca570ce215e9ee048"))
                 },
                 onPrivacyClick = {
-                    val encodedUrl = Uri.encode("https://buttered-palm-c4c.notion.site/32e4778e85928009966ac723b49f0f95")
-                    val encodedTitle = Uri.encode("개인정보 처리방침")
-                    navController.navigate("${NavRoutes.WEB_VIEW}?title=$encodedTitle&url=$encodedUrl")
+                    CustomTabsIntent.Builder().setShowTitle(true).build()
+                        .launchUrl(context, Uri.parse("https://buttered-palm-c4c.notion.site/32e4778e85928009966ac723b49f0f95"))
                 },
                 onLogoutClick = {
                     scope.launch {

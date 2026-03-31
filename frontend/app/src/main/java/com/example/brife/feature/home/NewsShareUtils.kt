@@ -11,12 +11,12 @@ import android.os.Looper
 import android.view.PixelCopy
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.FileProvider
-import androidx.core.view.doOnLayout
 import java.io.File
 import java.io.FileOutputStream
 
@@ -94,42 +94,57 @@ fun captureComposableContent(
             screenWidth,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
-        // 화면 오른쪽 밖으로 이동 — 사용자에게 보이지 않음
-        translationX = screenWidth.toFloat()
+        translationX = screenWidth.toFloat() // 화면 오른쪽 밖으로 이동 — 사용자에게 보이지 않음
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        // 부착 전에 SOFTWARE 레이어 설정 — draw(canvas) 가 하드웨어 레이어 없이 동작하도록
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         setContent { content() }
     }
 
     decorView.addView(composeView)
 
-    // doOnLayout: measure/layout 완료 후 호출
-    // postDelayed: Compose 첫 프레임 렌더링 완료까지 대기
-    composeView.doOnLayout {
-        Handler(Looper.getMainLooper()).postDelayed({
-            try {
-                if (!composeView.isAttachedToWindow) return@postDelayed
+    val handler = Handler(Looper.getMainLooper())
+    var layoutListener: ViewTreeObserver.OnGlobalLayoutListener? = null
+    layoutListener = ViewTreeObserver.OnGlobalLayoutListener {
+        if (composeView.height > 0) {
+            composeView.viewTreeObserver
+                .takeIf { it.isAlive }
+                ?.removeOnGlobalLayoutListener(layoutListener)
 
-                val height = composeView.height.coerceAtMost(12_000) // OOM 방지
-                if (height <= 0) {
+            // Compose 첫 프레임 완료 대기
+            handler.postDelayed({
+                try {
+                    if (!composeView.isAttachedToWindow) return@postDelayed
+
+                    // FrameLayout WRAP_CONTENT 는 자식에게 AT_MOST(parentHeight) 제약을 줘서
+                    // 화면 높이를 초과하는 콘텐츠가 잘린다.
+                    // UNSPECIFIED 모드로 재측정하면 Compose 가 전체 콘텐츠 높이를 반환한다.
+                    composeView.measure(
+                        View.MeasureSpec.makeMeasureSpec(screenWidth, View.MeasureSpec.EXACTLY),
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                    )
+                    val fullHeight = composeView.measuredHeight.coerceIn(1, 12_000) // OOM 방지
+                    composeView.layout(
+                        composeView.left,
+                        composeView.top,
+                        composeView.left + screenWidth,
+                        composeView.top + fullHeight
+                    )
+
+                    val bitmap = Bitmap.createBitmap(screenWidth, fullHeight, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(bitmap)
+                    canvas.drawColor(android.graphics.Color.WHITE)
+                    composeView.draw(canvas)
+
                     decorView.removeView(composeView)
-                    return@postDelayed
+                    onCaptured(bitmap)
+                } catch (e: Exception) {
+                    if (composeView.isAttachedToWindow) decorView.removeView(composeView)
                 }
-
-                // hardware-accelerated 뷰는 drawToBitmap 불가 → software 강제
-                composeView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-
-                val bitmap = Bitmap.createBitmap(screenWidth, height, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(bitmap)
-                canvas.drawColor(android.graphics.Color.WHITE)
-                composeView.draw(canvas)
-
-                decorView.removeView(composeView)
-                onCaptured(bitmap)
-            } catch (e: Exception) {
-                if (composeView.isAttachedToWindow) decorView.removeView(composeView)
-            }
-        }, 200L)
+            }, 300L)
+        }
     }
+    composeView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
 }
 
 /**

@@ -74,4 +74,7 @@ dependencies {
     // Glance (홈 화면 위젯)
     implementation("androidx.glance:glance-appwidget:1.1.1")
     implementation("androidx.glance:glance-material3:1.1.1")
+
+    // Chrome Custom Tabs (WebView 불안정한 외부 페이지용)
+    implementation("androidx.browser:browser:1.8.0")
 }

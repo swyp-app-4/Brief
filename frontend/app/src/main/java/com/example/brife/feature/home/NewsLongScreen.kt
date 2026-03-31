@@ -77,7 +77,6 @@ fun NewsLongScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-//    val view = LocalView.current
 
     val scrollState = rememberScrollState()
 
@@ -148,10 +147,23 @@ fun NewsLongScreen(
                 }
             },
             onShareClick = {
-                // 현재 화면 전체를 PixelCopy로 캡처 후 이미지 공유
-                captureWindowBitmap(context, view) { bitmap ->
-                    shareImageBitmap(context, bitmap, item.title)
-                }
+                captureComposableContent(
+                    context = context,
+                    onCaptured = { bitmap ->
+                        shareImageBitmap(context, bitmap, item.title)
+                    },
+                    content = {
+                        BrifeTheme {
+                            Surface(color = Color.White) {
+                                NewsLongShareContent(
+                                    item = item,
+                                    imageRes = imageRes,
+                                    sections = sections
+                                )
+                            }
+                        }
+                    }
+                )
             }
         )
 
@@ -180,7 +192,6 @@ fun NewsLongScreen(
                 }
             )
         }
-
         if (showCreateFolderSheet) {
             CreateFolderBottomSheet(
                 onDismissRequest = { showCreateFolderSheet = false },
@@ -194,6 +205,8 @@ fun NewsLongScreen(
         }
     }
 }
+
+
 @Composable
 private fun NewsLongContent(
     item: HomeNewsCardItem,
@@ -446,5 +459,26 @@ private fun NewsLongTopBar(
         ),
         windowInsets = WindowInsets(0, 0, 0, 0)
     )
+}
+
+@Composable
+private fun NewsLongShareContent(
+    item: HomeNewsCardItem,
+    imageRes: Int,
+    sections: List<NewsDetailSection>
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+    ) {
+        NewsLongContent(
+            item = item,
+            imageRes = imageRes,
+            sections = sections
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+    }
 }
 
