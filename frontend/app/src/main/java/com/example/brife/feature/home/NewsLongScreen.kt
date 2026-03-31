@@ -36,6 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,6 +77,9 @@ fun NewsLongScreen(
     onLoginRequired: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val view = LocalView.current
+
     val scrollState = rememberScrollState()
 
     val density = LocalDensity.current
@@ -136,7 +141,12 @@ fun NewsLongScreen(
                     onLoginRequired()
                 }
             },
-            onShareClick = onShareClick
+            onShareClick = {
+                // 현재 화면 전체를 PixelCopy로 캡처 후 이미지 공유
+                captureWindowBitmap(context, view) { bitmap ->
+                    shareImageBitmap(context, bitmap, item.title)
+                }
+            }
         )
 
         if (showBookmarkSheet) {

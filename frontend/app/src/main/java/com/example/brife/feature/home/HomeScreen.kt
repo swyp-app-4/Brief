@@ -1,5 +1,6 @@
 package com.example.brife.feature.home
 
+import android.graphics.Rect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,6 +47,9 @@ fun HomeScreen(
     onShareClick: (HomeNewsCardItem) -> Unit = {},
     topPadding: Dp = 0.dp
 ) {
+    val context = LocalContext.current
+    val view = LocalView.current
+
     var showBottomSheet by remember { mutableStateOf(false) }
     // 한 세션 내에서 로그인 유도 바텀시트를 이미 표시했는지 여부
     // "더 둘러보기" 클릭 후 다음 페이지로 넘어가도 다시 표시되지 않음
@@ -130,6 +139,9 @@ fun HomeScreen(
                         (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
                     val absOffset = pageOffset.absoluteValue
 
+                    // 카드 이미지 공유를 위해 카드 영역의 window 내 좌표를 추적
+                    var cardCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -148,7 +160,8 @@ fun HomeScreen(
                                     stop = 1f,
                                     fraction = 1f - absOffset.coerceIn(0f, 1f)
                                 )
-                            },
+                            }
+                            .onGloballyPositioned { cardCoords = it },
                         shape = RoundedCornerShape(20.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -159,7 +172,19 @@ fun HomeScreen(
                             HomeNewsCardContent(
                                 item = newsList[page],
                                 modifier = Modifier.fillMaxWidth(),
-                                onShareClick = { onShareClick(newsList[page]) },
+                                onShareClick = {
+                                    val coords = cardCoords ?: return@HomeNewsCardContent
+                                    val bounds = coords.boundsInWindow()
+                                    val srcRect = Rect(
+                                        bounds.left.toInt(),
+                                        bounds.top.toInt(),
+                                        bounds.right.toInt(),
+                                        bounds.bottom.toInt()
+                                    )
+                                    captureWindowBitmap(context, view, srcRect) { bitmap ->
+                                        shareImageBitmap(context, bitmap, newsList[page].title)
+                                    }
+                                },
                                 onDetailClick = { onDetailClick(newsList[page]) }
                             )
                         }

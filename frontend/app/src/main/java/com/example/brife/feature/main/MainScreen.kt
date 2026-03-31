@@ -41,7 +41,7 @@ import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
 import com.example.brife.feature.home.HomeToLoginBottomSheet
 import com.example.brife.feature.home.NewsLongScreen
-import com.example.brife.feature.home.shareNews
+
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -174,9 +174,7 @@ fun MainScreen(
                         selectedNewsItem = item
                         navController.navigate("${NavRoutes.NEWS_LONG}/${item.newsId}")
                     },
-                    onShareClick = { item ->
-                        shareNews(context, item.title, item.newsId.toString())
-                    },
+                    onShareClick = { /* 이미지 공유는 HomeScreen 내부에서 처리 */ },
                     topPadding = innerPadding.calculateTopPadding()
                 )
             }
@@ -347,9 +345,7 @@ fun MainScreen(
                             navController.popBackStack()
                             navigateTo(NavRoutes.ARCHIVE)
                         },
-                        onShareClick = {
-                            shareNews(context, item.title, newsId.toString())
-                        },
+                        onShareClick = { /* 이미지 공유는 NewsLongScreen 내부에서 처리 */ },
                         onLoginRequired = { showLoginBottomSheet = true }
                     )
                 }

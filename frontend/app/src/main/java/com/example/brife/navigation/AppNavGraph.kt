@@ -2,6 +2,7 @@ package com.example.brife.navigation
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
@@ -43,7 +44,9 @@ import com.example.brife.navigation.NavRoutes
 
 
 @Composable
-fun AppNavGraph() {
+fun AppNavGraph(
+    initialNewsId: Long? = null
+) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val authLocalStorage = remember { AuthLocalStorage(context) }
@@ -56,8 +59,11 @@ fun AppNavGraph() {
     var isWithdrawing by remember { mutableStateOf(false) }
     var withdrawErrorMessage by remember { mutableStateOf<String?>(null) }
 
-//    val context = LocalContext.current
-//    val hasCompletedOnboarding = OnboardingLocalStorage(context).hasCompletedOnboarding()
+    LaunchedEffect(initialNewsId) {
+        if (initialNewsId != null) {
+            navController.navigate("${NavRoutes.NEWS_LONG}/$initialNewsId")
+        }
+    }
 
     NavHost(
         navController = navController,

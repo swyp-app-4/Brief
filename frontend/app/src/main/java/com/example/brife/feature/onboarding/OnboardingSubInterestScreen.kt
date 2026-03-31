@@ -196,20 +196,31 @@ private fun SubCategorySectionView(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Image(
-                painter = painterResource(id = iconRes),
-                contentDescription = categoryName,
-                modifier = Modifier.size(22.dp)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = categoryName,
+                    modifier = Modifier.size(22.dp)
+                )
 
-            Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(10.dp))
 
-            AppText(
-                text = categoryName,
-                style = MaterialTheme.typography.bodyLarge
-            )
+                AppText(
+                    text = categoryName,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            if (needsCollapse) {
+                MoreChip(
+                    text = "+N",
+                    expanded = expanded,
+                    onClick = onExpandToggle
+                )
+            }
         }
 
         FlowRow(
@@ -222,15 +233,6 @@ private fun SubCategorySectionView(
                     text = subCategory.name,
                     selected = selectedIds.contains(subCategory.id),
                     onClick = { onChipClick(subCategory.id) }
-                )
-            }
-
-            // +N 토글 버튼 (항상 표시, 펼침/접힘 상태에 따라 스타일 변경)
-            if (needsCollapse) {
-                MoreChip(
-                    text = "+N",
-                    expanded = expanded,
-                    onClick = onExpandToggle
                 )
             }
         }
