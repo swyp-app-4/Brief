@@ -302,8 +302,9 @@ fun AppNavGraph(
 
                         // 4. 성공 시에만 로컬 초기화 — 화면 전환 없이 SettingScreen 유지
                         authLocalStorage.clear()
-                        onboardingLocalStorage.clearOnboarding()  // 재가입 시 구 관심사 재전송 방지
                         searchHistoryLocalStorage.clearAll()       // 탈퇴 사용자의 검색 기록 삭제
+                        // 관심사(onboarding_prefs)는 탈퇴 후에도 유지
+                        // → 비로그인 상태에서 프로필 화면 표시 및 홈 뉴스 로드에 계속 사용
                         isWithdrawing = false
                         isWithdrawn = true
                     }
