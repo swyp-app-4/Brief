@@ -4,28 +4,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="4dp">
+    android:padding="8dp">
 
-    <!-- 타이틀: 카드 영역 바깥 -->
+    <!-- 타이틀: 카드 영역 바깥 (13→14sp로 소폭 확대) -->
     <TextView
         android:id="@+id/widget_tv_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:textColor="#0D1B3E"
-        android:textSize="13sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:maxLines="2"
         android:ellipsize="end" />
 
-    <!-- 요약 카드 영역 (파란 배경) -->
+    <!-- 요약 카드 영역 (파란 배경 / 카드 높이 줄이기: weight=1→wrap_content + 패딩 축소) -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="@drawable/widget_card_bg"
-        android:padding="10dp"
+        android:padding="16dp"
         android:gravity="center_vertical">
 
         <TextView
@@ -33,7 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#4A5568"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:maxLines="1"
             android:ellipsize="end" />
 
@@ -41,9 +40,9 @@
             android:id="@+id/widget_tv_summary_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="12dp"
             android:textColor="#4A5568"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:maxLines="1"
             android:ellipsize="end" />
 
@@ -51,9 +50,9 @@
             android:id="@+id/widget_tv_summary_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="12dp"
             android:textColor="#4A5568"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:maxLines="1"
             android:ellipsize="end" />
 

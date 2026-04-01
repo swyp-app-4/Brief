@@ -62,6 +62,7 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
     private val repository = WidgetNewsRepository(
         newsApi = NetworkModule.newsApiService,
         homeApi = NetworkModule.homeApiService,
+        archiveApi = NetworkModule.archiveApiService,
         onboardingLocalStorage = OnboardingLocalStorage(context),
         authLocalStorage = AuthLocalStorage(context)
     )
@@ -96,6 +97,17 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         val editor = prefs.edit()
         currentData.forEachIndexed { index, news -> editor.putLong("newsId_$index", news.newsId) }
         editor.apply()
+
+        // 서버에서 저장된 뉴스 ID를 조회하여 widget_prefs 북마크 상태 동기화
+        // → 이미 앱에서 저장된 뉴스도 위젯에서 active 상태로 표시
+        val savedIds = repository.fetchSavedNewsIds()
+        if (savedIds.isNotEmpty()) {
+            val widgetPrefs = context.getSharedPreferences("widget_prefs", Context.MODE_PRIVATE)
+            val existing = widgetPrefs.getStringSet("bookmarked_ids", emptySet())?.toMutableSet() ?: mutableSetOf()
+            existing.addAll(savedIds.map { it.toString() })
+            widgetPrefs.edit().putStringSet("bookmarked_ids", existing).apply()
+            Log.d("BrifeWidgetFactory", "북마크 동기화 완료: ${savedIds.size}개")
+        }
     }
 
     override fun onDestroy() {}

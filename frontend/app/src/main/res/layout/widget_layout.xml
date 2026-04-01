@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#FFFFFF"
-    android:padding="8dp">
+    android:padding="12dp">
 
     <!-- 헤더: 로고(좌) + 북마크 버튼(우) -->
     <LinearLayout
@@ -15,7 +15,7 @@
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="20dp"
+            android:layout_height="24dp"
             android:layout_marginStart="12dp"
             android:src="@drawable/img_widget_toplogo"
             android:scaleType="fitStart"
@@ -30,7 +30,7 @@
             android:id="@+id/iv_widget_bookmark"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginEnd="12dp"
+            android:layout_marginEnd="14dp"
             android:src="@drawable/img_widget_bookmark_inactive"
             android:scaleType="fitCenter" />
 
@@ -41,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="14dp"
         android:clipChildren="false"
         android:clipToPadding="false">
 
@@ -55,23 +55,21 @@
             android:flipInterval="0"
             android:autoStart="false" />
 
-        <!-- 이전 버튼: summary 카드 세로 중심 (center_vertical + 아래 offset) -->
+        <!-- 이전 버튼: 카드 영역(FrameLayout) 기준 세로 가운데 -->
         <ImageView
             android:id="@+id/widget_btn_prev"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
             android:layout_gravity="start|center_vertical"
-            android:layout_marginTop="20dp"
             android:src="@drawable/img_widget_left_button"
             android:scaleType="fitCenter" />
 
-        <!-- 다음 버튼: summary 카드 세로 중심 (center_vertical + 아래 offset) -->
+        <!-- 다음 버튼: 카드 영역(FrameLayout) 기준 세로 가운데 -->
         <ImageView
             android:id="@+id/widget_btn_next"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="end|center_vertical"
-            android:layout_marginTop="20dp"
             android:src="@drawable/img_widget_right_button"
             android:scaleType="fitCenter" />
 
@@ -83,7 +81,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="6dp">
+        android:layout_marginTop="2dp">
 
         <ImageView
             android:id="@+id/widget_dot_0"

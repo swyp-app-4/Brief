@@ -33,6 +33,10 @@ class NewsLongViewModel(
     private val _articleCount = MutableStateFlow(0)
     val articleCount: StateFlow<Int> = _articleCount.asStateFlow()
 
+    // 위젯 진입 시 selectedNewsItem.title = "" 이므로 API 응답으로 보정
+    private val _title = MutableStateFlow("")
+    val title: StateFlow<String> = _title.asStateFlow()
+
     // preselectedArchiveId: ArchiveDetail에서 진입 시 해당 폴더를 isSelected=true로 초기화
     // newsId: Home/Explore 진입 시 이미 저장된 폴더를 자동 감지하여 isSelected=true로 설정
     fun loadFolders(preselectedArchiveId: Long? = null, newsId: Long? = null) {
@@ -97,6 +101,7 @@ class NewsLongViewModel(
                     _categoryName.value = detail.categoryName
                     _summaryPoints.value = detail.summaryList
                     _articleCount.value = detail.sourceCount
+                    _title.value = detail.title
                 }
                 .onFailure { e ->
                     Log.e("NewsLongViewModel", "섹션 로드 실패: ${e.message}")

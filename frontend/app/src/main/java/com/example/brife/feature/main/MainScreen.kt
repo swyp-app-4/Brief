@@ -99,6 +99,7 @@ fun MainScreen(
     // initialDeepLinkNewsId 가 변경될 때마다 재실행 (앱 실행 중 위젯 클릭 포함)
     LaunchedEffect(initialDeepLinkNewsId) {
         if (initialDeepLinkNewsId != null) {
+            preselectedArchiveId = null  // 위젯 진입 시 이전 ArchiveDetail 폴더 선택 상태 초기화
             selectedNewsItem = HomeNewsCardItem(
                 newsId = initialDeepLinkNewsId,
                 category = "",
@@ -357,6 +358,7 @@ fun MainScreen(
                     val newsLongCategoryName by newsLongViewModel.categoryName.collectAsState()
                     val newsLongSummaryPoints by newsLongViewModel.summaryPoints.collectAsState()
                     val newsLongArticleCount by newsLongViewModel.articleCount.collectAsState()
+                    val newsLongTitle by newsLongViewModel.title.collectAsState()
 
                     // 로그인 상태일 때만 폴더 목록 로드, 섹션은 항상 로드
                     // ArchiveDetail 진입: preselectedArchiveId로 해당 폴더 isSelected=true
@@ -370,6 +372,7 @@ fun MainScreen(
                     // Home 진입: item에 이미 완전한 데이터 → API 응답이 있으면 덮어씀(동일값)
                     // Explore/Archive 진입: item의 summaryPoints/articleCount가 빈값 → API 로드 후 반영
                     val resolvedItem = item.copy(
+                        title = if (newsLongTitle.isNotBlank()) newsLongTitle else item.title,
                         category = if (newsLongGroupName.isNotBlank()) newsLongGroupName else item.category,
                         subCategory = if (newsLongCategoryName.isNotBlank()) newsLongCategoryName else item.subCategory,
                         summaryPoints = if (newsLongSummaryPoints.isNotEmpty()) newsLongSummaryPoints else item.summaryPoints,

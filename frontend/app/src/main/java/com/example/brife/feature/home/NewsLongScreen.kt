@@ -88,8 +88,8 @@ fun NewsLongScreen(
         label = "newsLongTopBarColor"
     )
 
-    val imageRes = remember(item.category) {
-        LongFormImageProvider.getRandomImageRes(item.category)
+    val imageRes = remember(item.category, item.subCategory, item.newsId) {
+        LongFormImageProvider.getStableImageRes(item.category, item.subCategory, item.newsId)
     }
 
     var showBookmarkSheet by remember { mutableStateOf(false) }
