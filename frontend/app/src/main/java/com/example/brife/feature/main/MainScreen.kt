@@ -297,6 +297,8 @@ fun MainScreen(
                 )
             }
 
+            // MainScreen.kt 의 NavRoutes.ONBOARDING_SUB_INTEREST_RESET 부분 수정
+
             composable(
                 route = "${NavRoutes.ONBOARDING_SUB_INTEREST_RESET}/{idsArg}",
                 arguments = listOf(navArgument("idsArg") { type = NavType.StringType })
@@ -306,23 +308,30 @@ fun MainScreen(
                 OnboardingSubInterestRoute(
                     selectedParentCategoryIds = selectedIds,
                     onNextClick = {
-                        // 로컬 관심사 갱신
+                        // 1. 로컬 관심사 갱신 (프로필 화면 UI 즉시 반영용)
                         profileInterests = onboardingStorage.getSelectedCategoryIds()
                             .mapNotNull { categoryItemFromId(it) }
-                        // PUT /users/me/interests — 서버에 관심사 재설정
-                        // 성공 시에만 홈 뉴스 재로드 트리거
-                        scope.launch {
-                            val result = userRepository.updateInterests(
-                                categoryIds = onboardingStorage.getSelectedSubCategoryIds(),
-                                groupIds = onboardingStorage.getSelectedCategoryIds()
-                            )
-                            if (result.isSuccess) {
-                                Log.d("MainScreen", "관심사 재설정 PUT 성공 → 홈 뉴스 재로드")
-                                homeReloadVersion++
-                            } else {
-                                Log.w("MainScreen", "관심사 재설정 PUT 실패: ${result.exceptionOrNull()?.message}")
+
+                        if (isLoggedIn) {
+                            // 2-A. 로그인 상태: 서버와 관심사 동기화 시도
+                            scope.launch {
+                                val result = userRepository.updateInterests(
+                                    categoryIds = onboardingStorage.getSelectedSubCategoryIds(),
+                                    groupIds = onboardingStorage.getSelectedCategoryIds()
+                                )
+                                if (result.isSuccess) {
+                                    Log.d("MainScreen", "관심사 재설정 PUT 성공 → 홈 뉴스 재로드")
+                                    homeReloadVersion++
+                                } else {
+                                    Log.w("MainScreen", "관심사 재설정 PUT 실패: ${result.exceptionOrNull()?.message}")
+                                }
                             }
+                        } else {
+                            // 2-B. 비로그인 상태: 로컬 저장소 데이터만 사용하므로 즉시 홈 리로드 트리거
+                            Log.d("MainScreen", "비로그인 관심사 재설정 완료 → 홈 뉴스 재로드")
+                            homeReloadVersion++
                         }
+
                         navController.popBackStack(NavRoutes.PROFILE, false)
                     }
                 )
