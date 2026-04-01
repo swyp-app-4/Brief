@@ -68,6 +68,19 @@ fun AppNavGraph(
     // NEWS_LONG 은 MainScreen 내부 NavHost 에 있으므로 AppNavGraph 의 navController 로는
     // 직접 navigate 불가. initialNewsId 를 MainScreen 에 파라미터로 전달하여 처리.
 
+    // 위젯 딥링크 진입 시 SETTING 등 다른 화면에 있으면 MAIN으로 복귀
+    // → 이후 MainScreen 의 LaunchedEffect 가 NEWS_LONG 으로 이동
+    LaunchedEffect(initialNewsId) {
+        if (initialNewsId == null) return@LaunchedEffect
+        val currentRoute = navController.currentDestination?.route ?: return@LaunchedEffect
+        if (currentRoute != NavRoutes.MAIN && currentRoute != NavRoutes.SPLASH) {
+            navController.navigate(NavRoutes.MAIN) {
+                popUpTo(NavRoutes.MAIN) { inclusive = false }
+                launchSingleTop = true
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = NavRoutes.SPLASH

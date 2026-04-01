@@ -62,13 +62,21 @@ class WidgetActionReceiver : BroadcastReceiver() {
         private const val PREFS_NAME = "widget_prefs"
         private const val KEY_BOOKMARKED = "bookmarked_ids"
 
-        /** 로컬에 저장된 북마크된 newsId 목록 반환 (위젯 ★/☆ 표시용) */
+        /** 로컬에 저장된 북마크된 newsId 목록 반환 (위젯 이미지 전환용) */
         fun getBookmarkedIds(context: Context): Set<Long> {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             return prefs.getStringSet(KEY_BOOKMARKED, emptySet())
                 ?.mapNotNull { it.toLongOrNull() }
                 ?.toSet()
                 ?: emptySet()
+        }
+
+        /** 앱에서 보관함 저장 완료 후 위젯 북마크 상태를 active로 동기화 */
+        fun saveBookmarkedId(context: Context, newsId: Long) {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val current = prefs.getStringSet(KEY_BOOKMARKED, emptySet())?.toMutableSet() ?: mutableSetOf()
+            current.add(newsId.toString())
+            prefs.edit().putStringSet(KEY_BOOKMARKED, current).apply()
         }
     }
 }

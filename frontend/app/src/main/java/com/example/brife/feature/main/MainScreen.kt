@@ -1,5 +1,8 @@
 package com.example.brife.feature.main
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -41,6 +44,8 @@ import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
 import com.example.brife.feature.home.HomeToLoginBottomSheet
 import com.example.brife.feature.home.NewsLongScreen
+import com.example.brife.feature.widget.BrifeWidgetReceiver
+import com.example.brife.feature.widget.WidgetActionReceiver
 
 import kotlinx.coroutines.launch
 
@@ -379,6 +384,22 @@ fun MainScreen(
                         sections = newsLongSections,
                         onSaveToFolders = { selectedFolders ->
                             newsLongViewModel.saveToFolders(item.newsId, selectedFolders)
+                            // 저장 성공 시 위젯 북마크 상태 active로 동기화
+                            if (selectedFolders.isNotEmpty()) {
+                                WidgetActionReceiver.saveBookmarkedId(context, item.newsId)
+                                val manager = AppWidgetManager.getInstance(context)
+                                val ids = manager.getAppWidgetIds(
+                                    ComponentName(context, BrifeWidgetReceiver::class.java)
+                                )
+                                if (ids.isNotEmpty()) {
+                                    context.sendBroadcast(
+                                        Intent(context, BrifeWidgetReceiver::class.java).apply {
+                                            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                                            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                                        }
+                                    )
+                                }
+                            }
                         },
                         onCreateFolder = { folderName ->
                             newsLongViewModel.createFolder(folderName)

@@ -115,30 +115,12 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         rv.setTextViewText(R.id.widget_tv_summary_2, news.summary2)
         rv.setTextViewText(R.id.widget_tv_summary_3, news.summary3)
 
-        // ── 북마크 상태 이미지 적용 ────────────────────────────────────────────
-        val bookmarked = WidgetActionReceiver.getBookmarkedIds(context)
-        rv.setImageViewResource(
-            R.id.iv_bookmark,
-            if (news.newsId != 0L && news.newsId in bookmarked)
-                R.drawable.img_widget_bookmark_active
-            else
-                R.drawable.img_widget_bookmark_inactive
-        )
-
         // ── 카드 본문 클릭 → 뉴스 상세 이동 ──────────────────────────────────
-        // setPendingIntentTemplate(BrifeWidget) + setOnClickFillInIntent(여기) 패턴
         val cardFillIn = Intent().apply {
             putExtra(WidgetActionReceiver.EXTRA_ACTION, WidgetActionReceiver.ACTION_OPEN_NEWS)
             putExtra(WidgetActionReceiver.EXTRA_NEWS_ID, news.newsId)
         }
         rv.setOnClickFillInIntent(R.id.widget_card_root, cardFillIn)
-
-        // ── 북마크 버튼 클릭 → 즐겨찾기 저장 ────────────────────────────────
-        val bookmarkFillIn = Intent().apply {
-            putExtra(WidgetActionReceiver.EXTRA_ACTION, WidgetActionReceiver.ACTION_BOOKMARK)
-            putExtra(WidgetActionReceiver.EXTRA_NEWS_ID, news.newsId)
-        }
-        rv.setOnClickFillInIntent(R.id.iv_bookmark, bookmarkFillIn)
 
         return rv
     }

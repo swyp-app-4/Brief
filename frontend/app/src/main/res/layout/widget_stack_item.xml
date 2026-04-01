@@ -6,34 +6,17 @@
     android:orientation="vertical"
     android:padding="4dp">
 
-    <!-- 타이틀 + 북마크: 카드 영역 바깥 -->
-    <LinearLayout
+    <!-- 타이틀: 카드 영역 바깥 -->
+    <TextView
+        android:id="@+id/widget_tv_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:id="@+id/widget_tv_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textColor="#0D1B3E"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:maxLines="2"
-            android:ellipsize="end" />
-
-        <ImageView
-            android:id="@+id/iv_bookmark"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="6dp"
-            android:src="@drawable/img_widget_bookmark_inactive"
-            android:scaleType="fitCenter" />
-
-    </LinearLayout>
+        android:layout_marginBottom="8dp"
+        android:textColor="#0D1B3E"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:maxLines="2"
+        android:ellipsize="end" />
 
     <!-- 요약 카드 영역 (파란 배경) -->
     <LinearLayout
