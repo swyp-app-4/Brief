@@ -6,49 +6,115 @@
     android:background="#FFFFFF"
     android:padding="8dp">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- 헤더: 로고(좌) + 북마크 버튼(우) -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Brife"
-        android:textColor="#000000"
-        android:textStyle="bold"
-        android:textSize="14sp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <!-- AdapterViewFlipper: 카드 1개씩 표시, 버튼으로 전환 -->
-    <AdapterViewFlipper
-        android:id="@+id/widget_flipper"
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:src="@drawable/img_widget_toplogo"
+            android:scaleType="fitStart"
+            android:adjustViewBounds="true" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/iv_widget_bookmark"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/img_widget_bookmark_inactive"
+            android:scaleType="fitCenter" />
+
+    </LinearLayout>
+
+    <!-- 카드 영역 + 좌우 버튼 (버튼 중심이 카드 테두리에 겹치도록 FrameLayout 사용) -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_marginTop="6dp"
-        android:flipInterval="0"
-        android:autoStart="false" />
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
-    <!-- 이전 / 다음 버튼 -->
+        <!-- 카드 AdapterViewFlipper: 양쪽 12dp 마진 = 버튼(24dp) 절반 -->
+        <AdapterViewFlipper
+            android:id="@+id/widget_flipper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:flipInterval="0"
+            android:autoStart="false" />
+
+        <!-- 이전 버튼: 왼쪽 테두리 중심 -->
+        <ImageView
+            android:id="@+id/widget_btn_prev"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="start|center_vertical"
+            android:src="@drawable/img_widget_left_button"
+            android:scaleType="fitCenter" />
+
+        <!-- 다음 버튼: 오른쪽 테두리 중심 -->
+        <ImageView
+            android:id="@+id/widget_btn_next"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="end|center_vertical"
+            android:src="@drawable/img_widget_right_button"
+            android:scaleType="fitCenter" />
+
+    </FrameLayout>
+
+    <!-- 페이지 인디케이터 (5개 점) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="4dp">
+        android:layout_marginTop="6dp">
 
-        <TextView
-            android:id="@+id/widget_btn_prev"
-            android:layout_width="48dp"
-            android:layout_height="32dp"
-            android:text="◀"
-            android:textColor="#2060E8"
-            android:textSize="14sp"
-            android:gravity="center" />
+        <ImageView
+            android:id="@+id/widget_dot_0"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginHorizontal="3dp"
+            android:src="@drawable/widget_dot_active" />
 
-        <TextView
-            android:id="@+id/widget_btn_next"
-            android:layout_width="48dp"
-            android:layout_height="32dp"
-            android:text="▶"
-            android:textColor="#2060E8"
-            android:textSize="14sp"
-            android:gravity="center" />
+        <ImageView
+            android:id="@+id/widget_dot_1"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginHorizontal="3dp"
+            android:src="@drawable/widget_dot_inactive" />
+
+        <ImageView
+            android:id="@+id/widget_dot_2"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginHorizontal="3dp"
+            android:src="@drawable/widget_dot_inactive" />
+
+        <ImageView
+            android:id="@+id/widget_dot_3"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginHorizontal="3dp"
+            android:src="@drawable/widget_dot_inactive" />
+
+        <ImageView
+            android:id="@+id/widget_dot_4"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginHorizontal="3dp"
+            android:src="@drawable/widget_dot_inactive" />
 
     </LinearLayout>
 

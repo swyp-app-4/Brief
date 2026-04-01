@@ -90,6 +90,12 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
             mockData
         }
         Log.d("BrifeWidgetFactory", "onDataSetChanged 끝: itemCount=${currentData.size}")
+
+        // BrifeWidgetReceiver에서 현재 카드의 newsId를 조회할 수 있도록 저장
+        val prefs = context.getSharedPreferences("brife_widget_prefs", Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        currentData.forEachIndexed { index, news -> editor.putLong("newsId_$index", news.newsId) }
+        editor.apply()
     }
 
     override fun onDestroy() {}
@@ -109,11 +115,14 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         rv.setTextViewText(R.id.widget_tv_summary_2, news.summary2)
         rv.setTextViewText(R.id.widget_tv_summary_3, news.summary3)
 
-        // ── 북마크 상태 (★/☆ 문자 — VectorDrawable은 RemoteViews 미지원) ────────
+        // ── 북마크 상태 이미지 적용 ────────────────────────────────────────────
         val bookmarked = WidgetActionReceiver.getBookmarkedIds(context)
-        rv.setTextViewText(
-            R.id.widget_btn_bookmark,
-            if (news.newsId != 0L && news.newsId in bookmarked) "★" else "☆"
+        rv.setImageViewResource(
+            R.id.iv_bookmark,
+            if (news.newsId != 0L && news.newsId in bookmarked)
+                R.drawable.img_widget_bookmark_active
+            else
+                R.drawable.img_widget_bookmark_inactive
         )
 
         // ── 카드 본문 클릭 → 뉴스 상세 이동 ──────────────────────────────────
@@ -129,7 +138,7 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
             putExtra(WidgetActionReceiver.EXTRA_ACTION, WidgetActionReceiver.ACTION_BOOKMARK)
             putExtra(WidgetActionReceiver.EXTRA_NEWS_ID, news.newsId)
         }
-        rv.setOnClickFillInIntent(R.id.widget_btn_bookmark, bookmarkFillIn)
+        rv.setOnClickFillInIntent(R.id.iv_bookmark, bookmarkFillIn)
 
         return rv
     }
