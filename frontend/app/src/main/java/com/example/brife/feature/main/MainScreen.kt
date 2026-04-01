@@ -57,7 +57,8 @@ fun MainScreen(
     onNavigateToNewsLong: (String) -> Unit,
     onNavigateToSetting: () -> Unit = {},
     initialDeepLinkNewsId: Long? = null,
-    initialOpenBookmark: Boolean = false
+    initialOpenBookmark: Boolean = false,
+    deepLinkVersion: Int = 0
 ) {
     val context = LocalContext.current
     val onboardingStorage = remember { OnboardingLocalStorage(context) }
@@ -96,8 +97,8 @@ fun MainScreen(
     var preselectedArchiveId by remember { mutableStateOf<Long?>(null) }
 
     // 위젯 또는 딥링크로 진입 시 뉴스 상세 화면으로 자동 이동
-    // initialDeepLinkNewsId 가 변경될 때마다 재실행 (앱 실행 중 위젯 클릭 포함)
-    LaunchedEffect(initialDeepLinkNewsId) {
+    // deepLinkVersion을 키에 포함 → 동일 newsId 재진입 시에도 재실행 보장
+    LaunchedEffect(initialDeepLinkNewsId, deepLinkVersion) {
         if (initialDeepLinkNewsId != null) {
             preselectedArchiveId = null  // 위젯 진입 시 이전 ArchiveDetail 폴더 선택 상태 초기화
             selectedNewsItem = HomeNewsCardItem(
@@ -338,85 +339,99 @@ fun MainScreen(
             ) { backStackEntry ->
                 val newsId = backStackEntry.arguments?.getLong("newsId") ?: 0L
                 val openBookmark = backStackEntry.arguments?.getBoolean("openBookmark") ?: false
-                val item = selectedNewsItem
 
-                if (item != null) {
-                    val archiveRepository = remember {
-                        ArchiveRepository(
-                            api = NetworkModule.archiveApiService,
-                            newsApi = NetworkModule.newsApiService, // 이 인자를 추가하세요
-                            authLocalStorage = authStorage
-                        )
-                    }
-                    val newsLongViewModel: NewsLongViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-                        key = "newslong_$newsId",
-                        factory = NewsLongViewModelFactory(archiveRepository)
-                    )
-                    val newsLongFolders by newsLongViewModel.folders.collectAsState()
-                    val newsLongSections by newsLongViewModel.sections.collectAsState()
-                    val newsLongGroupName by newsLongViewModel.groupName.collectAsState()
-                    val newsLongCategoryName by newsLongViewModel.categoryName.collectAsState()
-                    val newsLongSummaryPoints by newsLongViewModel.summaryPoints.collectAsState()
-                    val newsLongArticleCount by newsLongViewModel.articleCount.collectAsState()
-                    val newsLongTitle by newsLongViewModel.title.collectAsState()
+                // selectedNewsItem이 null이어도 newsId로 fallback 항목 생성
+                // → 위젯 deeplink 진입 시 race condition 방어 + 항상 API 재조회 보장
+                val item = selectedNewsItem ?: HomeNewsCardItem(
+                    newsId = newsId,
+                    category = "",
+                    title = "",
+                    notice = "",
+                    summaryPoints = emptyList(),
+                    insight = "",
+                    articleCount = 0
+                )
 
-                    // 로그인 상태일 때만 폴더 목록 로드, 섹션은 항상 로드
-                    // ArchiveDetail 진입: preselectedArchiveId로 해당 폴더 isSelected=true
-                    // Home/Explore 진입: newsId로 이미 저장된 폴더 자동 감지
-                    LaunchedEffect(newsId) {
-                        if (isLoggedIn) newsLongViewModel.loadFolders(preselectedArchiveId, newsId)
-                        newsLongViewModel.loadSections(newsId)
-                    }
-
-                    // API 응답으로 누락 필드 보정
-                    // Home 진입: item에 이미 완전한 데이터 → API 응답이 있으면 덮어씀(동일값)
-                    // Explore/Archive 진입: item의 summaryPoints/articleCount가 빈값 → API 로드 후 반영
-                    val resolvedItem = item.copy(
-                        title = if (newsLongTitle.isNotBlank()) newsLongTitle else item.title,
-                        category = if (newsLongGroupName.isNotBlank()) newsLongGroupName else item.category,
-                        subCategory = if (newsLongCategoryName.isNotBlank()) newsLongCategoryName else item.subCategory,
-                        summaryPoints = if (newsLongSummaryPoints.isNotEmpty()) newsLongSummaryPoints else item.summaryPoints,
-                        articleCount = if (newsLongArticleCount > 0) newsLongArticleCount else item.articleCount
-                    )
-
-                    NewsLongScreen(
-                        item = resolvedItem,
-                        isLoggedIn = isLoggedIn,
-                        autoOpenBookmark = openBookmark && isLoggedIn,
-                        folders = newsLongFolders,
-                        sections = newsLongSections,
-                        onSaveToFolders = { selectedFolders ->
-                            newsLongViewModel.saveToFolders(item.newsId, selectedFolders)
-                            // 저장 성공 시 위젯 북마크 상태 active로 동기화
-                            if (selectedFolders.isNotEmpty()) {
-                                WidgetActionReceiver.saveBookmarkedId(context, item.newsId)
-                                val manager = AppWidgetManager.getInstance(context)
-                                val ids = manager.getAppWidgetIds(
-                                    ComponentName(context, BrifeWidgetReceiver::class.java)
-                                )
-                                if (ids.isNotEmpty()) {
-                                    context.sendBroadcast(
-                                        Intent(context, BrifeWidgetReceiver::class.java).apply {
-                                            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                                            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-                                        }
-                                    )
-                                }
-                            }
-                        },
-                        onCreateFolder = { folderName ->
-                            newsLongViewModel.createFolder(folderName)
-                        },
-                        onBackClick = { navController.popBackStack() },
-                        onNavigateToArchive = {
-                            archiveReloadVersion++
-                            navController.popBackStack()
-                            navigateTo(NavRoutes.ARCHIVE)
-                        },
-                        onShareClick = { /* 이미지 공유는 NewsLongScreen 내부에서 처리 */ },
-                        onLoginRequired = { showLoginBottomSheet = true }
+                val archiveRepository = remember {
+                    ArchiveRepository(
+                        api = NetworkModule.archiveApiService,
+                        newsApi = NetworkModule.newsApiService,
+                        authLocalStorage = authStorage
                     )
                 }
+                val newsLongViewModel: NewsLongViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                    key = "newslong_$newsId",
+                    factory = NewsLongViewModelFactory(archiveRepository)
+                )
+                val newsLongFolders by newsLongViewModel.folders.collectAsState()
+                val newsLongSections by newsLongViewModel.sections.collectAsState()
+                val newsLongGroupName by newsLongViewModel.groupName.collectAsState()
+                val newsLongCategoryName by newsLongViewModel.categoryName.collectAsState()
+                val newsLongSummaryPoints by newsLongViewModel.summaryPoints.collectAsState()
+                val newsLongArticleCount by newsLongViewModel.articleCount.collectAsState()
+                val newsLongTitle by newsLongViewModel.title.collectAsState()
+                val isSectionsLoading by newsLongViewModel.isSectionsLoading.collectAsState()
+                val sectionsError by newsLongViewModel.sectionsError.collectAsState()
+
+                // 로그인 상태일 때만 폴더 목록 로드, 섹션은 항상 로드
+                // ArchiveDetail 진입: preselectedArchiveId로 해당 폴더 isSelected=true
+                // Home/Explore 진입: newsId로 이미 저장된 폴더 자동 감지
+                LaunchedEffect(newsId) {
+                    if (isLoggedIn) newsLongViewModel.loadFolders(preselectedArchiveId, newsId)
+                    newsLongViewModel.loadSections(newsId)
+                }
+
+                // API 응답으로 누락 필드 보정
+                // Home 진입: item에 이미 완전한 데이터 → API 응답이 있으면 덮어씀(동일값)
+                // Explore/Archive/위젯 진입: item의 title/summaryPoints 등 빈값 → API 로드 후 반영
+                val resolvedItem = item.copy(
+                    title = if (newsLongTitle.isNotBlank()) newsLongTitle else item.title,
+                    category = if (newsLongGroupName.isNotBlank()) newsLongGroupName else item.category,
+                    subCategory = if (newsLongCategoryName.isNotBlank()) newsLongCategoryName else item.subCategory,
+                    summaryPoints = if (newsLongSummaryPoints.isNotEmpty()) newsLongSummaryPoints else item.summaryPoints,
+                    articleCount = if (newsLongArticleCount > 0) newsLongArticleCount else item.articleCount
+                )
+
+                NewsLongScreen(
+                    item = resolvedItem,
+                    isLoggedIn = isLoggedIn,
+                    autoOpenBookmark = openBookmark && isLoggedIn,
+                    folders = newsLongFolders,
+                    sections = newsLongSections,
+                    isSectionsLoading = isSectionsLoading,
+                    sectionsError = sectionsError,
+                    onRetryLoadSections = { newsLongViewModel.loadSections(newsId) },
+                    onSaveToFolders = { selectedFolders ->
+                        newsLongViewModel.saveToFolders(item.newsId, selectedFolders)
+                        // 저장 성공 시 위젯 북마크 상태 active로 동기화
+                        if (selectedFolders.isNotEmpty()) {
+                            WidgetActionReceiver.saveBookmarkedId(context, item.newsId)
+                            val manager = AppWidgetManager.getInstance(context)
+                            val ids = manager.getAppWidgetIds(
+                                ComponentName(context, BrifeWidgetReceiver::class.java)
+                            )
+                            if (ids.isNotEmpty()) {
+                                context.sendBroadcast(
+                                    Intent(context, BrifeWidgetReceiver::class.java).apply {
+                                        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    onCreateFolder = { folderName ->
+                        newsLongViewModel.createFolder(folderName)
+                    },
+                    onBackClick = { navController.popBackStack() },
+                    onNavigateToArchive = {
+                        archiveReloadVersion++
+                        navController.popBackStack()
+                        navigateTo(NavRoutes.ARCHIVE)
+                    },
+                    onShareClick = { /* 이미지 공유는 NewsLongScreen 내부에서 처리 */ },
+                    onLoginRequired = { showLoginBottomSheet = true }
+                )
             }
         }
 

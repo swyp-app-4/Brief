@@ -49,7 +49,8 @@ import com.example.brife.navigation.NavRoutes
 @Composable
 fun AppNavGraph(
     initialNewsId: Long? = null,
-    initialOpenBookmark: Boolean = false
+    initialOpenBookmark: Boolean = false,
+    deepLinkVersion: Int = 0
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -70,7 +71,8 @@ fun AppNavGraph(
 
     // 위젯 딥링크 진입 시 SETTING 등 다른 화면에 있으면 MAIN으로 복귀
     // → 이후 MainScreen 의 LaunchedEffect 가 NEWS_LONG 으로 이동
-    LaunchedEffect(initialNewsId) {
+    // deepLinkVersion을 키에 포함 → 동일 newsId 재진입 시에도 재실행 보장
+    LaunchedEffect(initialNewsId, deepLinkVersion) {
         if (initialNewsId == null) return@LaunchedEffect
         val currentRoute = navController.currentDestination?.route ?: return@LaunchedEffect
         if (currentRoute != NavRoutes.MAIN && currentRoute != NavRoutes.SPLASH) {
@@ -206,6 +208,7 @@ fun AppNavGraph(
             MainScreen(
                 initialDeepLinkNewsId = initialNewsId,
                 initialOpenBookmark = initialOpenBookmark,
+                deepLinkVersion = deepLinkVersion,
                 onLogout = {
                     navController.navigate(NavRoutes.LOGIN) {
                         popUpTo(NavRoutes.MAIN) { inclusive = true }

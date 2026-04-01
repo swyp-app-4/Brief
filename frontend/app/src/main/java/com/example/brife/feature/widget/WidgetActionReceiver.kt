@@ -21,7 +21,8 @@ class WidgetActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.getStringExtra(EXTRA_ACTION) ?: return
         val newsId = intent.getLongExtra(EXTRA_NEWS_ID, -1L)
-        if (newsId == -1L) return
+        // newsId=0은 mock 데이터(API 미로드 상태) → 유효하지 않은 ID이므로 차단
+        if (newsId <= 0L) return
 
         when (action) {
 

@@ -20,10 +20,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -69,6 +71,9 @@ fun NewsLongScreen(
     autoOpenBookmark: Boolean = false,
     folders: List<BookmarkFolderUiModel> = emptyList(),
     sections: List<NewsDetailSection> = emptyList(),
+    isSectionsLoading: Boolean = false,
+    sectionsError: Boolean = false,
+    onRetryLoadSections: () -> Unit = {},
     onSaveToFolders: (selectedFolders: List<BookmarkFolderUiModel>) -> Unit = {},
     onCreateFolder: (folderName: String) -> Unit = {},
     onShareClick: () -> Unit = {},
@@ -128,7 +133,10 @@ fun NewsLongScreen(
             NewsLongContent(
                 item = item,
                 imageRes = imageRes,
-                sections = sections
+                sections = sections,
+                isSectionsLoading = isSectionsLoading,
+                sectionsError = sectionsError,
+                onRetryLoadSections = onRetryLoadSections
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -211,7 +219,10 @@ fun NewsLongScreen(
 private fun NewsLongContent(
     item: HomeNewsCardItem,
     imageRes: Int,
-    sections: List<NewsDetailSection> = emptyList()
+    sections: List<NewsDetailSection> = emptyList(),
+    isSectionsLoading: Boolean = false,
+    sectionsError: Boolean = false,
+    onRetryLoadSections: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -294,27 +305,59 @@ private fun NewsLongContent(
                 summaryPoints = item.summaryPoints
             )
 
-            if (sections.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(28.dp))
-                sections.take(3).forEachIndexed { index, section ->
-                    if (index > 0) Spacer(modifier = Modifier.height(24.dp))
-                    LongFormSectionBlock(index = index, section = section)
+            Spacer(modifier = Modifier.height(28.dp))
+            when {
+                isSectionsLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = PrimaryNormal)
+                    }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
-            } else if (item.insight.isNotBlank()) {
-                Spacer(modifier = Modifier.height(28.dp))
-                AppText(
-                    text = "살펴보기",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.Black
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                AppText(
-                    text = item.insight,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF5F6368)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
+                sectionsError -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        AppText(
+                            text = "내용을 불러오지 못했어요.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextCaption
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextButton(onClick = onRetryLoadSections) {
+                            AppText(
+                                text = "다시 시도",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = PrimaryNormal
+                            )
+                        }
+                    }
+                }
+                sections.isNotEmpty() -> {
+                    sections.take(3).forEachIndexed { index, section ->
+                        if (index > 0) Spacer(modifier = Modifier.height(24.dp))
+                        LongFormSectionBlock(index = index, section = section)
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+                item.insight.isNotBlank() -> {
+                    AppText(
+                        text = "살펴보기",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Black
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AppText(
+                        text = item.insight,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFF5F6368)
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
             }
         }
     }

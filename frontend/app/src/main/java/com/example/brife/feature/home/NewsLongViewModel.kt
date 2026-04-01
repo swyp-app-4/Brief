@@ -37,6 +37,12 @@ class NewsLongViewModel(
     private val _title = MutableStateFlow("")
     val title: StateFlow<String> = _title.asStateFlow()
 
+    private val _isSectionsLoading = MutableStateFlow(false)
+    val isSectionsLoading: StateFlow<Boolean> = _isSectionsLoading.asStateFlow()
+
+    private val _sectionsError = MutableStateFlow(false)
+    val sectionsError: StateFlow<Boolean> = _sectionsError.asStateFlow()
+
     // preselectedArchiveId: ArchiveDetail에서 진입 시 해당 폴더를 isSelected=true로 초기화
     // newsId: Home/Explore 진입 시 이미 저장된 폴더를 자동 감지하여 isSelected=true로 설정
     fun loadFolders(preselectedArchiveId: Long? = null, newsId: Long? = null) {
@@ -94,6 +100,8 @@ class NewsLongViewModel(
 
     fun loadSections(newsId: Long) {
         viewModelScope.launch {
+            _isSectionsLoading.value = true
+            _sectionsError.value = false
             archiveRepository.getNewsDetail(newsId)
                 .onSuccess { detail ->
                     _sections.value = detail.sections
@@ -102,9 +110,12 @@ class NewsLongViewModel(
                     _summaryPoints.value = detail.summaryList
                     _articleCount.value = detail.sourceCount
                     _title.value = detail.title
+                    _isSectionsLoading.value = false
                 }
                 .onFailure { e ->
-                    Log.e("NewsLongViewModel", "섹션 로드 실패: ${e.message}")
+                    Log.e("NewsLongViewModel", "섹션 로드 실패: newsId=$newsId, ${e.message}")
+                    _isSectionsLoading.value = false
+                    _sectionsError.value = true
                 }
         }
     }

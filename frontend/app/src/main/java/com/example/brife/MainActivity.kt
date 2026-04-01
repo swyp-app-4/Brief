@@ -22,10 +22,10 @@ import com.example.brife.ui.theme.BrifeTheme
 
 class MainActivity : ComponentActivity() {
 
-    // setContent 바깥 Activity 수준 state → onNewIntent에서도 업데이트 가능
-    // 위젯 클릭 등으로 앱이 이미 실행 중일 때 onNewIntent 가 호출되어도 Compose 가 재구성됨
+    // newsId + version 쌍으로 관리 → 동일 newsId를 다시 탭해도 version이 증가해 LaunchedEffect 재실행
     private var deepLinkNewsId by mutableStateOf<Long?>(null)
     private var deepLinkOpenBookmark by mutableStateOf(false)
+    private var deepLinkVersion by mutableStateOf(0)
 
     private fun extractBookmarkFromIntent(intent: Intent?): Boolean =
         intent?.getBooleanExtra("open_bookmark", false) ?: false
@@ -65,7 +65,8 @@ class MainActivity : ComponentActivity() {
                 ) {
                     AppNavGraph(
                         initialNewsId = deepLinkNewsId,
-                        initialOpenBookmark = deepLinkOpenBookmark
+                        initialOpenBookmark = deepLinkOpenBookmark,
+                        deepLinkVersion = deepLinkVersion
                     )
                 }
             }
@@ -77,5 +78,7 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         deepLinkNewsId = extractNewsIdFromIntent(intent)
         deepLinkOpenBookmark = extractBookmarkFromIntent(intent)
+        // 동일 newsId라도 매번 버전 증가 → LaunchedEffect 재실행 보장
+        deepLinkVersion++
     }
 }
