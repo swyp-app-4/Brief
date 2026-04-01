@@ -72,7 +72,16 @@ object LongFormImageProvider {
                     )
                 subCategory.contains("영화") ->
                     listOf(R.drawable.longform_entertainment_1)
-                // 책, 종교 → 새 이미지 미준비, 대분류(culture_1~4) fallback
+
+                subCategory.contains("책") ->
+                    listOf(R.drawable.ic_longform_culture_book)
+
+                subCategory.contains("종교") ->
+                    listOf(
+                        R.drawable.ic_longform_culture_religion_1,
+                        R.drawable.ic_longform_culture_religion_2
+                    )
+
                 else -> null
             }
 
@@ -80,24 +89,72 @@ object LongFormImageProvider {
             category.contains("엔터") || category.contains("스포츠") || category.contains("연예") -> when {
                 subCategory.contains("드라마") ->
                     listOf(R.drawable.longform_entertainment_1)
+
                 subCategory.contains("뮤직") ->
                     listOf(R.drawable.longform_entertainment_3)
+
                 subCategory.contains("연예") ->
-                    listOf(R.drawable.longform_entertainment_1, R.drawable.longform_entertainment_3)
-                subCategory.contains("축구") ->  // "축구" / "해외축구" 모두 포함
+                    listOf(
+                        R.drawable.longform_entertainment_1,
+                        R.drawable.longform_entertainment_3
+                    )
+
+                // "해외축구"도 "축구"를 포함하므로 함께 처리
+                subCategory.contains("축구") ->
                     listOf(R.drawable.longform_entertainment_2)
-                // 야구, 해외야구, 농구, 배구, 골프, e스포츠, 아웃도어, 스포츠일반
-                // → 새 이미지 미준비, 대분류(entertainment_1~4) fallback
+
+                // "해외야구"도 "야구"를 포함하므로 함께 처리
+                subCategory.contains("야구") ->
+                    listOf(R.drawable.ic_longform_entertainment_baseball)
+
+                subCategory.contains("농구") ->
+                    listOf(R.drawable.ic_longform_entertainment_basketball)
+
+                subCategory.contains("배구") ->
+                    listOf(R.drawable.ic_longform_entertainment_volleyball)
+
+                subCategory.contains("골프") ->
+                    listOf(R.drawable.ic_longform_entertainment_golf)
+
+                subCategory.contains("e스포츠") ->
+                    listOf(R.drawable.ic_longform_entertainment_esports)
+
+                subCategory.contains("아웃도어") ->
+                    listOf(R.drawable.ic_longform_entertainment_outdoor)
+
+                subCategory.contains("스포츠일반") ->
+                    listOf(R.drawable.ic_longform_entertainment_general)
+
                 else -> null
             }
 
             // ── 라이프/성장 ──────────────────────────────────────────────────
             category.contains("라이프") || category.contains("성장") -> when {
-                // "건강정보일반"이 "건강정보"를 포함하므로 일반 먼저 체크
+                // 더 구체적인 조건 먼저
                 subCategory.contains("건강정보일반") || subCategory.contains("생활문화일반") ->
                     listOf(R.drawable.longform_life_4)
-                // 건강정보, 자동차/시승기, 도로/교통, 여행/레저, 음식/맛집, 패션/뷰티, 날씨
-                // → 새 이미지 미준비, 대분류(life_1~4) fallback
+
+                subCategory.contains("건강정보") ->
+                    listOf(R.drawable.longform_life_4)
+
+                subCategory.contains("자동차") || subCategory.contains("시승기") ->
+                    listOf(R.drawable.ic_longform_life_car)
+
+                subCategory.contains("도로") || subCategory.contains("교통") ->
+                    listOf(R.drawable.ic_longform_life_traffic)
+
+                subCategory.contains("여행") || subCategory.contains("레저") ->
+                    listOf(R.drawable.ic_longform_life_travel)
+
+                subCategory.contains("음식") || subCategory.contains("맛집") ->
+                    listOf(R.drawable.ic_longform_life_food)
+
+                subCategory.contains("패션") || subCategory.contains("뷰티") ->
+                    listOf(R.drawable.ic_longform_life_fashion)
+
+                subCategory.contains("날씨") ->
+                    listOf(R.drawable.ic_longform_life_weather)
+
                 else -> null
             }
 
