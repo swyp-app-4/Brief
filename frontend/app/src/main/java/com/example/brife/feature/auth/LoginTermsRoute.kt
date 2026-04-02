@@ -86,7 +86,12 @@ fun LoginTermsRoute(
         LoginTermsPage.MAIN -> {
             LoginTermsScreen(
                 isLoading = uiState.isLoading,
-                onNext = { viewModel.agreeTerms() },
+                onNext = {
+                    // ★ 수정: 두 약관이 모두 확정(confirmed)된 상태여야 함
+                    if (serviceConfirmed && privacyConfirmed) {
+                        viewModel.agreeTerms()
+                    }
+                },
                 onBack = onBackClick,
                 onServiceDetailClick = {
                     serviceChecked = serviceConfirmed

@@ -34,6 +34,8 @@ import com.example.brife.R
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.ui.theme.BrifeTheme
 import kotlin.math.absoluteValue
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +61,7 @@ fun HomeScreen(
     val pageCount = if (isLoading) 1 else newsList.size
     // pagerState 초기화 시 initialPage 지원
     val pagerState = rememberPagerState(
-        initialPage = if (newsList.size > 2) (0..newsList.lastIndex).first { it == 2 } else 0, // 기본값 혹은 주입받은 값
+        initialPage = initialPage,
         pageCount = { pageCount }
     )
 
@@ -80,12 +82,16 @@ fun HomeScreen(
     }
 
 
-    // 스와이프 차단 및 바텀시트 트리거
-    LaunchedEffect(pagerState.currentPage) {
-        if (!isLoggedIn && pagerState.currentPage >= 3) {
-            // 4번째 카드로 넘어가려고 하면 3번째(index 2)로 강제 복귀
-            pagerState.animateScrollToPage(2)
-            onLoginRequired()
+    // 비로그인 시 3번째 카드에서 오른쪽 스와이프 시도 감지 → 3번째로 복귀 + 바텀시트 트리거
+    LaunchedEffect(isLoggedIn) {
+        if (!isLoggedIn) {
+            snapshotFlow { pagerState.currentPage == 2 && pagerState.currentPageOffsetFraction > 0.15f }
+                .distinctUntilChanged()
+                .filter { it }
+                .collect {
+                    pagerState.animateScrollToPage(2)
+                    onLoginRequired()
+                }
         }
     }
 

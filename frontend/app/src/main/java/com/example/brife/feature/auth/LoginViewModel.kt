@@ -102,7 +102,7 @@ class LoginViewModel(
         refreshToken: String,
         isNewUser: Boolean
     ) {
-        if (isNewUser || !authLocalStorage.hasAgreedTerms()) {
+        if (isNewUser && !authLocalStorage.hasAgreedTerms()) {
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 isNewUser = true,

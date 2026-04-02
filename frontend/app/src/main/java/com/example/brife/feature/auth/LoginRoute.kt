@@ -35,7 +35,7 @@ fun LoginRoute(
 
     LaunchedEffect(uiState.isLoginSuccess) {
         if (uiState.isLoginSuccess) {
-            onNavigateToTerms()
+            onNavigateToHome()
         }
     }
 
