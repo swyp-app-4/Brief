@@ -252,10 +252,9 @@ fun AppNavGraph(
                         if (refreshToken != null) {
                             authRepository.logout(refreshToken)
                         }
-                        authLocalStorage.clear()
-                        navController.navigate(NavRoutes.LOGIN) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                        // 수정: 전체 삭제 대신 인증 정보만 삭제하여 약관 동의 상태는 유지
+                        authLocalStorage.clearAuthOnly()
+                        // 수정: 로그인 화면으로 이동하는 navigation 코드 삭제
                     }
                 },
                 onWithdrawClick = {

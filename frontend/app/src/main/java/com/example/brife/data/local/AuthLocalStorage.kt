@@ -26,6 +26,26 @@ class AuthLocalStorage(context: Context) {
 
     fun getLoginMethod(): String? = prefs.getString("login_method", null)
 
+
+
+    //  약관 동의 상태를 저장하고 관리하는 메서드
+    fun hasAgreedTerms(): Boolean = prefs.getBoolean("has_agreed_terms", false)
+
+    fun saveTermsAgreement(agreed: Boolean) {
+        prefs.edit().putBoolean("has_agreed_terms", agreed).apply()
+    }
+
+    // 로그아웃 시 사용 (인증 정보만 삭제)
+    fun clearAuthOnly() {
+        prefs.edit()
+            .remove("access_token")
+            .remove("refresh_token")
+            .remove("login_method")
+            .apply()
+    }
+
+
+
     fun clear() {
         prefs.edit().clear().apply()
     }

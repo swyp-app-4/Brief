@@ -102,7 +102,7 @@ class LoginViewModel(
         refreshToken: String,
         isNewUser: Boolean
     ) {
-        if (isNewUser) {
+        if (isNewUser || !authLocalStorage.hasAgreedTerms()) {
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 isNewUser = true,
@@ -111,15 +111,21 @@ class LoginViewModel(
                 needTermsAgreement = true
             )
         } else {
+            // 이미 약관에 동의한 기존 유저라면 바로 토큰 저장 및 로그인 완료 처리
+            authLocalStorage.saveAccessToken(accessToken)
+            refreshToken?.let { authLocalStorage.saveRefreshToken(it) }
+            _uiState.value.pendingLoginMethod.takeIf { it.isNotEmpty() }?.let {
+                authLocalStorage.saveLoginMethod(it)
+            }
+
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 isLoginSuccess = true,
-                isNewUser = false,
-                pendingAccessToken = accessToken,
-                pendingRefreshToken = refreshToken
+                isNewUser = false
             )
         }
     }
+
 
     fun agreeTerms() {
         // 코루틴 진입 전에 가드 — 연타 시 중복 요청 방지
@@ -135,6 +141,7 @@ class LoginViewModel(
 
             repository.agreeTerms(accessToken)
                 .onSuccess {
+                    authLocalStorage.saveTermsAgreement(true) // 약관 동의 성공
                     authLocalStorage.saveAccessToken(accessToken)
                     if (refreshToken != null) {
                         authLocalStorage.saveRefreshToken(refreshToken)
