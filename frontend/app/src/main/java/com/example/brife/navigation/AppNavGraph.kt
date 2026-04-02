@@ -44,6 +44,7 @@ import com.example.brife.feature.auth.LoginViewModelFactory
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.setting.OneToOneInquiryRoute
 import com.example.brife.navigation.NavRoutes
+import android.widget.Toast
 
 
 @Composable
@@ -65,6 +66,13 @@ fun AppNavGraph(
     var isWithdrawing by remember { mutableStateOf(false) }
     var withdrawErrorMessage by remember { mutableStateOf<String?>(null) }
     var isWithdrawn by remember { mutableStateOf(false) }
+
+    // --- 추가: UI 실시간 반영을 위한 상태값 ---
+    var isLoggedIn by remember { mutableStateOf(authLocalStorage.isLoggedIn()) }
+    var loginMethod by remember { mutableStateOf(authLocalStorage.getLoginMethod() ?: "") }
+    // --------------------------------------
+
+
 
     // NEWS_LONG 은 MainScreen 내부 NavHost 에 있으므로 AppNavGraph 의 navController 로는
     // 직접 navigate 불가. initialNewsId 를 MainScreen 에 파라미터로 전달하여 처리.
@@ -156,12 +164,20 @@ fun AppNavGraph(
                 val repository = AuthRepository(NetworkModule.authApiService)
                 val loginViewModel: LoginViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = LoginViewModelFactory(repository, authLocalStorage, onboardingLocalStorage, userRepository)
+                    factory = LoginViewModelFactory(
+                        authRepository,
+                        authLocalStorage,
+                        onboardingLocalStorage,
+                        userRepository
+                    )
                 )
 
                 LoginRoute(
                     viewModel = loginViewModel,
                     onNavigateToHome = {
+                        // 로그인 성공 시 상태 업데이트
+                        isLoggedIn = true
+                        loginMethod = authLocalStorage.getLoginMethod() ?: ""
                         navController.navigate(NavRoutes.MAIN) {
                             popUpTo(NavRoutes.AUTH) { inclusive = true }
                         }
@@ -180,17 +196,26 @@ fun AppNavGraph(
                 val repository = AuthRepository(NetworkModule.authApiService)
                 val loginViewModel: LoginViewModel = viewModel(
                     viewModelStoreOwner = parentEntry,
-                    factory = LoginViewModelFactory(repository, authLocalStorage, onboardingLocalStorage, userRepository)
+                    factory = LoginViewModelFactory(
+                        authRepository,
+                        authLocalStorage,
+                        onboardingLocalStorage,
+                        userRepository
+                    )
                 )
 
                 LoginTermsRoute(
                     viewModel = loginViewModel,
                     onNavigateToOnboarding = {
+                        isLoggedIn = true // 신규 유저 온보딩 진입 시에도 로그인 상태로 판단
+                        loginMethod = authLocalStorage.getLoginMethod() ?: ""
                         navController.navigate(NavRoutes.MAIN) {
                             popUpTo(NavRoutes.AUTH) { inclusive = true }
                         }
                     },
                     onNavigateToHome = {
+                        isLoggedIn = true // 상태 업데이트!
+                        loginMethod = authLocalStorage.getLoginMethod() ?: ""
                         navController.navigate(NavRoutes.MAIN) {
                             popUpTo(NavRoutes.AUTH) { inclusive = true }
                         }
@@ -206,12 +231,24 @@ fun AppNavGraph(
         // 하단 바가 있는 전체 메인 화면
         composable(NavRoutes.MAIN) {
             MainScreen(
+                isLoggedIn = isLoggedIn,
                 initialDeepLinkNewsId = initialNewsId,
                 initialOpenBookmark = initialOpenBookmark,
                 deepLinkVersion = deepLinkVersion,
                 onLogout = {
-                    navController.navigate(NavRoutes.LOGIN) {
-                        popUpTo(NavRoutes.MAIN) { inclusive = true }
+                    // 수정: 화면 이동 대신 상태 업데이트 및 로컬 데이터만 삭제
+                    scope.launch {
+                        val refreshToken = authLocalStorage.getRefreshToken()
+                        if (refreshToken != null) {
+                            authRepository.logout(refreshToken)
+                        }
+                        authLocalStorage.clearAuthOnly()
+
+                        // 전역 상태 변수 업데이트 -> MainScreen 및 하위 탭들이 즉시 Recomposition됨
+                        isLoggedIn = false
+                        loginMethod = ""
+
+                        Toast.makeText(context, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
                     }
                 },
                 onNavigateToLogin = {
@@ -228,8 +265,8 @@ fun AppNavGraph(
 
         composable(NavRoutes.SETTING) {
             SettingScreen(
-                uiState = SettingUiState(loginMethod = authLocalStorage.getLoginMethod() ?: "", appVersion = "1.0.0"),
-                isLoggedIn = authLocalStorage.isLoggedIn(),
+                uiState = SettingUiState(loginMethod = loginMethod, appVersion = "1.0.0"),
+                isLoggedIn = isLoggedIn,
                 isWithdrawing = isWithdrawing,
                 isWithdrawn = isWithdrawn,
                 withdrawErrorMessage = withdrawErrorMessage,
@@ -252,9 +289,15 @@ fun AppNavGraph(
                         if (refreshToken != null) {
                             authRepository.logout(refreshToken)
                         }
-                        // 수정: 전체 삭제 대신 인증 정보만 삭제하여 약관 동의 상태는 유지
+                        // 1. 로컬 데이터 삭제
                         authLocalStorage.clearAuthOnly()
-                        // 수정: 로그인 화면으로 이동하는 navigation 코드 삭제
+
+                        // 2. 상태값 변경 -> SettingScreen UI 즉시 갱신
+                        isLoggedIn = false
+                        loginMethod = ""
+
+                        // 3. 안내 메시지
+                        Toast.makeText(context, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
                     }
                 },
                 onWithdrawClick = {
@@ -262,10 +305,10 @@ fun AppNavGraph(
                         isWithdrawing = true
                         withdrawErrorMessage = null
 
-                        val loginMethod = authLocalStorage.getLoginMethod()
+                        val currentMethod = authLocalStorage.getLoginMethod()
 
                         // 1. 카카오 사용자면 SDK unlink 먼저
-                        if (loginMethod == "kakao") {
+                        if (currentMethod == "kakao") {
                             val unlinkResult = kakaoUnlink()
                             if (unlinkResult.isFailure) {
                                 isWithdrawing = false
@@ -275,7 +318,7 @@ fun AppNavGraph(
                         }
 
                         // 2. 네이버 사용자면 NidOAuth.logout()으로 토큰 폐기
-                        if (loginMethod == "naver") {
+                        if (currentMethod == "naver") {
                             val disconnectResult = naverDisconnect()
                             if (disconnectResult.isFailure) {
                                 isWithdrawing = false
@@ -285,7 +328,7 @@ fun AppNavGraph(
                         }
 
                         // 3. 구글 사용자면 Credential Manager credential state 초기화
-                        if (loginMethod == "google") {
+                        if (currentMethod == "google") {
                             val clearResult = googleClearCredentialState(context)
                             if (clearResult.isFailure) {
                                 isWithdrawing = false
@@ -302,13 +345,16 @@ fun AppNavGraph(
                             return@launch
                         }
 
-                        // 4. 성공 시에만 로컬 초기화 — 화면 전환 없이 SettingScreen 유지
+                        // 3. 로컬 데이터 완전 초기화 (약관 동의 상태 포함)
                         authLocalStorage.clear()
-                        searchHistoryLocalStorage.clearAll()       // 탈퇴 사용자의 검색 기록 삭제
-                        // 관심사(onboarding_prefs)는 탈퇴 후에도 유지
-                        // → 비로그인 상태에서 프로필 화면 표시 및 홈 뉴스 로드에 계속 사용
+                        searchHistoryLocalStorage.clearAll()
+
+                        // ★ 4. UI 즉시 반영을 위한 상태 업데이트 (이 부분이 핵심)
+                        isLoggedIn = false
+                        loginMethod = ""
+
                         isWithdrawing = false
-                        isWithdrawn = true
+                        isWithdrawn = true // Toast 메시지 출력을 위한 플래그
                     }
                 }
             )

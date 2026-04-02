@@ -52,6 +52,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
+    isLoggedIn: Boolean,
     onLogout: () -> Unit,
     onNavigateToLogin: () -> Unit,
     onNavigateToNewsLong: (String) -> Unit,
@@ -167,12 +168,24 @@ fun MainScreen(
         bottomBar = {
             if (!isNewsLongRoute && !isInterestResetRoute && !isArchiveDeleteMode && !isArchiveDetailRoute) {
                 AppNavigationBar(
-                    selectedIndex = when (currentRoute) {
-                        NavRoutes.HOME -> 0
-                        NavRoutes.EXPLORE -> 1
-                        NavRoutes.ARCHIVE -> 2
-                        NavRoutes.PROFILE -> 3
-                        else -> 0
+                    selectedIndex = if (showLoginBottomSheet) {
+                        // 바텀시트가 떠 있을 때는 현재 실제 경로에 따른 인덱스 유지
+                        when (currentRoute) {
+                            NavRoutes.HOME -> 0
+                            NavRoutes.EXPLORE -> 1
+                            NavRoutes.ARCHIVE -> 2
+                            NavRoutes.PROFILE -> 3
+                            else -> 0
+                        }
+                    } else {
+                        // 기존 로직 유지
+                        when (currentRoute) {
+                            NavRoutes.HOME -> 0
+                            NavRoutes.EXPLORE -> 1
+                            NavRoutes.ARCHIVE -> 2
+                            NavRoutes.PROFILE -> 3
+                            else -> 0
+                        }
                     },
                     onItemSelected = { index ->
                         when (index) {
