@@ -279,9 +279,15 @@ fun AppNavGraph(
                 isWithdrawing = isWithdrawing,
                 isWithdrawn = isWithdrawn,
                 withdrawErrorMessage = withdrawErrorMessage,
-                onWithdrawErrorDismiss = { withdrawErrorMessage = null },
+                onWithdrawErrorDismiss = {
+                    withdrawErrorMessage = null
+                    isWithdrawn = false // ★ 토스트 출력 후 상태 리셋
+                },
                 onBackClick = { navController.popBackStack() },
-                onLoginClick = { navController.navigate(NavRoutes.LOGIN) },
+                onLoginClick = {
+                    pendingInternalRoute = NavRoutes.SETTING // ★ 복귀 경로 저장
+                    navController.navigate(NavRoutes.LOGIN)
+                },
                 onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) },
                 onInquiryClick = { navController.navigate(NavRoutes.INQUIRY) },
                 onTermsClick = {

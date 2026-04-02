@@ -57,8 +57,12 @@ fun SettingScreen(
     var showLogoutSheet by remember { mutableStateOf(false) }
     var showWithdrawSheet by remember { mutableStateOf(false) }
 
+    // 회원탈퇴 완료 토스트 출력 및 상태 리셋
     LaunchedEffect(isWithdrawn) {
-        if (isWithdrawn) Toast.makeText(context, "회원탈퇴가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+        if (isWithdrawn) {
+            Toast.makeText(context, "회원탈퇴가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+            onWithdrawErrorDismiss() // 전역 상태(isWithdrawn)를 false로 리셋하여 중복 출력 방지
+        }
     }
 
     Scaffold(
