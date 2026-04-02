@@ -45,6 +45,7 @@ import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.setting.OneToOneInquiryRoute
 import com.example.brife.navigation.NavRoutes
 import android.widget.Toast
+import androidx.compose.runtime.saveable.rememberSaveable
 
 
 @Composable
@@ -71,6 +72,10 @@ fun AppNavGraph(
     var isLoggedIn by remember { mutableStateOf(authLocalStorage.isLoggedIn()) }
     var loginMethod by remember { mutableStateOf(authLocalStorage.getLoginMethod() ?: "") }
     // --------------------------------------
+
+    // 로그인 후 복귀할 위치 저장
+    var pendingInternalRoute by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingHomeIndex by rememberSaveable { mutableStateOf(0) }
 
 
 
@@ -232,6 +237,8 @@ fun AppNavGraph(
         composable(NavRoutes.MAIN) {
             MainScreen(
                 isLoggedIn = isLoggedIn,
+                initialRoute = pendingInternalRoute ?: NavRoutes.HOME,
+                initialHomeIndex = pendingHomeIndex,
                 initialDeepLinkNewsId = initialNewsId,
                 initialOpenBookmark = initialOpenBookmark,
                 deepLinkVersion = deepLinkVersion,
@@ -251,7 +258,9 @@ fun AppNavGraph(
                         Toast.makeText(context, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
                     }
                 },
-                onNavigateToLogin = {
+                onNavigateToLogin = { route, index ->
+                    pendingInternalRoute = route
+                    pendingHomeIndex = index ?: 0
                     navController.navigate(NavRoutes.LOGIN)
                 },
                 onNavigateToNewsLong = { index ->

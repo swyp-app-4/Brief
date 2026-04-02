@@ -21,6 +21,7 @@ fun HomeRoute(
     isLoggedIn: Boolean,
     // 관심사 재설정 완료 시 MainScreen에서 이 값을 증가시켜 홈 뉴스 재로드를 트리거
     reloadVersion: Int = 0,
+    initialPage: Int = 0, // ★ 추가
     onLoginRequired: () -> Unit,
     onDetailClick: (HomeNewsCardItem) -> Unit,
     onShareClick: (HomeNewsCardItem) -> Unit,
@@ -64,6 +65,7 @@ fun HomeRoute(
         newsList = uiState.newsList,
         isLoggedIn = isLoggedIn,
         isLoading = uiState.isLoading,
+        initialPage = initialPage, // ★ 추가
         onLoginRequired = onLoginRequired,
         onDetailClick = onDetailClick,
         onShareClick = onShareClick,

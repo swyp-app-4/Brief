@@ -41,6 +41,7 @@ fun HomeScreen(
     newsList: List<HomeNewsCardItem>,
     isLoggedIn: Boolean,
     isLoading: Boolean = false,
+    initialPage: Int = 0, // ★ 추가
     onLoginRequired: () -> Unit,
     onLoginClick: () -> Unit = {},
     onDetailClick: (HomeNewsCardItem) -> Unit,
@@ -56,7 +57,11 @@ fun HomeScreen(
     var loginPromptShown by remember { mutableStateOf(false) }
 
     val pageCount = if (isLoading) 1 else newsList.size
-    val pagerState = rememberPagerState(pageCount = { pageCount })
+    // pagerState 초기화 시 initialPage 지원
+    val pagerState = rememberPagerState(
+        initialPage = if (newsList.size > 2) (0..newsList.lastIndex).first { it == 2 } else 0, // 기본값 혹은 주입받은 값
+        pageCount = { pageCount }
+    )
 
     // 현재 페이지 category 기반으로 가운데 일러스트 결정
     // 로딩 중에는 img_home_life 고정
@@ -75,9 +80,11 @@ fun HomeScreen(
     }
 
 
-    LaunchedEffect(pagerState.currentPage, isLoggedIn) {
-        if (!isLoggedIn && !loginPromptShown && pagerState.currentPage >= 3) {
-            loginPromptShown = true
+    // 스와이프 차단 및 바텀시트 트리거
+    LaunchedEffect(pagerState.currentPage) {
+        if (!isLoggedIn && pagerState.currentPage >= 3) {
+            // 4번째 카드로 넘어가려고 하면 3번째(index 2)로 강제 복귀
+            pagerState.animateScrollToPage(2)
             onLoginRequired()
         }
     }

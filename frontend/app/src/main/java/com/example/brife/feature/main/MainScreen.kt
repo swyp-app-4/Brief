@@ -12,6 +12,8 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -54,11 +56,14 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     isLoggedIn: Boolean,
     onLogout: () -> Unit,
-    onNavigateToLogin: () -> Unit,
+    onNavigateToLogin: (String?, Int?) -> Unit, // 시그니처 변경 (경로, 인덱스)
+    // ...
     onNavigateToNewsLong: (String) -> Unit,
     onNavigateToSetting: () -> Unit = {},
     initialDeepLinkNewsId: Long? = null,
     initialOpenBookmark: Boolean = false,
+    initialRoute: String = NavRoutes.HOME, // 추가
+    initialHomeIndex: Int = 0,             // 추가
     deepLinkVersion: Int = 0
 ) {
     val context = LocalContext.current
@@ -90,6 +95,13 @@ fun MainScreen(
     var isArchiveDeleteMode by remember { mutableStateOf(false) }
     var isArchiveRenameMode by remember { mutableStateOf(false) }
     val archiveMoreSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+
+
+    // --- 추가: 로그인 성공 후 복귀를 위한 임시 상태 저장 ---
+    var pendingRouteForLogin by remember { mutableStateOf<String?>(null) }
+    var pendingIndexForLogin by remember { mutableStateOf<Int?>(null) }
+    // ------------------------------------------------
 
 
     //롱폼 관련
@@ -195,9 +207,22 @@ fun MainScreen(
                                 if (isLoggedIn) {
                                     archiveReloadVersion++
                                     navigateTo(NavRoutes.ARCHIVE)
-                                } else showLoginBottomSheet = true
+                                } else {
+                                    // 요구사항: 이동 없이 바텀시트만 등장
+                                    pendingRouteForLogin = NavRoutes.ARCHIVE
+                                    pendingIndexForLogin = null
+                                    showLoginBottomSheet = true
+                                }
                             }
-                            3 -> navigateTo(NavRoutes.PROFILE)
+                            3 -> { // 프로필
+                                // 요구사항: ProfileScreen으로 먼저 이동 후 바텀시트 등장
+                                navigateTo(NavRoutes.PROFILE)
+                                if (!isLoggedIn) {
+                                    pendingRouteForLogin = NavRoutes.PROFILE
+                                    pendingIndexForLogin = null
+                                    showLoginBottomSheet = true
+                                }
+                            }
                         }
                     }
                 )
@@ -206,7 +231,7 @@ fun MainScreen(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = NavRoutes.HOME,
+            startDestination = initialRoute,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = innerPadding.calculateBottomPadding())
@@ -215,7 +240,13 @@ fun MainScreen(
                 HomeRoute(
                     isLoggedIn = isLoggedIn,
                     reloadVersion = homeReloadVersion,
-                    onLoginRequired = { showLoginBottomSheet = true },
+                    initialPage = initialHomeIndex, // ★ 로그인 전 보던 인덱스로 복귀
+                    onLoginRequired = {
+                        // 홈 3->4 스와이프 차단 시 호출됨
+                        pendingRouteForLogin = NavRoutes.HOME
+                        pendingIndexForLogin = 2 // 3번째 카드(index 2)로 복귀하도록 설정
+                        showLoginBottomSheet = true
+                    },
                     onDetailClick = { item ->
                         selectedNewsItem = item
                         preselectedArchiveId = null
@@ -266,7 +297,10 @@ fun MainScreen(
                     onResetInterestClick = {
                         navController.navigate(NavRoutes.ONBOARDING_INTEREST_RESET)
                     },
-                    onLoginClick = onNavigateToLogin
+                    onLoginClick = {
+                        // ★ 타입 불일치 해결: 파라미터 없이 호출되는 콜백을 인자 2개짜리 함수로 연결
+                        onNavigateToLogin(NavRoutes.PROFILE, null)
+                    }
                 )
             }
 
@@ -452,7 +486,12 @@ fun MainScreen(
                         navigateTo(NavRoutes.ARCHIVE)
                     },
                     onShareClick = { /* 이미지 공유는 NewsLongScreen 내부에서 처리 */ },
-                    onLoginRequired = { showLoginBottomSheet = true }
+                    onLoginRequired = {
+                        // 롱폼에서 로그인 유도 시 현재 경로 저장
+                        pendingRouteForLogin = "${NavRoutes.NEWS_LONG}/$newsId"
+                        pendingIndexForLogin = null
+                        showLoginBottomSheet = true
+                    }
                 )
             }
         }
@@ -472,15 +511,26 @@ fun MainScreen(
             )
         }
 
+        // 로그인 바텀시트 호출부 수정
         if (showLoginBottomSheet) {
             HomeToLoginBottomSheet(
                 sheetState = sheetState,
-                onDismissRequest = { showLoginBottomSheet = false },
+                onDismissRequest = {
+                    showLoginBottomSheet = false
+                    pendingRouteForLogin = null
+                    pendingIndexForLogin = null
+                },
                 onLoginClick = {
                     showLoginBottomSheet = false
-                    onNavigateToLogin()
+                    // ★ AppNavGraph에 복귀 정보를 넘기며 로그인 화면으로 이동
+                    onNavigateToLogin(pendingRouteForLogin, pendingIndexForLogin)
                 },
-                onBrowseClick = { showLoginBottomSheet = false }
+                onBrowseClick = {
+                    showLoginBottomSheet = false
+                    // "더 둘러보기" 클릭 시 상태 초기화 (현재 화면 유지)
+                    pendingRouteForLogin = null
+                    pendingIndexForLogin = null
+                }
             )
         }
     }
