@@ -1,5 +1,6 @@
 package com.example.brife.feature.onboarding
 
+import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,12 +16,15 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +42,7 @@ import com.example.brife.R
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.PrimaryButton
 import com.example.brife.ui.theme.BgSub
+import kotlinx.coroutines.launch
 
 data class OnboardingGuidePage(
     val title: String,
@@ -75,21 +80,31 @@ fun OnboardingGuideScreen(
     modifier: Modifier = Modifier,
     onNextClick: () -> Unit = {}
 ) {
-    var currentPage by remember { mutableIntStateOf(0) }
+    // 1. PagerState 및 CoroutineScope 초기화
+    val pagerState = rememberPagerState(pageCount = { onboardingPages.size })
+    val coroutineScope = rememberCoroutineScope()
 
-    OnboardingGuideContent(
-        modifier = modifier,
-        item = onboardingPages[currentPage],
-        currentPage = currentPage,
-        totalPageCount = onboardingPages.size,
-        onButtonClick = {
-            if (currentPage == onboardingPages.lastIndex) {
-                onNextClick()
-            } else {
-                currentPage++
+    // 2. HorizontalPager로 전체 컨텐츠 감싸기
+    HorizontalPager(
+        state = pagerState,
+        modifier = modifier.fillMaxSize()
+    ) { page ->
+        OnboardingGuideContent(
+            item = onboardingPages[page],
+            currentPage = page,
+            totalPageCount = onboardingPages.size,
+            onButtonClick = {
+                if (page == onboardingPages.lastIndex) {
+                    onNextClick()
+                } else {
+                    // 3. 버튼 클릭 시 다음 페이지로 애니메이션 이동
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(page + 1)
+                    }
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable
