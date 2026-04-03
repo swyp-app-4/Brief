@@ -141,6 +141,10 @@ fun AppNavGraph(
                         navController.navigate(NavRoutes.MAIN) {
                             popUpTo(NavRoutes.SPLASH) { inclusive = true }
                         }
+                    } else if (onboardingLocalStorage.hasSavedInterests()) {
+                        navController.navigate(NavRoutes.MAIN) {
+                            popUpTo(NavRoutes.SPLASH) { inclusive = true }
+                        }
                     } else {
                         navController.navigate(NavRoutes.ONBOARDING_GUIDE) {
                             popUpTo(NavRoutes.SPLASH) { inclusive = true }

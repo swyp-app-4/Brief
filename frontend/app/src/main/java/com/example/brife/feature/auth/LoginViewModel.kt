@@ -119,11 +119,43 @@ class LoginViewModel(
                 authLocalStorage.saveLoginMethod(it)
             }
 
+            syncLocalInterestsAfterLogin()
+        }
+    }
+
+    private fun syncLocalInterestsAfterLogin() {
+        val categoryIds = onboardingLocalStorage.getSelectedSubCategoryIds()
+        val groupIds = onboardingLocalStorage.getSelectedCategoryIds()
+
+        if (categoryIds.isEmpty() && groupIds.isEmpty()) {
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 isLoginSuccess = true,
                 isNewUser = false
             )
+            return
+        }
+
+        viewModelScope.launch {
+            val interestResult = userRepository.updateInterests(categoryIds, groupIds)
+            if (interestResult.isSuccess) {
+                Log.d("LoginViewModel", "login sync interests success: categoryIds=$categoryIds, groupIds=$groupIds")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoginSuccess = true,
+                    isNewUser = false,
+                    errorMessage = null
+                )
+            } else {
+                val errMsg = interestResult.exceptionOrNull()?.message ?: "알 수 없는 오류"
+                Log.e("LoginViewModel", "login sync interests failed: $errMsg")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoginSuccess = false,
+                    isNewUser = false,
+                    errorMessage = "관심사 동기화 실패 ($errMsg)"
+                )
+            }
         }
     }
 
