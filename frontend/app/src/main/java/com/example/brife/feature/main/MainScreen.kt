@@ -105,6 +105,7 @@ fun MainScreen(
     // --- 추가: 로그인 성공 후 복귀를 위한 임시 상태 저장 ---
     var pendingRouteForLogin by remember { mutableStateOf<String?>(null) }
     var pendingIndexForLogin by remember { mutableStateOf<Int?>(null) }
+    var returnRouteAfterGuestArchiveSheet by remember { mutableStateOf<String?>(null) }
     var forceResetHomePagerKey by remember { mutableStateOf(0) }
     LaunchedEffect(isLoggedIn) {
         if (!isLoggedIn) {
@@ -112,6 +113,7 @@ fun MainScreen(
             showLoginBottomSheet = false
             pendingRouteForLogin = null
             pendingIndexForLogin = null
+            returnRouteAfterGuestArchiveSheet = null
         }
     }
     // ------------------------------------------------
@@ -165,6 +167,22 @@ fun MainScreen(
             launchSingleTop = true
             restoreState = true
         }
+    }
+
+    fun dismissLoginSheet() {
+        showLoginBottomSheet = false
+        if (pendingRouteForLogin == NavRoutes.HOME && pendingIndexForLogin == 2) {
+            forceResetHomePagerKey++
+        }
+        if (!isLoggedIn &&
+            pendingRouteForLogin == NavRoutes.ARCHIVE &&
+            currentRoute == NavRoutes.ARCHIVE
+        ) {
+            navigateTo(returnRouteAfterGuestArchiveSheet ?: NavRoutes.HOME)
+        }
+        pendingRouteForLogin = null
+        pendingIndexForLogin = null
+        returnRouteAfterGuestArchiveSheet = null
     }
 
     LaunchedEffect(initialRoute) {
@@ -231,6 +249,7 @@ fun MainScreen(
                                     navigateTo(NavRoutes.ARCHIVE)
                                 } else {
                                     // 요구사항: 이동 없이 바텀시트만 등장
+                                    returnRouteAfterGuestArchiveSheet = currentRoute
                                     navigateTo(NavRoutes.ARCHIVE)
                                     pendingRouteForLogin = NavRoutes.ARCHIVE
                                     pendingIndexForLogin = null
@@ -534,28 +553,14 @@ fun MainScreen(
         if (showLoginBottomSheet) {
             HomeToLoginBottomSheet(
                 sheetState = sheetState,
-                onDismissRequest = {
-                    showLoginBottomSheet = false
-                    if (pendingRouteForLogin == NavRoutes.HOME && pendingIndexForLogin == 2) {
-                        forceResetHomePagerKey++
-                    }
-                    pendingRouteForLogin = null
-                    pendingIndexForLogin = null
-                },
+                onDismissRequest = { dismissLoginSheet() },
                 onLoginClick = {
                     showLoginBottomSheet = false
+                    returnRouteAfterGuestArchiveSheet = null
                     // ★ AppNavGraph에 복귀 정보를 넘기며 로그인 화면으로 이동
                     onNavigateToLogin(pendingRouteForLogin, pendingIndexForLogin)
                 },
-                onBrowseClick = {
-                    showLoginBottomSheet = false
-                    if (pendingRouteForLogin == NavRoutes.HOME && pendingIndexForLogin == 2) {
-                        forceResetHomePagerKey++
-                    }
-                    // "더 둘러보기" 클릭 시 상태 초기화 (현재 화면 유지)
-                    pendingRouteForLogin = null
-                    pendingIndexForLogin = null
-                }
+                onBrowseClick = { dismissLoginSheet() }
             )
         }
     }
