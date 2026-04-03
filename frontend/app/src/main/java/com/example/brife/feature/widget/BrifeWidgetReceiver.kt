@@ -122,8 +122,8 @@ class BrifeWidgetReceiver : AppWidgetProvider() {
         rv.setOnClickPendingIntent(R.id.widget_btn_next, nextPending)
 
         // 첫 페이지: 이전 버튼 비활성, 마지막 페이지: 다음 버튼 비활성 (알파 30%)
-        rv.setInt(R.id.widget_btn_prev, "setAlpha", if (currentPos == 0) 77 else 255)
-        rv.setInt(R.id.widget_btn_next, "setAlpha", if (currentPos == maxAccessiblePos) 77 else 255)
+        rv.setFloat(R.id.widget_btn_prev, "setAlpha", if (currentPos == 0) 0.3f else 1f)
+        rv.setFloat(R.id.widget_btn_next, "setAlpha", if (currentPos == maxAccessiblePos) 0.3f else 1f)
 
         // 페이지 인디케이터 도트 업데이트
         val dotIds = intArrayOf(
