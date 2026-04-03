@@ -241,12 +241,12 @@ fun MainScreen(
                     isLoggedIn = isLoggedIn,
                     reloadVersion = homeReloadVersion,
                     initialPage = initialHomeIndex, // ★ 로그인 전 보던 인덱스로 복귀
-                    onLoginRequired = {
+                    onLoginRequired = { if (!showLoginBottomSheet) {
                         // 홈 3->4 스와이프 차단 시 호출됨
                         pendingRouteForLogin = NavRoutes.HOME
                         pendingIndexForLogin = 2 // 3번째 카드(index 2)로 복귀하도록 설정
                         showLoginBottomSheet = true
-                    },
+                    }},
                     onDetailClick = { item ->
                         selectedNewsItem = item
                         preselectedArchiveId = null

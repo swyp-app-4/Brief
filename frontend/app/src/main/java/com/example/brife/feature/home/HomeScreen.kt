@@ -33,9 +33,8 @@ import androidx.compose.ui.zIndex
 import com.example.brife.R
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.ui.theme.BrifeTheme
-import kotlin.math.absoluteValue
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,15 +52,12 @@ fun HomeScreen(
     val context = LocalContext.current
     val view = LocalView.current
 
-    var showBottomSheet by remember { mutableStateOf(false) }
-    // 한 세션 내에서 로그인 유도 바텀시트를 이미 표시했는지 여부
-    // "더 둘러보기" 클릭 후 다음 페이지로 넘어가도 다시 표시되지 않음
-    var loginPromptShown by remember { mutableStateOf(false) }
+//    var showBottomSheet by remember { mutableStateOf(false) }
+//    // 한 세션 내에서 로그인 유도 바텀시트를 이미 표시했는지 여부
+//    // "더 둘러보기" 클릭 후 다음 페이지로 넘어가도 다시 표시되지 않음
+//    var loginPromptShown by remember { mutableStateOf(false) }
 
-    // 비로그인 시 최대 4장까지만 (3장 감상 + 1장 티저용) 표시하여 5번째 이후는 존재하지 않게 함
-    val pageCount = if (isLoading) 1
-    else if (!isLoggedIn) minOf(newsList.size, 5)
-    else newsList.size
+    val pageCount = if (isLoading) 1 else newsList.size
 
 
     // pagerState 초기화 시 initialPage 지원
@@ -87,27 +83,17 @@ fun HomeScreen(
     }
 
 
-    // 비로그인 시 3번째 카드에서 오른쪽 스와이프 시도 감지 → 3번째로 복귀 + 바텀시트 트리거
-    LaunchedEffect(isLoggedIn) {
-        if (!isLoggedIn) {
-            // 1. 이미 4번째 이후를 보고 있었다면 (로그아웃/탈퇴 직후) 즉시 3번째(index 2)로 이동
-            if (pagerState.currentPage > 2) {
-                pagerState.scrollToPage(2)
-            }
-
-            // 2. 3번째에서 4번째로 넘어가려는 시도 감지
-            snapshotFlow {
-                // index 2 (3번째 카드)에서 0.1 이상 스와이프하거나, index 3 (4번째 카드)에 진입한 경우
-                (pagerState.currentPage == 2 && pagerState.currentPageOffsetFraction > 0.1f) ||
-                        (pagerState.currentPage > 2)
-            }
-                .filter { it }
-                .collect {
-                    pagerState.animateScrollToPage(2)
-                    onLoginRequired()
-                }
+    // 비로그인 시 3번째 카드까지만 실제 열람 가능
+    // targetPage 기반으로 4번째 이상 이동 시도를 감지 → 즉시 복귀 + 바텀시트
+    // - distinctUntilChanged 미사용: 시도할 때마다 매번 트리거
+    // - scrollToPage (애니메이션 없음): 역방향 애니메이션 중 재트리거 원천 차단
+    LaunchedEffect(isLoggedIn, pagerState.targetPage) {
+        if (!isLoggedIn && pagerState.targetPage > 2) {
+            pagerState.scrollToPage(2)
+            onLoginRequired()
         }
     }
+
 
 
 

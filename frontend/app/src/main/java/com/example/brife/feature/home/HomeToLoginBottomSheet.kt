@@ -105,19 +105,3 @@ fun HomeToLoginBottomSheet(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun HomeToLoginBottomSheetPreview() {
-    BrifeTheme {
-        val sheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true
-        )
-
-        HomeToLoginBottomSheet(
-            sheetState = sheetState,
-            onDismissRequest = {},
-            onLoginClick = {}
-        )
-    }
-}
