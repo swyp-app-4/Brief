@@ -101,6 +101,7 @@ fun MainScreen(
     // --- 추가: 로그인 성공 후 복귀를 위한 임시 상태 저장 ---
     var pendingRouteForLogin by remember { mutableStateOf<String?>(null) }
     var pendingIndexForLogin by remember { mutableStateOf<Int?>(null) }
+    var forceResetHomePagerKey by remember { mutableStateOf(0) }
     // ------------------------------------------------
 
 
@@ -241,12 +242,13 @@ fun MainScreen(
                     isLoggedIn = isLoggedIn,
                     reloadVersion = homeReloadVersion,
                     initialPage = initialHomeIndex, // ★ 로그인 전 보던 인덱스로 복귀
-                    onLoginRequired = { if (!showLoginBottomSheet) {
+                    forceResetToThirdPageKey = forceResetHomePagerKey,
+                    onLoginRequired = {
                         // 홈 3->4 스와이프 차단 시 호출됨
                         pendingRouteForLogin = NavRoutes.HOME
                         pendingIndexForLogin = 2 // 3번째 카드(index 2)로 복귀하도록 설정
                         showLoginBottomSheet = true
-                    }},
+                    },
                     onDetailClick = { item ->
                         selectedNewsItem = item
                         preselectedArchiveId = null
@@ -517,6 +519,9 @@ fun MainScreen(
                 sheetState = sheetState,
                 onDismissRequest = {
                     showLoginBottomSheet = false
+                    if (pendingRouteForLogin == NavRoutes.HOME && pendingIndexForLogin == 2) {
+                        forceResetHomePagerKey++
+                    }
                     pendingRouteForLogin = null
                     pendingIndexForLogin = null
                 },
@@ -527,6 +532,9 @@ fun MainScreen(
                 },
                 onBrowseClick = {
                     showLoginBottomSheet = false
+                    if (pendingRouteForLogin == NavRoutes.HOME && pendingIndexForLogin == 2) {
+                        forceResetHomePagerKey++
+                    }
                     // "더 둘러보기" 클릭 시 상태 초기화 (현재 화면 유지)
                     pendingRouteForLogin = null
                     pendingIndexForLogin = null

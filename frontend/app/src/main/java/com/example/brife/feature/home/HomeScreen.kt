@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +34,6 @@ import androidx.compose.ui.zIndex
 import com.example.brife.R
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.ui.theme.BrifeTheme
-import kotlinx.coroutines.flow.filter
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,6 +43,7 @@ fun HomeScreen(
     isLoggedIn: Boolean,
     isLoading: Boolean = false,
     initialPage: Int = 0,
+    forceResetToThirdPageKey: Int = 0,
     onLoginRequired: () -> Unit,
     onLoginClick: () -> Unit = {},
     onDetailClick: (HomeNewsCardItem) -> Unit,
@@ -87,10 +88,27 @@ fun HomeScreen(
     // targetPage 기반으로 4번째 이상 이동 시도를 감지 → 즉시 복귀 + 바텀시트
     // - distinctUntilChanged 미사용: 시도할 때마다 매번 트리거
     // - scrollToPage (애니메이션 없음): 역방향 애니메이션 중 재트리거 원천 차단
-    LaunchedEffect(isLoggedIn, pagerState.targetPage) {
-        if (!isLoggedIn && pagerState.targetPage > 2) {
-            pagerState.scrollToPage(2)
-            onLoginRequired()
+    val maxAccessiblePage = 2
+
+    LaunchedEffect(isLoggedIn, pagerState) {
+        snapshotFlow { pagerState.currentPage to pagerState.targetPage }
+            .collect { (currentPage, targetPage) ->
+                if (!isLoggedIn && (currentPage > maxAccessiblePage || targetPage > maxAccessiblePage)) {
+                    onLoginRequired()
+                    pagerState.scrollToPage(maxAccessiblePage)
+                }
+            }
+    }
+
+    LaunchedEffect(isLoggedIn, pageCount) {
+        if (!isLoggedIn && pagerState.currentPage > maxAccessiblePage) {
+            pagerState.scrollToPage(maxAccessiblePage)
+        }
+    }
+
+    LaunchedEffect(forceResetToThirdPageKey, isLoggedIn) {
+        if (!isLoggedIn && forceResetToThirdPageKey > 0) {
+            pagerState.scrollToPage(maxAccessiblePage)
         }
     }
 
