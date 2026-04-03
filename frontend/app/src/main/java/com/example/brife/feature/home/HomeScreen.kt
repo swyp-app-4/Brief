@@ -3,6 +3,7 @@ package com.example.brife.feature.home
 import android.graphics.Rect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -22,6 +23,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -89,6 +91,8 @@ fun HomeScreen(
     // - distinctUntilChanged 미사용: 시도할 때마다 매번 트리거
     // - scrollToPage (애니메이션 없음): 역방향 애니메이션 중 재트리거 원천 차단
     val maxAccessiblePage = 2
+    val isGuestLockedOnThirdCard =
+        !isLoggedIn && !isLoading && pagerState.currentPage >= maxAccessiblePage
 
     LaunchedEffect(isLoggedIn, pagerState) {
         snapshotFlow { pagerState.currentPage to pagerState.targetPage }
@@ -159,9 +163,12 @@ fun HomeScreen(
                 }
                 Spacer(modifier = Modifier.height(42.dp))
             } else {
-                HorizontalPager(
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier.fillMaxWidth(),
+                    userScrollEnabled = !isGuestLockedOnThirdCard,
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = 36.dp),
                     pageSpacing = 12.dp,
                     beyondViewportPageCount = 1
@@ -219,6 +226,28 @@ fun HomeScreen(
                                 onDetailClick = { onDetailClick(newsList[page]) }
                             )
                         }
+                    }
+                    }
+
+                    if (isGuestLockedOnThirdCard) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .pointerInput(isGuestLockedOnThirdCard) {
+                                    var promptedThisDrag = false
+                                    detectHorizontalDragGestures(
+                                        onDragStart = { promptedThisDrag = false },
+                                        onDragEnd = { promptedThisDrag = false },
+                                        onDragCancel = { promptedThisDrag = false },
+                                        onHorizontalDrag = { _, dragAmount ->
+                                            if (dragAmount < 0f && !promptedThisDrag) {
+                                                promptedThisDrag = true
+                                                onLoginRequired()
+                                            }
+                                        }
+                                    )
+                                }
+                        )
                     }
                 }
 

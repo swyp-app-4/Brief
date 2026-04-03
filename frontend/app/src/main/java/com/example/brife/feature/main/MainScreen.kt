@@ -86,7 +86,6 @@ fun MainScreen(
 
     // remember {} 없이 직접 읽어 항상 최신 로그인 상태 반영
     // SharedPreferences는 메모리 캐시 기반이므로 재구성 시 호출해도 부담 없음
-    val isLoggedIn = authStorage.isLoggedIn()
     var showLoginBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -102,6 +101,14 @@ fun MainScreen(
     var pendingRouteForLogin by remember { mutableStateOf<String?>(null) }
     var pendingIndexForLogin by remember { mutableStateOf<Int?>(null) }
     var forceResetHomePagerKey by remember { mutableStateOf(0) }
+    LaunchedEffect(isLoggedIn) {
+        if (!isLoggedIn) {
+            forceResetHomePagerKey++
+            showLoginBottomSheet = false
+            pendingRouteForLogin = null
+            pendingIndexForLogin = null
+        }
+    }
     // ------------------------------------------------
 
 

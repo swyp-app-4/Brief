@@ -77,6 +77,13 @@ fun AppNavGraph(
     var pendingInternalRoute by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingHomeIndex by rememberSaveable { mutableStateOf(0) }
 
+    LaunchedEffect(isLoggedIn) {
+        if (!isLoggedIn) {
+            pendingInternalRoute = null
+            pendingHomeIndex = 0
+        }
+    }
+
 
 
     // NEWS_LONG 은 MainScreen 내부 NavHost 에 있으므로 AppNavGraph 의 navController 로는
