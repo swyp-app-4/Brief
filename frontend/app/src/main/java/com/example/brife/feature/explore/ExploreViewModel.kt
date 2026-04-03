@@ -148,9 +148,9 @@ class ExploreViewModel(
 // - company: categoryName으로 대체
 // - imageUrl: newsId (id) 기반 결정론적 이미지로 수정
 private fun NewsListItem.toArchiveNewsItem() = ArchiveNewsItem(
-    title = title,
+    title = title.ifBlank { "뉴스 #$id" },
     summary = "",
-    time = publishedDate,
+    time = publishedDate.ifBlank { "-" },
     company = categoryName,
     imageUrl = LongFormImageProvider.getStableImageRes(categoryName, "", id),
     newsId = id

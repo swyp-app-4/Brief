@@ -133,6 +133,7 @@ fun MainScreen(
             selectedNewsItem = HomeNewsCardItem(
                 newsId = initialDeepLinkNewsId,
                 category = "",
+                imageRes = null,
                 title = "",
                 notice = "",
                 summaryPoints = emptyList(),
@@ -288,7 +289,8 @@ fun MainScreen(
                     onNewsClick = { archiveItem ->
                         selectedNewsItem = com.example.brife.feature.home.HomeNewsCardItem(
                             newsId = archiveItem.newsId,
-                            category = "",
+                            category = archiveItem.company,
+                            imageRes = archiveItem.imageUrl,
                             title = archiveItem.title,
                             notice = "",
                             summaryPoints = emptyList(),
@@ -345,7 +347,8 @@ fun MainScreen(
                     onNewsClick = { archiveItem ->
                         selectedNewsItem = com.example.brife.feature.home.HomeNewsCardItem(
                             newsId = archiveItem.newsId,
-                            category = "",
+                            category = archiveItem.company,
+                            imageRes = archiveItem.imageUrl,
                             title = archiveItem.title,
                             notice = "",
                             summaryPoints = emptyList(),
@@ -426,6 +429,7 @@ fun MainScreen(
                 val item = selectedNewsItem ?: HomeNewsCardItem(
                     newsId = newsId,
                     category = "",
+                    imageRes = null,
                     title = "",
                     notice = "",
                     summaryPoints = emptyList(),

@@ -39,9 +39,9 @@ class ArchiveDetailViewModel(
                             if (detail != null) {
                                 ArchiveNewsItem(
                                     archiveItemId = item.id,
-                                    title = detail.title,
+                                    title = detail.title.ifBlank { "뉴스 #${item.contentId}" },
                                     summary = "",
-                                    time = detail.publishedDate,
+                                    time = detail.publishedDate.ifBlank { item.savedAt.ifBlank { "-" } },
                                     company = "${detail.sourceCount}개 언론사",
                                     // index 대신 newsId를 사용하여 모든 화면에서 동일 이미지 유지
                                     imageUrl = LongFormImageProvider.getStableImageRes(
