@@ -1,8 +1,5 @@
 package com.example.brife.feature.main
 
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
-import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -46,7 +43,7 @@ import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
 import com.example.brife.feature.home.HomeToLoginBottomSheet
 import com.example.brife.feature.home.NewsLongScreen
-import com.example.brife.feature.widget.BrifeWidgetReceiver
+import com.example.brife.feature.widget.WidgetRefreshHelper
 import com.example.brife.feature.widget.WidgetActionReceiver
 
 import kotlinx.coroutines.launch
@@ -397,6 +394,7 @@ fun MainScreen(
                                 if (result.isSuccess) {
                                     Log.d("MainScreen", "관심사 재설정 PUT 성공 → 홈 뉴스 재로드")
                                     homeReloadVersion++
+                                    WidgetRefreshHelper.refreshAll(context)
                                 } else {
                                     Log.w("MainScreen", "관심사 재설정 PUT 실패: ${result.exceptionOrNull()?.message}")
                                 }
@@ -405,6 +403,7 @@ fun MainScreen(
                             // 2-B. 비로그인 상태: 로컬 저장소 데이터만 사용하므로 즉시 홈 리로드 트리거
                             Log.d("MainScreen", "비로그인 관심사 재설정 완료 → 홈 뉴스 재로드")
                             homeReloadVersion++
+                            WidgetRefreshHelper.refreshAll(context)
                         }
 
                         navController.popBackStack(NavRoutes.PROFILE, false)
@@ -491,18 +490,7 @@ fun MainScreen(
                         // 저장 성공 시 위젯 북마크 상태 active로 동기화
                         if (selectedFolders.isNotEmpty()) {
                             WidgetActionReceiver.saveBookmarkedId(context, item.newsId)
-                            val manager = AppWidgetManager.getInstance(context)
-                            val ids = manager.getAppWidgetIds(
-                                ComponentName(context, BrifeWidgetReceiver::class.java)
-                            )
-                            if (ids.isNotEmpty()) {
-                                context.sendBroadcast(
-                                    Intent(context, BrifeWidgetReceiver::class.java).apply {
-                                        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-                                    }
-                                )
-                            }
+                            WidgetRefreshHelper.refreshAll(context)
                         }
                     },
                     onCreateFolder = { folderName ->

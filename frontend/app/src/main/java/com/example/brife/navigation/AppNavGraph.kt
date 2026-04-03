@@ -38,6 +38,7 @@ import com.example.brife.feature.auth.LoginTermsRoute
 import com.example.brife.feature.setting.SettingScreen
 import com.example.brife.feature.setting.SettingUiState
 import com.example.brife.feature.setting.WidgetInstallGuideScreen
+import com.example.brife.feature.widget.WidgetRefreshHelper
 import com.example.brife.feature.webview.WebViewScreen
 import com.example.brife.feature.auth.LoginViewModel
 import com.example.brife.feature.auth.LoginViewModelFactory
@@ -183,6 +184,7 @@ fun AppNavGraph(
             OnboardingSubInterestRoute(
                 selectedParentCategoryIds = selectedParentCategoryIds,
                 onNextClick = {
+                    WidgetRefreshHelper.refreshAll(context)
                     navController.navigate(NavRoutes.MAIN) {
                         popUpTo(NavRoutes.ONBOARDING_GUIDE) { inclusive = true }
                     }

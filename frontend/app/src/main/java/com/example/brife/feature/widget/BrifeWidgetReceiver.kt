@@ -34,6 +34,7 @@ class BrifeWidgetReceiver : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
+        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_flipper)
         for (appWidgetId in appWidgetIds) {
             updateWidget(context, appWidgetManager, appWidgetId)
         }
