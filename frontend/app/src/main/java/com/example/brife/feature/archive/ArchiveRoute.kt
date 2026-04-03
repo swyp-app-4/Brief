@@ -17,6 +17,7 @@ import com.example.brife.data.repository.ArchiveRepository
 @Composable
 fun ArchiveRoute(
     modifier: Modifier = Modifier,
+    isLoggedIn: Boolean,
     reloadVersion: Int = 0,
     isDeleteMode: Boolean,
     isRenameMode: Boolean,
@@ -24,6 +25,26 @@ fun ArchiveRoute(
     onRenameModeExit: () -> Unit,
     onNavigateToDetail: (archiveId: Long, folderName: String) -> Unit
 ) {
+    if (!isLoggedIn) {
+        ArchiveScreen(
+            modifier = modifier,
+            folders = emptyList(),
+            favoriteArchiveId = 0L,
+            favoriteItemCount = 0,
+            onFolderAdd = {},
+            onNavigateToDetail = onNavigateToDetail,
+            isDeleteMode = false,
+            selectedFolderIds = emptySet(),
+            onToggleFolderSelect = {},
+            onCancelDelete = onDeleteModeExit,
+            onConfirmDelete = {},
+            isRenameMode = false,
+            onFolderRename = { _, _ -> },
+            onCancelRename = onRenameModeExit
+        )
+        return
+    }
+
     val context = LocalContext.current
     val authStorage = remember { AuthLocalStorage(context) }
     val repository = remember {
@@ -39,7 +60,7 @@ fun ArchiveRoute(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(reloadVersion) {
-        if (reloadVersion > 0) viewModel.loadFolders()
+        if (isLoggedIn && reloadVersion > 0) viewModel.loadFolders()
     }
 
     var selectedFolderIds by remember { mutableStateOf(setOf<Long>()) }

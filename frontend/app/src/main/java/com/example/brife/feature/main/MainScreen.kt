@@ -192,7 +192,7 @@ fun MainScreen(
                         showLogo = false,
                         showSettings = false,
                         centerTitle = true,
-                        showMore = true,
+                        showMore = isLoggedIn,
                         onMoreClick = { showArchiveMoreSheet = true }
                     )
                 }
@@ -231,6 +231,7 @@ fun MainScreen(
                                     navigateTo(NavRoutes.ARCHIVE)
                                 } else {
                                     // 요구사항: 이동 없이 바텀시트만 등장
+                                    navigateTo(NavRoutes.ARCHIVE)
                                     pendingRouteForLogin = NavRoutes.ARCHIVE
                                     pendingIndexForLogin = null
                                     showLoginBottomSheet = true
@@ -304,6 +305,7 @@ fun MainScreen(
             composable(NavRoutes.ARCHIVE) {
                 ArchiveRoute(
                     modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
+                    isLoggedIn = isLoggedIn,
                     reloadVersion = archiveReloadVersion,
                     isDeleteMode = isArchiveDeleteMode,
                     isRenameMode = isArchiveRenameMode,
