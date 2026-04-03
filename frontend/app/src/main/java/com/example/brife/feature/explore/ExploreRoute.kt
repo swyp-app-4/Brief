@@ -21,7 +21,12 @@ fun ExploreRoute(
     val viewModel: ExploreViewModel = viewModel(
         factory = ExploreViewModelFactory(
             searchHistoryStorage = SearchHistoryLocalStorage(context),
-            exploreRepository = remember { ExploreRepository(NetworkModule.exploreApiService) }
+            exploreRepository = remember {
+                ExploreRepository(
+                    NetworkModule.exploreApiService,
+                    NetworkModule.newsApiService
+                )
+            }
         )
     )
     val uiState by viewModel.uiState.collectAsState()

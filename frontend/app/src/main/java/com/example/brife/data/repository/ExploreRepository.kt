@@ -1,10 +1,15 @@
 package com.example.brife.data.repository
 
 import android.util.Log
+import com.example.brife.data.model.NewsDetailResponse
 import com.example.brife.data.model.NewsListItem
 import com.example.brife.data.remote.api.ExploreApiService
+import com.example.brife.data.remote.api.NewsApiService
 
-class ExploreRepository(private val api: ExploreApiService) {
+class ExploreRepository(
+    private val api: ExploreApiService,
+    private val newsApi: NewsApiService
+) {
 
     // GET /news/latest — page=0, size=20 고정 (1차 연동)
     suspend fun getLatestNews(): Result<List<NewsListItem>> {
@@ -48,6 +53,20 @@ class ExploreRepository(private val api: ExploreApiService) {
             }
         } catch (e: Exception) {
             Log.e("ExploreRepository", "searchNews: exception=${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getNewsDetail(id: Long): Result<NewsDetailResponse> {
+        return try {
+            val response = newsApi.getNewsDetailAsync(id)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("뉴스 상세 조회 실패: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Log.e("ExploreRepository", "getNewsDetail: id=$id, exception=${e.message}")
             Result.failure(e)
         }
     }

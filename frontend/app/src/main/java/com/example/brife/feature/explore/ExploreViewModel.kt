@@ -4,10 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.brife.data.local.SearchHistoryLocalStorage
+import com.example.brife.data.model.NewsDetailResponse
 import com.example.brife.data.model.NewsListItem
 import com.example.brife.data.repository.ExploreRepository
 import com.example.brife.feature.archive.ArchiveNewsItem
 import com.example.brife.feature.home.LongFormImageProvider
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,7 +41,13 @@ class ExploreViewModel(
             exploreRepository.getLatestNews()
                 .onSuccess { items ->
                     Log.d("ExploreViewModel", "loadLatestNews: ${items.size}개 수신")
-                    val archiveItems = items.map { item -> item.toArchiveNewsItem() }
+                    val archiveItems = items.map { item ->
+                        async {
+                            item.toArchiveNewsItem(
+                                detail = exploreRepository.getNewsDetail(item.id).getOrNull()
+                            )
+                        }
+                    }.awaitAll()
                     cachedLatestNews = archiveItems
                     val rawDate = items.firstOrNull()?.publishedDate ?: ""
                     val lastUpdatedDate = if (rawDate.length >= 10) rawDate.take(10) else rawDate
@@ -85,7 +94,13 @@ class ExploreViewModel(
             exploreRepository.searchNews(trimmed)
                 .onSuccess { items ->
                     Log.d("ExploreViewModel", "searchNews '${trimmed}': ${items.size}개 수신")
-                    val archiveItems = items.map { item -> item.toArchiveNewsItem() }
+                    val archiveItems = items.map { item ->
+                        async {
+                            item.toArchiveNewsItem(
+                                detail = exploreRepository.getNewsDetail(item.id).getOrNull()
+                            )
+                        }
+                    }.awaitAll()
                     _uiState.value = if (archiveItems.isEmpty()) {
                         ExploreUiState.Empty(trimmed)
                     } else {
@@ -147,12 +162,16 @@ class ExploreViewModel(
 // - summary: API list 미제공 → ""
 // - company: categoryName으로 대체
 // - imageUrl: newsId (id) 기반 결정론적 이미지로 수정
-private fun NewsListItem.toArchiveNewsItem() = ArchiveNewsItem(
-    title = title.ifBlank { "뉴스 #$id" },
+private fun NewsListItem.toArchiveNewsItem(detail: NewsDetailResponse?) = ArchiveNewsItem(
+    title = title.ifBlank { detail?.title?.ifBlank { "뉴스 #$id" } ?: "뉴스 #$id" },
     summary = "",
-    time = publishedDate.ifBlank { "-" },
-    company = categoryName,
-    imageUrl = LongFormImageProvider.getStableImageRes(categoryName, "", id),
+    time = publishedDate.ifBlank { detail?.publishedDate?.ifBlank { "-" } ?: "-" },
+    company = detail?.groupName?.ifBlank { categoryName } ?: categoryName,
+    imageUrl = LongFormImageProvider.getStableImageRes(
+        detail?.groupName ?: categoryName,
+        detail?.categoryName ?: categoryName,
+        id
+    ),
     newsId = id
 )
 
