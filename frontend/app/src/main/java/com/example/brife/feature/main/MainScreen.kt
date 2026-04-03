@@ -75,6 +75,14 @@ fun MainScreen(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: NavRoutes.HOME
+    val mainStartDestination = when (initialRoute) {
+        NavRoutes.HOME,
+        NavRoutes.EXPLORE,
+        NavRoutes.ARCHIVE,
+        NavRoutes.PROFILE,
+        NavRoutes.ONBOARDING_INTEREST_RESET -> initialRoute
+        else -> NavRoutes.HOME
+    }
 
     val isNewsLongRoute = currentRoute?.startsWith("${NavRoutes.NEWS_LONG}/") == true
     val isInterestResetRoute = currentRoute == NavRoutes.ONBOARDING_INTEREST_RESET ||
@@ -161,6 +169,14 @@ fun MainScreen(
         }
     }
 
+    LaunchedEffect(initialRoute) {
+        if (initialRoute != mainStartDestination && currentRoute == mainStartDestination) {
+            navController.navigate(initialRoute) {
+                launchSingleTop = true
+            }
+        }
+    }
+
     Scaffold(
         containerColor = backgroundColor,
         topBar = {
@@ -239,7 +255,7 @@ fun MainScreen(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = initialRoute,
+            startDestination = mainStartDestination,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = innerPadding.calculateBottomPadding())

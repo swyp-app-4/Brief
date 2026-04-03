@@ -76,11 +76,37 @@ fun AppNavGraph(
     // 로그인 후 복귀할 위치 저장
     var pendingInternalRoute by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingHomeIndex by rememberSaveable { mutableStateOf(0) }
+    var pendingExternalRoute by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(isLoggedIn) {
         if (!isLoggedIn) {
             pendingInternalRoute = null
             pendingHomeIndex = 0
+            pendingExternalRoute = null
+        }
+    }
+
+    fun navigateAfterLogin() {
+        val targetInternalRoute = pendingInternalRoute
+        val targetHomeIndex = pendingHomeIndex
+        val targetExternalRoute = pendingExternalRoute
+
+        navController.navigate(NavRoutes.MAIN) {
+            popUpTo(NavRoutes.AUTH) { inclusive = true }
+            launchSingleTop = true
+        }
+
+        pendingInternalRoute = null
+        pendingHomeIndex = 0
+        pendingExternalRoute = null
+
+        if (targetExternalRoute != null) {
+            navController.navigate(targetExternalRoute) {
+                launchSingleTop = true
+            }
+        } else {
+            pendingInternalRoute = targetInternalRoute
+            pendingHomeIndex = targetHomeIndex
         }
     }
 
@@ -187,12 +213,9 @@ fun AppNavGraph(
                 LoginRoute(
                     viewModel = loginViewModel,
                     onNavigateToHome = {
-                        // 로그인 성공 시 상태 업데이트
                         isLoggedIn = true
                         loginMethod = authLocalStorage.getLoginMethod() ?: ""
-                        navController.navigate(NavRoutes.MAIN) {
-                            popUpTo(NavRoutes.AUTH) { inclusive = true }
-                        }
+                        navigateAfterLogin()
                     },
                     onNavigateToTerms = {
                         navController.navigate(NavRoutes.LOGIN_TERMS)
@@ -221,16 +244,12 @@ fun AppNavGraph(
                     onNavigateToOnboarding = {
                         isLoggedIn = true // 신규 유저 온보딩 진입 시에도 로그인 상태로 판단
                         loginMethod = authLocalStorage.getLoginMethod() ?: ""
-                        navController.navigate(NavRoutes.MAIN) {
-                            popUpTo(NavRoutes.AUTH) { inclusive = true }
-                        }
+                        navigateAfterLogin()
                     },
                     onNavigateToHome = {
                         isLoggedIn = true // 상태 업데이트!
                         loginMethod = authLocalStorage.getLoginMethod() ?: ""
-                        navController.navigate(NavRoutes.MAIN) {
-                            popUpTo(NavRoutes.AUTH) { inclusive = true }
-                        }
+                        navigateAfterLogin()
                     },
                     onBackClick = {
                         navController.popBackStack()
@@ -266,6 +285,7 @@ fun AppNavGraph(
                     }
                 },
                 onNavigateToLogin = { route, index ->
+                    pendingExternalRoute = null
                     pendingInternalRoute = route
                     pendingHomeIndex = index ?: 0
                     navController.navigate(NavRoutes.LOGIN)
@@ -292,7 +312,9 @@ fun AppNavGraph(
                 },
                 onBackClick = { navController.popBackStack() },
                 onLoginClick = {
-                    pendingInternalRoute = NavRoutes.SETTING // ★ 복귀 경로 저장
+                    pendingInternalRoute = null
+                    pendingHomeIndex = 0
+                    pendingExternalRoute = NavRoutes.SETTING
                     navController.navigate(NavRoutes.LOGIN)
                 },
                 onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) },

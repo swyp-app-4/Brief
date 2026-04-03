@@ -112,6 +112,7 @@ class LoginViewModel(
             )
         } else {
             // 이미 약관에 동의한 기존 유저라면 바로 토큰 저장 및 로그인 완료 처리
+            authLocalStorage.saveTermsAgreement(true)
             authLocalStorage.saveAccessToken(accessToken)
             refreshToken?.let { authLocalStorage.saveRefreshToken(it) }
             _uiState.value.pendingLoginMethod.takeIf { it.isNotEmpty() }?.let {
