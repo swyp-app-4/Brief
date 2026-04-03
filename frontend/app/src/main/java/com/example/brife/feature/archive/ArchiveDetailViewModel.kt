@@ -33,7 +33,7 @@ class ArchiveDetailViewModel(
             repository.getItems(archiveId, sort)
                 .onSuccess { items ->
                     Log.d("ArchiveDetailVM", "아이템 ${items.size}개 로드 → 뉴스 상세 병렬 조회")
-                    val mapped = items.mapIndexed { index, item ->
+                    val mapped = items.map { item ->
                         async {
                             val detail = repository.getNewsDetail(item.contentId).getOrNull()
                             if (detail != null) {
@@ -43,9 +43,11 @@ class ArchiveDetailViewModel(
                                     summary = "",
                                     time = detail.publishedDate,
                                     company = "${detail.sourceCount}개 언론사",
+                                    // index 대신 newsId를 사용하여 모든 화면에서 동일 이미지 유지
                                     imageUrl = LongFormImageProvider.getStableImageRes(
                                         detail.groupName,
-                                        index
+                                        "", // subCategory 정보가 필요한 경우 detail에서 가져오도록 확장 가능
+                                        item.contentId
                                     ),
                                     newsId = item.contentId
                                 )
@@ -58,7 +60,7 @@ class ArchiveDetailViewModel(
                                     summary = "",
                                     time = item.savedAt,
                                     company = "",
-                                    imageUrl = LongFormImageProvider.getStableImageRes("", index),
+                                    imageUrl = LongFormImageProvider.getStableImageRes("", "", item.contentId),
                                     newsId = item.contentId
                                 )
                             }

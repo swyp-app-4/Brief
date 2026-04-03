@@ -3,7 +3,6 @@ package com.example.brife.feature.home
 import android.graphics.Rect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -23,13 +22,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
@@ -93,6 +96,48 @@ fun HomeScreen(
     val maxAccessiblePage = 2
     val isGuestLockedOnThirdCard =
         !isLoggedIn && !isLoading && pagerState.currentPage >= maxAccessiblePage
+    val guestForwardBlocker = remember(isGuestLockedOnThirdCard, forceResetToThirdPageKey) {
+        object : NestedScrollConnection {
+            private var promptedThisGesture = false
+
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (!isGuestLockedOnThirdCard) return Offset.Zero
+
+                if (available.x < 0f) {
+                    if (!promptedThisGesture) {
+                        promptedThisGesture = true
+                        onLoginRequired()
+                    }
+                    return Offset(x = available.x, y = 0f)
+                }
+
+                if (available.x > 0f) {
+                    promptedThisGesture = false
+                }
+                return Offset.Zero
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                if (!isGuestLockedOnThirdCard) return Velocity.Zero
+
+                if (available.x < 0f) {
+                    if (!promptedThisGesture) {
+                        promptedThisGesture = true
+                        onLoginRequired()
+                    }
+                    return Velocity(x = available.x, y = 0f)
+                }
+
+                promptedThisGesture = false
+                return Velocity.Zero
+            }
+
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                promptedThisGesture = false
+                return Velocity.Zero
+            }
+        }
+    }
 
     LaunchedEffect(isLoggedIn, pagerState) {
         snapshotFlow { pagerState.currentPage to pagerState.targetPage }
@@ -163,12 +208,11 @@ fun HomeScreen(
                 }
                 Spacer(modifier = Modifier.height(42.dp))
             } else {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    HorizontalPager(
+                HorizontalPager(
                     state = pagerState,
-                    userScrollEnabled = !isGuestLockedOnThirdCard,
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .nestedScroll(guestForwardBlocker),
                     contentPadding = PaddingValues(horizontal = 36.dp),
                     pageSpacing = 12.dp,
                     beyondViewportPageCount = 1
@@ -228,28 +272,6 @@ fun HomeScreen(
                         }
                     }
                     }
-
-                    if (isGuestLockedOnThirdCard) {
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .pointerInput(isGuestLockedOnThirdCard) {
-                                    var promptedThisDrag = false
-                                    detectHorizontalDragGestures(
-                                        onDragStart = { promptedThisDrag = false },
-                                        onDragEnd = { promptedThisDrag = false },
-                                        onDragCancel = { promptedThisDrag = false },
-                                        onHorizontalDrag = { _, dragAmount ->
-                                            if (dragAmount < 0f && !promptedThisDrag) {
-                                                promptedThisDrag = true
-                                                onLoginRequired()
-                                            }
-                                        }
-                                    )
-                                }
-                        )
-                    }
-                }
 
                 Spacer(modifier = Modifier.height(18.dp))
 

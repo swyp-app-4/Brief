@@ -38,7 +38,7 @@ class ExploreViewModel(
             exploreRepository.getLatestNews()
                 .onSuccess { items ->
                     Log.d("ExploreViewModel", "loadLatestNews: ${items.size}개 수신")
-                    val archiveItems = items.mapIndexed { index, item -> item.toArchiveNewsItem(index) }
+                    val archiveItems = items.map { item -> item.toArchiveNewsItem() }
                     cachedLatestNews = archiveItems
                     val rawDate = items.firstOrNull()?.publishedDate ?: ""
                     val lastUpdatedDate = if (rawDate.length >= 10) rawDate.take(10) else rawDate
@@ -85,7 +85,7 @@ class ExploreViewModel(
             exploreRepository.searchNews(trimmed)
                 .onSuccess { items ->
                     Log.d("ExploreViewModel", "searchNews '${trimmed}': ${items.size}개 수신")
-                    val archiveItems = items.mapIndexed { index, item -> item.toArchiveNewsItem(index) }
+                    val archiveItems = items.map { item -> item.toArchiveNewsItem() }
                     _uiState.value = if (archiveItems.isEmpty()) {
                         ExploreUiState.Empty(trimmed)
                     } else {
@@ -146,13 +146,13 @@ class ExploreViewModel(
 // NewsListItem → ArchiveNewsItem 매핑
 // - summary: API list 미제공 → ""
 // - company: categoryName으로 대체
-// - imageUrl: categoryName + index 기반 결정론적 이미지
-private fun NewsListItem.toArchiveNewsItem(index: Int) = ArchiveNewsItem(
+// - imageUrl: newsId (id) 기반 결정론적 이미지로 수정
+private fun NewsListItem.toArchiveNewsItem() = ArchiveNewsItem(
     title = title,
     summary = "",
     time = publishedDate,
     company = categoryName,
-    imageUrl = LongFormImageProvider.getStableImageRes(categoryName, index),
+    imageUrl = LongFormImageProvider.getStableImageRes(categoryName, "", id),
     newsId = id
 )
 
@@ -163,34 +163,39 @@ private val exploreMockNewsList = listOf(
         summary = "연방준비제도가 이번 FOMC 회의에서 기준금리를 현 수준에서 동결하기로 결정했다.",
         time = "2시간 전",
         company = "한국경제",
-        imageUrl = LongFormImageProvider.getStableImageRes("경제 · 재테크", 0)
+        imageUrl = LongFormImageProvider.getStableImageRes("경제 · 재테크", "", 1001L),
+        newsId = 1001L
     ),
     ArchiveNewsItem(
         title = "애플, AI 기능 탑재한 아이폰 17 공개",
         summary = "애플이 차세대 아이폰에 온디바이스 AI 기능을 전면 탑재한다고 발표했다.",
         time = "4시간 전",
         company = "조선일보",
-        imageUrl = LongFormImageProvider.getStableImageRes("IT · 테크", 0)
+        imageUrl = LongFormImageProvider.getStableImageRes("IT · 테크", "", 1002L),
+        newsId = 1002L
     ),
     ArchiveNewsItem(
         title = "국내 부동산 시장 안정세 지속",
         summary = "수도권 아파트 가격이 3개월 연속 보합세를 유지하며 안정세를 이어가고 있다.",
         time = "6시간 전",
         company = "매일경제",
-        imageUrl = LongFormImageProvider.getStableImageRes("경제 · 재테크", 1)
+        imageUrl = LongFormImageProvider.getStableImageRes("경제 · 재테크", "", 1003L),
+        newsId = 1003L
     ),
     ArchiveNewsItem(
         title = "국내 전기차 판매량, 전년 대비 30% 증가",
         summary = "올해 상반기 국내 전기차 신규 등록 대수가 전년 동기 대비 30% 증가한 것으로 집계됐다.",
         time = "8시간 전",
         company = "동아일보",
-        imageUrl = LongFormImageProvider.getStableImageRes("IT · 테크", 1)
+        imageUrl = LongFormImageProvider.getStableImageRes("IT · 테크", "", 1004L),
+        newsId = 1004L
     ),
     ArchiveNewsItem(
         title = "정부, 청년 주거 지원 정책 강화 발표",
         summary = "국토교통부가 청년층 주거 부담 완화를 위한 새로운 지원 정책 패키지를 발표했다.",
         time = "10시간 전",
         company = "연합뉴스",
-        imageUrl = LongFormImageProvider.getStableImageRes("시사 · 정치", 0)
+        imageUrl = LongFormImageProvider.getStableImageRes("시사 · 정치", "", 1005L),
+        newsId = 1005L
     )
 )
