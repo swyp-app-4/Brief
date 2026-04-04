@@ -55,6 +55,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.example.brife.R
 import com.example.brife.data.local.BookmarkFolderUiModel
 import com.example.brife.data.model.NewsDetailSection
@@ -94,12 +96,20 @@ fun NewsLongScreen(
     val isOverImageSection by remember {
         derivedStateOf { scrollState.value > topBarColorThreshold }
     }
+    val statusBarHeight = remember(view, density) {
+        with(density) {
+            (
+                ViewCompat.getRootWindowInsets(view)
+                    ?.getInsets(WindowInsetsCompat.Type.statusBars())
+                    ?.top ?: 0
+            ).toDp()
+        }
+    }
 
     DisposableEffect(view, isOverImageSection) {
         val window = (view.context as? Activity)?.window
         if (window != null) {
-            window.statusBarColor =
-                if (isOverImageSection) Color.White.toArgb() else Color.Transparent.toArgb()
+            window.statusBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
                 isOverImageSection
         }
@@ -160,6 +170,16 @@ fun NewsLongScreen(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        if (isOverImageSection) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(statusBarHeight)
+                    .background(Color.White)
+                    .align(Alignment.TopCenter)
+            )
         }
 
         NewsLongTopBar(
