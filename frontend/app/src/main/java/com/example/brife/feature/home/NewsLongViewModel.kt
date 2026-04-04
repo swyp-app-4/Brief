@@ -195,10 +195,6 @@ class NewsLongViewModel(
             val archiveItemIdsByArchiveId = mutableMapOf<Long, Long>()
 
             when {
-                preselectedArchiveId != null -> {
-                    savedArchiveIds += preselectedArchiveId
-                }
-
                 newsId != null -> {
                     archiveFolders.forEach { folder ->
                         val savedItem = archiveRepository.getItems(folder.archiveId)
@@ -211,6 +207,10 @@ class NewsLongViewModel(
                             archiveItemIdsByArchiveId[folder.archiveId] = savedItem.id
                         }
                     }
+                }
+
+                preselectedArchiveId != null -> {
+                    savedArchiveIds += preselectedArchiveId
                 }
             }
 

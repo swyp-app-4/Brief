@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,13 +65,20 @@ fun HomeScreen(
 //    var loginPromptShown by remember { mutableStateOf(false) }
 
     val pageCount = if (isLoading) 1 else newsList.size
-
+    var restoredPage by rememberSaveable { mutableIntStateOf(initialPage) }
 
     // pagerState 초기화 시 initialPage 지원
     val pagerState = rememberPagerState(
-        initialPage = initialPage,
+        initialPage = restoredPage.coerceIn(0, (pageCount - 1).coerceAtLeast(0)),
         pageCount = { pageCount }
     )
+
+    LaunchedEffect(pagerState, pageCount) {
+        snapshotFlow { pagerState.settledPage }
+            .collect { page ->
+                restoredPage = page.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
+            }
+    }
 
     // 현재 페이지 category 기반으로 가운데 일러스트 결정
     // 로딩 중에는 img_home_life 고정
