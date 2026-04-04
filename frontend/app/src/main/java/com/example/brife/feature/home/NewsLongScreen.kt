@@ -85,7 +85,10 @@ fun NewsLongScreen(
         targetFolders: List<BookmarkFolderUiModel>,
         onCompleted: (Boolean) -> Unit
     ) -> Unit = { _, onCompleted -> onCompleted(false) },
-    onCreateFolder: (folderName: String) -> Unit = {},
+    onCreateFolder: (
+        folderName: String,
+        onCreated: (BookmarkFolderUiModel) -> Unit
+    ) -> Unit = { _, _ -> },
     onShareClick: () -> Unit = {},
     onNavigateToArchive: () -> Unit = {},
     onLoginRequired: () -> Unit = {},
@@ -262,7 +265,9 @@ fun NewsLongScreen(
             CreateFolderBottomSheet(
                 onDismissRequest = { showCreateFolderSheet = false },
                 onSave = { newFolderName ->
-                    onCreateFolder(newFolderName)
+                    onCreateFolder(newFolderName) { createdFolder ->
+                        tempFolders = tempFolders + createdFolder.copy(isSelected = true)
+                    }
                     showCreateFolderSheet = false
                 },
                 currentFolderCount = folderItems.size,

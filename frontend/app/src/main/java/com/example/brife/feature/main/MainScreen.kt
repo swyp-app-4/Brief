@@ -574,8 +574,8 @@ fun MainScreen(
                             onCompleted(isSuccess)
                         }
                     },
-                    onCreateFolder = { folderName ->
-                        newsLongViewModel.createFolder(folderName)
+                    onCreateFolder = { folderName, onCreated ->
+                        newsLongViewModel.createFolder(folderName, onCreated)
                     },
                     onBackClick = { navController.popBackStack() },
                     onNavigateToArchive = {

@@ -18,6 +18,9 @@ class NewsLongViewModel(
     private val _folders = MutableStateFlow<List<BookmarkFolderUiModel>>(emptyList())
     val folders: StateFlow<List<BookmarkFolderUiModel>> = _folders.asStateFlow()
 
+    // 서버에서 실제로 저장이 확인된 폴더 ID 집합 (새로 생성만 된 폴더는 포함하지 않음)
+    private val _savedFolderIds = MutableStateFlow<Set<Long>>(emptySet())
+
     private val _isSavingFolders = MutableStateFlow(false)
     val isSavingFolders: StateFlow<Boolean> = _isSavingFolders.asStateFlow()
 
@@ -54,6 +57,7 @@ class NewsLongViewModel(
             fetchBookmarkFolders(preselectedArchiveId, newsId)
                 .onSuccess { mappedFolders ->
                     _folders.value = mappedFolders
+                    _savedFolderIds.value = mappedFolders.filter { it.isSelected }.map { it.id }.toSet()
                     Log.d(
                         "NewsLongViewModel",
                         "loadFolders success: count=${mappedFolders.size}"
@@ -100,9 +104,10 @@ class NewsLongViewModel(
         viewModelScope.launch {
             _isSavingFolders.value = true
 
-            val currentFoldersById = _folders.value.associateBy { it.id }
-            val currentSelectedFolders = currentFoldersById.values.filter { it.isSelected }
-            val currentSelectedIds = currentSelectedFolders.map { it.id }.toSet()
+            // _savedFolderIds: 서버에 실제로 저장이 확인된 폴더 ID 집합
+            // createFolder 후 _folders.value에 추가된 폴더는 여기에 포함되지 않으므로
+            // 새 폴더가 foldersToAdd에 올바르게 포함됨
+            val currentSelectedIds = _savedFolderIds.value
             val targetSelectedIds = targetFolders
                 .filter { it.isSelected }
                 .map { it.id }
@@ -111,6 +116,8 @@ class NewsLongViewModel(
             val foldersToAdd = targetFolders.filter { folder ->
                 folder.isSelected && folder.id !in currentSelectedIds
             }
+            // 서버 기준으로 저장된 폴더들 중 이번에 해제된 것만 제거 대상으로 삼음
+            val currentSelectedFolders = _folders.value.filter { it.id in currentSelectedIds }
             val foldersToRemove = currentSelectedFolders.filter { folder ->
                 folder.id !in targetSelectedIds
             }
@@ -165,6 +172,7 @@ class NewsLongViewModel(
             fetchBookmarkFolders(newsId = newsId)
                 .onSuccess { refreshedFolders ->
                     _folders.value = refreshedFolders
+                    _savedFolderIds.value = refreshedFolders.filter { it.isSelected }.map { it.id }.toSet()
                 }
                 .onFailure { error ->
                     hasFailure = true
@@ -176,18 +184,25 @@ class NewsLongViewModel(
         }
     }
 
-    fun createFolder(folderName: String) {
+    fun createFolder(
+        folderName: String,
+        onSuccess: (BookmarkFolderUiModel) -> Unit = {}
+    ) {
         viewModelScope.launch {
             Log.d("NewsLongViewModel", "createFolder: name=$folderName")
             archiveRepository.createFolder(folderName)
                 .onSuccess { newFolder ->
-                    _folders.value = _folders.value + BookmarkFolderUiModel(
+                    val createdFolder = BookmarkFolderUiModel(
                         id = newFolder.archiveId,
                         name = newFolder.folderName,
                         newsCount = 0,
-                        isSelected = true,
+                        isSelected = true,  // UI에서 즉시 선택 상태로 표시 (LaunchedEffect 타이밍 방어)
                         isFavorite = false
+                        // _savedFolderIds에는 추가하지 않음 — 아직 서버에 저장된 게 아니므로
+                        // saveToFolders에서 foldersToAdd에 올바르게 포함됨
                     )
+                    _folders.value = _folders.value + createdFolder
+                    onSuccess(createdFolder)
                 }
                 .onFailure { error ->
                     Log.e("NewsLongViewModel", "createFolder failed: ${error.message}", error)
