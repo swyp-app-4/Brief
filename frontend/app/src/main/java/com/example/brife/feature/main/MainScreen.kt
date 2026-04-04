@@ -2,6 +2,10 @@ package com.example.brife.feature.main
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +29,7 @@ import com.example.brife.data.local.AuthLocalStorage
 import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.UserRepository
+import com.example.brife.feature.archive.ArchiveScreen
 import com.example.brife.feature.profile.ProfileRoute
 //import com.example.brife.data.local.longsampleHomeNews
 import com.example.brife.feature.archive.ArchiveDetailRoute
@@ -114,6 +119,15 @@ fun MainScreen(
     var returnRouteAfterGuestArchiveSheet by remember { mutableStateOf<String?>(null) }
     var returnRouteAfterGuestProfileEditSheet by remember { mutableStateOf<String?>(null) }
     var forceResetHomePagerKey by remember { mutableStateOf(0) }
+    val guestPreviewRoute = if (showLoginBottomSheet && !isLoggedIn) {
+        when (pendingRouteForLogin) {
+            NavRoutes.ARCHIVE -> NavRoutes.ARCHIVE
+            NavRoutes.PROFILE_EDIT -> NavRoutes.PROFILE_EDIT
+            else -> null
+        }
+    } else {
+        null
+    }
     LaunchedEffect(isLoggedIn) {
         if (!isLoggedIn) {
             forceResetHomePagerKey++
@@ -234,7 +248,8 @@ fun MainScreen(
         }
     }
 
-    Scaffold(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
         containerColor = backgroundColor,
         topBar = {
             when {
@@ -313,7 +328,7 @@ fun MainScreen(
                 )
             }
         }
-    ) { innerPadding ->
+        ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = mainStartDestination,
@@ -638,6 +653,14 @@ fun MainScreen(
         }
 
         // 로그인 바텀시트 호출부 수정
+        if (guestPreviewRoute != null) {
+            GuestLoginPreviewOverlay(
+                previewRoute = guestPreviewRoute,
+                username = profileEditUserName,
+                selectedImageRes = profileEditImageRes
+            )
+        }
+
         if (showLoginBottomSheet) {
             HomeToLoginBottomSheet(
                 sheetState = sheetState,
@@ -652,5 +675,59 @@ fun MainScreen(
                 onBrowseClick = { dismissLoginSheet() }
             )
         }
+    }
+}
+}
+
+@Composable
+private fun GuestLoginPreviewOverlay(
+    previewRoute: String,
+    username: String,
+    selectedImageRes: Int
+) {
+    val consumeClicks = Modifier.clickable(
+        interactionSource = remember { MutableInteractionSource() },
+        indication = null,
+        onClick = {}
+    )
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (previewRoute) {
+            NavRoutes.ARCHIVE -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    AppTopBar(
+                        title = "보관함",
+                        showLogo = false,
+                        showSettings = false,
+                        centerTitle = true,
+                        showMore = false
+                    )
+                    ArchiveScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        folders = emptyList(),
+                        favoriteArchiveId = 0L,
+                        favoriteItemCount = 0,
+                        onFolderAdd = {},
+                        onNavigateToDetail = { _, _ -> }
+                    )
+                }
+            }
+
+            NavRoutes.PROFILE_EDIT -> {
+                ProfileEditScreen(
+                    username = username,
+                    selectedImageRes = selectedImageRes,
+                    isGuestPreview = true,
+                    onBackClick = {},
+                    onSaveClick = {}
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(consumeClicks)
+        )
     }
 }
