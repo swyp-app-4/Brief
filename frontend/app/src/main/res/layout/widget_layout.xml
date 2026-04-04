@@ -18,7 +18,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="30dp"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="5dp"
             android:adjustViewBounds="true"
             android:scaleType="fitStart"
             android:src="@drawable/img_widget_toplogo" />
@@ -32,7 +32,7 @@
             android:id="@+id/iv_widget_bookmark"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginEnd="5dp"
             android:scaleType="fitCenter"
             android:src="@drawable/img_widget_bookmark_inactive" />
     </LinearLayout>
@@ -51,7 +51,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="0dp"
         android:gravity="center"
         android:orientation="horizontal">
 
