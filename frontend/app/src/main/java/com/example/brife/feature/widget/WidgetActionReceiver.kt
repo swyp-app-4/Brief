@@ -86,5 +86,12 @@ class WidgetActionReceiver : BroadcastReceiver() {
             current.remove(newsId.toString())
             prefs.edit().putStringSet(KEY_BOOKMARKED, current).apply()
         }
+
+        fun clearBookmarkedIds(context: Context) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .remove(KEY_BOOKMARKED)
+                .apply()
+        }
     }
 }

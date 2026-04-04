@@ -81,6 +81,7 @@ fun LoginScreen(
                 backgroundColor = Color(0xFFFEE500),
                 contentColor = Color(0xFF191919),
                 iconRes = R.drawable.ic_kakao,
+                enabled = !uiState.isLoading,
                 onClick = {
                     if (!uiState.isLoading) {
                         onKakaoClick()
@@ -95,6 +96,7 @@ fun LoginScreen(
                 backgroundColor = Color(0xFF03C75A),
                 contentColor = Color.White,
                 iconRes = R.drawable.ic_naver,
+                enabled = !uiState.isLoading,
                 onClick = onNaverClick
             )
 
@@ -106,6 +108,7 @@ fun LoginScreen(
                 contentColor = Color(0xFF464646),
                 borderColor = Color(0xFFE3E5E8),
                 iconRes = R.drawable.ic_google,
+                enabled = !uiState.isLoading,
                 onClick = onGoogleClick
             )
 
@@ -195,10 +198,12 @@ private fun SocialLoginButton(
     contentColor: Color,
     @DrawableRes iconRes: Int? = null,
     borderColor: Color = Color.Transparent,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),

@@ -97,6 +97,13 @@ class LoginViewModel(
         }
     }
 
+    fun onExternalLoginError(message: String) {
+        _uiState.value = _uiState.value.copy(
+            isLoading = false,
+            errorMessage = message
+        )
+    }
+
     private fun handleLoginSuccess(
         accessToken: String,
         refreshToken: String,
@@ -111,23 +118,24 @@ class LoginViewModel(
                 needTermsAgreement = true
             )
         } else {
-            // 이미 약관에 동의한 기존 유저라면 바로 토큰 저장 및 로그인 완료 처리
-            authLocalStorage.saveTermsAgreement(true)
-            authLocalStorage.saveAccessToken(accessToken)
-            refreshToken?.let { authLocalStorage.saveRefreshToken(it) }
-            _uiState.value.pendingLoginMethod.takeIf { it.isNotEmpty() }?.let {
-                authLocalStorage.saveLoginMethod(it)
-            }
-
-            syncLocalInterestsAfterLogin()
+            completeLogin(
+                accessToken = accessToken,
+                refreshToken = refreshToken,
+                persistTermsAgreement = true
+            )
         }
     }
 
-    private fun syncLocalInterestsAfterLogin() {
+    private fun completeLogin(
+        accessToken: String,
+        refreshToken: String,
+        persistTermsAgreement: Boolean
+    ) {
         val categoryIds = onboardingLocalStorage.getSelectedSubCategoryIds()
         val groupIds = onboardingLocalStorage.getSelectedCategoryIds()
 
         if (categoryIds.isEmpty() && groupIds.isEmpty()) {
+            persistAuthState(accessToken, refreshToken, persistTermsAgreement)
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 isLoginSuccess = true,
@@ -137,9 +145,10 @@ class LoginViewModel(
         }
 
         viewModelScope.launch {
-            val interestResult = userRepository.updateInterests(categoryIds, groupIds)
+            val interestResult = userRepository.updateInterests(accessToken, categoryIds, groupIds)
             if (interestResult.isSuccess) {
                 Log.d("LoginViewModel", "login sync interests success: categoryIds=$categoryIds, groupIds=$groupIds")
+                persistAuthState(accessToken, refreshToken, persistTermsAgreement)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     isLoginSuccess = true,
@@ -147,7 +156,7 @@ class LoginViewModel(
                     errorMessage = null
                 )
             } else {
-                val errMsg = interestResult.exceptionOrNull()?.message ?: "알 수 없는 오류"
+                val errMsg = interestResult.exceptionOrNull()?.message ?: "unknown error"
                 Log.e("LoginViewModel", "login sync interests failed: $errMsg")
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -159,12 +168,10 @@ class LoginViewModel(
         }
     }
 
-
     fun agreeTerms() {
-        // 코루틴 진입 전에 가드 — 연타 시 중복 요청 방지
         if (_uiState.value.isLoading) return
         val accessToken = _uiState.value.pendingAccessToken ?: return
-        val refreshToken = _uiState.value.pendingRefreshToken
+        val refreshToken = _uiState.value.pendingRefreshToken.orEmpty()
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
@@ -174,40 +181,7 @@ class LoginViewModel(
 
             repository.agreeTerms(accessToken)
                 .onSuccess {
-                    authLocalStorage.saveTermsAgreement(true) // 약관 동의 성공
-                    authLocalStorage.saveAccessToken(accessToken)
-                    if (refreshToken != null) {
-                        authLocalStorage.saveRefreshToken(refreshToken)
-                    }
-                    val loginMethod = _uiState.value.pendingLoginMethod
-                    if (loginMethod.isNotEmpty()) {
-                        authLocalStorage.saveLoginMethod(loginMethod)
-                    }
-
-                    // 비로그인 온보딩에서 로컬에만 저장된 관심사를 서버에 동기화
-                    // (온보딩 시점에는 토큰이 없어 API 전송이 스킵됐기 때문)
-                    val categoryIds = onboardingLocalStorage.getSelectedSubCategoryIds()
-                    val groupIds = onboardingLocalStorage.getSelectedCategoryIds()
-                    if (categoryIds.isNotEmpty() || groupIds.isNotEmpty()) {
-                        val interestResult = userRepository.updateInterests(categoryIds, groupIds)
-                        if (interestResult.isFailure) {
-                            // PUT 실패 → 관심사 없이 추천 API가 호출되는 것을 막기 위해 홈 이동 차단
-                            val errMsg = interestResult.exceptionOrNull()?.message ?: "알 수 없는 오류"
-                            Log.e("LoginViewModel", "관심사 저장 실패: $errMsg")
-                            _uiState.value = _uiState.value.copy(
-                                isLoading = false,
-                                errorMessage = "관심사 저장 실패 ($errMsg)"
-                            )
-                            return@onSuccess  // isTermsSuccess 설정 없이 리턴 → 홈 이동 안 함
-                        }
-                        Log.d("LoginViewModel", "관심사 저장 성공: categoryIds=$categoryIds, groupIds=$groupIds")
-                    }
-
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        needTermsAgreement = false,
-                        isTermsSuccess = true
-                    )
+                    completeTermsLogin(accessToken, refreshToken)
                 }
                 .onFailure { throwable ->
                     _uiState.value = _uiState.value.copy(
@@ -218,10 +192,61 @@ class LoginViewModel(
         }
     }
 
+    private fun completeTermsLogin(
+        accessToken: String,
+        refreshToken: String
+    ) {
+        val categoryIds = onboardingLocalStorage.getSelectedSubCategoryIds()
+        val groupIds = onboardingLocalStorage.getSelectedCategoryIds()
+
+        viewModelScope.launch {
+            if (categoryIds.isNotEmpty() || groupIds.isNotEmpty()) {
+                val interestResult = userRepository.updateInterests(accessToken, categoryIds, groupIds)
+                if (interestResult.isFailure) {
+                    val errMsg = interestResult.exceptionOrNull()?.message ?: "unknown error"
+                    Log.e("LoginViewModel", "terms sync interests failed: $errMsg")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "관심사 저장 실패 ($errMsg)"
+                    )
+                    return@launch
+                }
+                Log.d("LoginViewModel", "terms sync interests success: categoryIds=$categoryIds, groupIds=$groupIds")
+            }
+
+            persistAuthState(
+                accessToken = accessToken,
+                refreshToken = refreshToken,
+                persistTermsAgreement = true
+            )
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                needTermsAgreement = false,
+                isTermsSuccess = true
+            )
+        }
+    }
+
+    private fun persistAuthState(
+        accessToken: String,
+        refreshToken: String,
+        persistTermsAgreement: Boolean
+    ) {
+        if (persistTermsAgreement) {
+            authLocalStorage.saveTermsAgreement(true)
+        }
+        authLocalStorage.saveAccessToken(accessToken)
+        if (refreshToken.isNotBlank()) {
+            authLocalStorage.saveRefreshToken(refreshToken)
+        }
+        _uiState.value.pendingLoginMethod.takeIf { it.isNotEmpty() }?.let {
+            authLocalStorage.saveLoginMethod(it)
+        }
+    }
+
     fun consumeTermsNavigation() {
         _uiState.value = _uiState.value.copy(
             needTermsAgreement = false
         )
     }
 }
-

@@ -13,6 +13,8 @@ class UserRepository(
     private fun bearerToken(): String? =
         authLocalStorage.getAccessToken()?.let { "Bearer $it" }
 
+    private fun bearerToken(accessToken: String): String = "Bearer $accessToken"
+
     // 토큰 존재 여부로 로그인 상태 판단
     fun isLoggedIn(): Boolean = authLocalStorage.isLoggedIn()
 
@@ -52,6 +54,26 @@ class UserRepository(
     }
 
     // DELETE /users/me — 회원 탈퇴
+    suspend fun updateInterests(
+        accessToken: String,
+        categoryIds: List<Long>,
+        groupIds: List<Long>
+    ): Result<Unit> {
+        return try {
+            val response = api.updateInterests(
+                authorization = bearerToken(accessToken),
+                request = InterestRequest(categoryIds = categoryIds, groupIds = groupIds)
+            )
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("愿?ъ궗 ?낅뜲?댄듃 ?ㅽ뙣: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun deleteUser(): Result<Unit> {
         val token = bearerToken()
             ?: return Result.failure(Exception("로그인이 필요합니다."))

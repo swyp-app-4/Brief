@@ -38,6 +38,7 @@ import com.example.brife.feature.auth.LoginTermsRoute
 import com.example.brife.feature.setting.SettingScreen
 import com.example.brife.feature.setting.SettingUiState
 import com.example.brife.feature.setting.WidgetInstallGuideScreen
+import com.example.brife.feature.widget.WidgetActionReceiver
 import com.example.brife.feature.widget.WidgetRefreshHelper
 import com.example.brife.feature.webview.WebViewScreen
 import com.example.brife.feature.auth.LoginViewModel
@@ -72,6 +73,8 @@ fun AppNavGraph(
     // --- 추가: UI 실시간 반영을 위한 상태값 ---
     var isLoggedIn by remember { mutableStateOf(authLocalStorage.isLoggedIn()) }
     var loginMethod by remember { mutableStateOf(authLocalStorage.getLoginMethod() ?: "") }
+    var mainSessionVersion by remember { mutableStateOf(0) }
+    var previousLoggedInState by remember { mutableStateOf(isLoggedIn) }
     // --------------------------------------
 
     // 로그인 후 복귀할 위치 저장
@@ -80,6 +83,14 @@ fun AppNavGraph(
     var pendingExternalRoute by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(isLoggedIn) {
+        if (previousLoggedInState != isLoggedIn) {
+            mainSessionVersion++
+            if (!isLoggedIn) {
+                WidgetActionReceiver.clearBookmarkedIds(context)
+                WidgetRefreshHelper.refreshAll(context)
+            }
+            previousLoggedInState = isLoggedIn
+        }
         if (!isLoggedIn) {
             pendingInternalRoute = null
             pendingHomeIndex = 0
@@ -269,6 +280,7 @@ fun AppNavGraph(
         composable(NavRoutes.MAIN) {
             MainScreen(
                 isLoggedIn = isLoggedIn,
+                sessionVersion = mainSessionVersion,
                 initialRoute = pendingInternalRoute ?: NavRoutes.HOME,
                 initialHomeIndex = pendingHomeIndex,
                 initialDeepLinkNewsId = initialNewsId,
@@ -398,10 +410,13 @@ fun AppNavGraph(
                         // 3. 로컬 데이터 완전 초기화 (약관 동의 상태 포함)
                         authLocalStorage.clear()
                         searchHistoryLocalStorage.clearAll()
+                        WidgetActionReceiver.clearBookmarkedIds(context)
+                        WidgetRefreshHelper.refreshAll(context)
 
                         // ★ 4. UI 즉시 반영을 위한 상태 업데이트 (이 부분이 핵심)
                         isLoggedIn = false
                         loginMethod = ""
+                        mainSessionVersion++
 
                         isWithdrawing = false
                         isWithdrawn = true // Toast 메시지 출력을 위한 플래그
@@ -449,7 +464,7 @@ fun AppNavGraph(
             )
         ) { backStackEntry ->
             val archiveId = backStackEntry.arguments?.getLong("archiveId") ?: 0L
-            val folderName = backStackEntry.arguments?.getString("folderName") ?: ""
+            val folderName = Uri.decode(backStackEntry.arguments?.getString("folderName") ?: "")
             ArchiveDetailRoute(
                 archiveId = archiveId,
                 folderName = folderName,

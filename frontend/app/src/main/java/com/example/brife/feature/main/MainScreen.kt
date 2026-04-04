@@ -1,5 +1,6 @@
 package com.example.brife.feature.main
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -54,6 +55,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     isLoggedIn: Boolean,
+    sessionVersion: Int = 0,
     onLogout: () -> Unit,
     onNavigateToLogin: (String?, Int?) -> Unit, // 시그니처 변경 (경로, 인덱스)
     // ...
@@ -208,6 +210,30 @@ fun MainScreen(
         }
     }
 
+    LaunchedEffect(sessionVersion, mainStartDestination, initialRoute) {
+        showLoginBottomSheet = false
+        showArchiveMoreSheet = false
+        isArchiveDeleteMode = false
+        isArchiveRenameMode = false
+        pendingRouteForLogin = null
+        pendingIndexForLogin = null
+        returnRouteAfterGuestArchiveSheet = null
+        returnRouteAfterGuestProfileEditSheet = null
+        selectedNewsItem = null
+        preselectedArchiveId = null
+
+        navController.navigate(mainStartDestination) {
+            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+            launchSingleTop = true
+        }
+
+        if (initialRoute != mainStartDestination) {
+            navController.navigate(initialRoute) {
+                launchSingleTop = true
+            }
+        }
+    }
+
     Scaffold(
         containerColor = backgroundColor,
         topBar = {
@@ -350,7 +376,9 @@ fun MainScreen(
                     onDeleteModeExit = { isArchiveDeleteMode = false },
                     onRenameModeExit = { isArchiveRenameMode = false },
                     onNavigateToDetail = { archiveId, folderName ->
-                        navController.navigate("${NavRoutes.ARCHIVE_DETAIL}/$archiveId/$folderName")
+                        navController.navigate(
+                            "${NavRoutes.ARCHIVE_DETAIL}/$archiveId/${Uri.encode(folderName)}"
+                        )
                     }
                 )
             }
@@ -411,7 +439,7 @@ fun MainScreen(
                 )
             ) { backStackEntry ->
                 val archiveId = backStackEntry.arguments?.getLong("archiveId") ?: 0L
-                val folderName = backStackEntry.arguments?.getString("folderName") ?: ""
+                val folderName = Uri.decode(backStackEntry.arguments?.getString("folderName") ?: "")
                 ArchiveDetailRoute(
                     archiveId = archiveId,
                     folderName = folderName,

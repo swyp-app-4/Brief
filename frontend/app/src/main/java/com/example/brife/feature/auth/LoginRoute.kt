@@ -6,21 +6,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.brife.data.remote.NetworkModule
-import com.example.brife.data.repository.AuthRepository
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.kakao.sdk.user.UserApiClient
 import com.navercorp.nid.NaverIdLoginSDK
 import com.navercorp.nid.oauth.OAuthLoginCallback
-import androidx.credentials.CredentialManager
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.GetCredentialResponse
-import androidx.credentials.CustomCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import androidx.compose.runtime.rememberCoroutineScope
-import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import kotlinx.coroutines.launch
 
 @Composable
@@ -53,7 +50,8 @@ fun LoginRoute(
                 if (accessToken != null) {
                     viewModel.loginWithKakao(accessToken)
                 } else {
-                    Log.e("KakaoLogin", "카카오 accessToken 획득 실패")
+                    Log.e("KakaoLogin", "Failed to fetch Kakao accessToken")
+                    viewModel.onExternalLoginError("카카오 로그인에 실패했습니다. 다시 시도해주세요.")
                 }
             }
         },
@@ -66,7 +64,8 @@ fun LoginRoute(
                     if (idToken != null) {
                         viewModel.loginWithGoogle(idToken)
                     } else {
-                        Log.e("GoogleLogin", "Google idToken 획득 실패")
+                        Log.e("GoogleLogin", "Failed to fetch Google idToken")
+                        viewModel.onExternalLoginError("Google 로그인에 실패했습니다. 다시 시도해주세요.")
                     }
                 }
             }
@@ -81,29 +80,29 @@ private fun loginWithKakao(
     if (UserApiClient.instance.isKakaoTalkLoginAvailable(context)) {
         UserApiClient.instance.loginWithKakaoTalk(context) { token, error ->
             if (error != null) {
-                Log.e("KakaoLogin", "카카오톡 로그인 실패", error)
+                Log.e("KakaoLogin", "KakaoTalk login failed", error)
 
                 UserApiClient.instance.loginWithKakaoAccount(context) { accountToken, accountError ->
                     if (accountError != null) {
-                        Log.e("KakaoLogin", "카카오계정 로그인 실패", accountError)
+                        Log.e("KakaoLogin", "Kakao account login failed", accountError)
                         onResult(null)
                     } else {
-                        Log.d("KakaoLogin", "카카오계정 로그인 성공: ${accountToken?.accessToken}")
+                        Log.d("KakaoLogin", "Kakao account login success")
                         onResult(accountToken?.accessToken)
                     }
                 }
             } else {
-                Log.d("KakaoLogin", "카카오톡 로그인 성공: ${token?.accessToken}")
+                Log.d("KakaoLogin", "KakaoTalk login success")
                 onResult(token?.accessToken)
             }
         }
     } else {
         UserApiClient.instance.loginWithKakaoAccount(context) { token, error ->
             if (error != null) {
-                Log.e("KakaoLogin", "카카오계정 로그인 실패", error)
+                Log.e("KakaoLogin", "Kakao account login failed", error)
                 onResult(null)
             } else {
-                Log.d("KakaoLogin", "카카오계정 로그인 성공: ${token?.accessToken}")
+                Log.d("KakaoLogin", "Kakao account login success")
                 onResult(token?.accessToken)
             }
         }
@@ -121,15 +120,19 @@ private fun loginWithNaver(
 
             if (accessToken != null) {
                 viewModel.loginWithNaver(accessToken)
+            } else {
+                viewModel.onExternalLoginError("네이버 로그인에 실패했습니다. 다시 시도해주세요.")
             }
         }
 
         override fun onFailure(httpStatus: Int, message: String) {
             Log.e("NaverLogin", "fail: $message")
+            viewModel.onExternalLoginError("네이버 로그인에 실패했습니다. ($message)")
         }
 
         override fun onError(errorCode: Int, message: String) {
             Log.e("NaverLogin", "error: $message")
+            viewModel.onExternalLoginError("네이버 로그인에 실패했습니다. ($message)")
         }
     }
 
@@ -166,8 +169,7 @@ private suspend fun loginWithGoogle(
                 val googleIdTokenCredential =
                     GoogleIdTokenCredential.createFrom(credential.data)
 
-                val idToken = googleIdTokenCredential.idToken
-                onResult(idToken)
+                onResult(googleIdTokenCredential.idToken)
             } catch (e: GoogleIdTokenParsingException) {
                 onResult(null)
             }
