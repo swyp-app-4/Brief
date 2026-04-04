@@ -1,5 +1,6 @@
 package com.example.brife.feature.home
 
+import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,9 +19,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +32,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,32 +42,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import com.example.brife.R
+import com.example.brife.data.local.BookmarkFolderUiModel
+import com.example.brife.data.model.NewsDetailSection
+import com.example.brife.feature.archive.component.CreateFolderBottomSheet
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.component.CategoryChip
-import androidx.compose.ui.text.font.FontWeight
-import com.example.brife.data.model.NewsDetailSection
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.PrimaryNormal
 import com.example.brife.ui.theme.TextBody
 import com.example.brife.ui.theme.TextCaption
 import com.example.brife.ui.theme.TextSubtitle
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.ui.text.style.TextAlign
-import com.example.brife.data.local.BookmarkFolderUiModel
-import com.example.brife.feature.archive.component.CreateFolderBottomSheet
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.ui.platform.LocalDensity
-
 
 @Composable
 fun NewsLongScreen(
@@ -82,16 +86,30 @@ fun NewsLongScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-
+    val view = LocalView.current
     val scrollState = rememberScrollState()
 
     val density = LocalDensity.current
     val topBarColorThreshold = remember(density) { with(density) { 180.dp.toPx() } }
-    val isTopBarWhite by remember { derivedStateOf { scrollState.value > topBarColorThreshold } }
-    val topBarColor by animateColorAsState(
-        targetValue = if (isTopBarWhite) Color.White else Color.Transparent,
-        label = "newsLongTopBarColor"
-    )
+    val isOverImageSection by remember {
+        derivedStateOf { scrollState.value > topBarColorThreshold }
+    }
+
+    DisposableEffect(view, isOverImageSection) {
+        val window = (view.context as? Activity)?.window
+        if (window != null) {
+            window.statusBarColor =
+                if (isOverImageSection) Color.White.toArgb() else Color.Transparent.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
+                isOverImageSection
+        }
+
+        onDispose {
+            val disposeWindow = (view.context as? Activity)?.window ?: return@onDispose
+            disposeWindow.statusBarColor = Color.Transparent.toArgb()
+            WindowCompat.getInsetsController(disposeWindow, view).isAppearanceLightStatusBars = false
+        }
+    }
 
     val imageRes = remember(item.imageRes, item.category, item.subCategory, item.newsId) {
         item.imageRes ?: LongFormImageProvider.getStableImageRes(
@@ -103,16 +121,14 @@ fun NewsLongScreen(
 
     var showBookmarkSheet by remember { mutableStateOf(false) }
     var showCreateFolderSheet by remember { mutableStateOf(false) }
+    var folderItems by remember { mutableStateOf(folders) }
+    var tempFolders by remember { mutableStateOf(folders) }
 
-    // 위젯 북마크 버튼 클릭 시 화면 진입과 동시에 북마크 시트 자동 오픈
     LaunchedEffect(autoOpenBookmark) {
         if (autoOpenBookmark) {
             showBookmarkSheet = true
         }
     }
-
-    var folderItems by remember { mutableStateOf(folders) }
-    var tempFolders by remember { mutableStateOf(folders) }
 
     LaunchedEffect(folders) {
         val existingIds = folderItems.map { it.id }.toSet()
@@ -147,7 +163,7 @@ fun NewsLongScreen(
         }
 
         NewsLongTopBar(
-            containerColor = topBarColor,
+            showIconBackground = isOverImageSection,
             isBookmarked = folderItems.any { it.isSelected },
             onBackClick = onBackClick,
             onBookmarkClick = {
@@ -159,6 +175,7 @@ fun NewsLongScreen(
                 }
             },
             onShareClick = {
+                onShareClick()
                 captureComposableContent(
                     context = context,
                     onCaptured = { bitmap ->
@@ -192,8 +209,11 @@ fun NewsLongScreen(
                 },
                 onFolderBookmarkClick = { clickedFolder ->
                     tempFolders = tempFolders.map { folder ->
-                        if (folder.id == clickedFolder.id) folder.copy(isSelected = !folder.isSelected)
-                        else folder
+                        if (folder.id == clickedFolder.id) {
+                            folder.copy(isSelected = !folder.isSelected)
+                        } else {
+                            folder
+                        }
                     }
                 },
                 onSaveClick = {
@@ -204,6 +224,7 @@ fun NewsLongScreen(
                 }
             )
         }
+
         if (showCreateFolderSheet) {
             CreateFolderBottomSheet(
                 onDismissRequest = { showCreateFolderSheet = false },
@@ -218,7 +239,6 @@ fun NewsLongScreen(
     }
 }
 
-
 @Composable
 private fun NewsLongContent(
     item: HomeNewsCardItem,
@@ -228,9 +248,7 @@ private fun NewsLongContent(
     sectionsError: Boolean = false,
     onRetryLoadSections: () -> Unit = {}
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Image(
             painter = painterResource(id = imageRes),
             contentDescription = null,
@@ -253,9 +271,7 @@ private fun NewsLongContent(
                 .background(Color.White)
                 .padding(horizontal = 24.dp, vertical = 24.dp)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 CategoryChip(text = item.category)
                 if (item.subCategory.isNotBlank()) {
                     CategoryChip(text = item.subCategory)
@@ -275,7 +291,7 @@ private fun NewsLongContent(
             Spacer(modifier = Modifier.height(10.dp))
 
             AppText(
-                text = "${item.updatedAt} ",
+                text = item.updatedAt,
                 style = MaterialTheme.typography.bodySmall,
                 color = TextCaption
             )
@@ -296,7 +312,7 @@ private fun NewsLongContent(
                 contentAlignment = Alignment.Center
             ) {
                 AppText(
-                    text = "본 요약은 ${item.articleCount}개 언론사의 보도를\n교차 검증하여 AI가 재구성한 내용입니다.",
+                    text = "보통 요약은 ${item.articleCount}개 언론사의 보도를\n교차 검증해 AI가 재구성한 내용입니다.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextCaption,
                     textAlign = TextAlign.Center
@@ -305,11 +321,10 @@ private fun NewsLongContent(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            SummaryCard(
-                summaryPoints = item.summaryPoints
-            )
+            SummaryCard(summaryPoints = item.summaryPoints)
 
             Spacer(modifier = Modifier.height(28.dp))
+
             when {
                 isSectionsLoading -> {
                     Box(
@@ -321,6 +336,7 @@ private fun NewsLongContent(
                         CircularProgressIndicator(color = PrimaryNormal)
                     }
                 }
+
                 sectionsError -> {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -341,16 +357,20 @@ private fun NewsLongContent(
                         }
                     }
                 }
+
                 sections.isNotEmpty() -> {
                     sections.take(3).forEachIndexed { index, section ->
-                        if (index > 0) Spacer(modifier = Modifier.height(24.dp))
+                        if (index > 0) {
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
                         LongFormSectionBlock(index = index, section = section)
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
+
                 item.insight.isNotBlank() -> {
                     AppText(
-                        text = "살펴보기",
+                        text = "인사이트",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.Black
                     )
@@ -366,6 +386,7 @@ private fun NewsLongContent(
         }
     }
 }
+
 @Composable
 private fun SummaryCard(
     summaryPoints: List<String>
@@ -378,9 +399,7 @@ private fun SummaryCard(
             .padding(20.dp)
     ) {
         Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_longform_pencil),
                     contentDescription = null,
@@ -388,7 +407,7 @@ private fun SummaryCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 AppText(
-                    text = "세줄 간편요약",
+                    text = "핵심 간편요약",
                     style = MaterialTheme.typography.titleSmall,
                     color = Color.Black
                 )
@@ -428,6 +447,7 @@ private fun LongFormSectionBlock(
         1 -> R.drawable.ic_longform_number2
         else -> R.drawable.ic_longform_number3
     }
+
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -444,7 +464,9 @@ private fun LongFormSectionBlock(
                 color = TextSubtitle
             )
         }
+
         Spacer(modifier = Modifier.height(12.dp))
+
         section.contentList.forEach { line ->
             AppText(
                 text = line,
@@ -459,7 +481,7 @@ private fun LongFormSectionBlock(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NewsLongTopBar(
-    containerColor: Color,
+    showIconBackground: Boolean,
     isBookmarked: Boolean,
     onBackClick: () -> Unit,
     onBookmarkClick: () -> Unit,
@@ -469,40 +491,73 @@ private fun NewsLongTopBar(
         modifier = Modifier.statusBarsPadding(),
         title = {},
         navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = "뒤로가기",
-                    tint = Color.Unspecified
-                )
+            val navigationModifier = if (showIconBackground) {
+                Modifier
+                    .padding(start = 12.dp)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        ambientColor = Color.Black.copy(alpha = 0.1f),
+                        spotColor = Color.Black.copy(alpha = 0.1f)
+                    )
+                    .background(Color.White, CircleShape)
+            } else {
+                Modifier.padding(start = 12.dp)
+            }
+
+            Box(modifier = navigationModifier) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_back),
+                        contentDescription = "뒤로가기",
+                        tint = Color.Unspecified
+                    )
+                }
             }
         },
         actions = {
-            IconButton(onClick = onBookmarkClick) {
-                Icon(
-                    painter = painterResource(
-                        id = if (isBookmarked) {
-                            R.drawable.ic_longform_bookmark_active
-                        } else {
-                            R.drawable.ic_longform_bookmark_inactive
-                        }
-                    ),
-                    contentDescription = "즐겨찾기",
-                    tint = Color.Unspecified
-                )
+            val actionsModifier = if (showIconBackground) {
+                Modifier
+                    .padding(end = 12.dp)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(999.dp),
+                        ambientColor = Color.Black.copy(alpha = 0.1f),
+                        spotColor = Color.Black.copy(alpha = 0.1f)
+                    )
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Color.White)
+            } else {
+                Modifier.padding(end = 12.dp)
             }
 
-            IconButton(onClick = onShareClick) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_upload),
-                    contentDescription = "공유",
-                    tint = Color.Unspecified
-                )
+            Row(modifier = actionsModifier) {
+                IconButton(onClick = onBookmarkClick) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (isBookmarked) {
+                                R.drawable.ic_longform_bookmark_active
+                            } else {
+                                R.drawable.ic_longform_bookmark_inactive
+                            }
+                        ),
+                        contentDescription = "즐겨찾기",
+                        tint = Color.Unspecified
+                    )
+                }
+
+                IconButton(onClick = onShareClick) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_upload),
+                        contentDescription = "공유",
+                        tint = Color.Unspecified
+                    )
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = containerColor,
-            scrolledContainerColor = containerColor
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent
         ),
         windowInsets = WindowInsets(0, 0, 0, 0)
     )
@@ -528,4 +583,3 @@ private fun NewsLongShareContent(
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
-
