@@ -2,8 +2,10 @@ package com.example.brife.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.annotation.DrawableRes
 import com.example.brife.data.local.OnboardingLocalStorage
 import com.example.brife.data.repository.UserRepository
+import com.example.brife.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +30,7 @@ class ProfileViewModel(
             if (!loggedIn) {
                 _uiState.value = ProfileUiState(
                     isLoggedIn = false,
+                    profileImageRes = R.drawable.img_profile_avatar,
                     interests = localInterests
                 )
                 return@launch
@@ -40,6 +43,8 @@ class ProfileViewModel(
                         isLoggedIn = true,
                         userName = profile.nickname,
                         userEmail = profile.email,
+                        profileImageUrl = profile.profileImageUrl,
+                        profileImageRes = profileImageResFromUrl(profile.profileImageUrl),
                         interests = localInterests
                     )
                 }
@@ -47,9 +52,20 @@ class ProfileViewModel(
                     // API 실패해도 토큰이 있으면 로그인 상태 유지
                     _uiState.value = ProfileUiState(
                         isLoggedIn = true,
+                        profileImageRes = R.drawable.img_profile_avatar,
                         interests = localInterests
                     )
                 }
         }
+    }
+
+    fun updateLocalProfileImage(
+        profileImageUrl: String,
+        @DrawableRes profileImageRes: Int
+    ) {
+        _uiState.value = _uiState.value.copy(
+            profileImageUrl = profileImageUrl,
+            profileImageRes = profileImageRes
+        )
     }
 }

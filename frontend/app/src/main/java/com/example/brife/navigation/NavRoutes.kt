@@ -23,6 +23,7 @@ object NavRoutes {
     const val ARCHIVE = "archive"
     const val ARCHIVE_DETAIL = "archive_detail"   // 추가: 폴더 상세 화면 (폴더 이름을 인자로 받을 수 있도록 설정 가능)
     const val PROFILE = "profile"
+    const val PROFILE_EDIT = "profile_edit"
 
     // 비로그인 프로필에서 관심사 재설정 플로우 (MainScreen 내부 NavHost 전용)
     const val ONBOARDING_INTEREST_RESET = "onboarding_interest_reset"

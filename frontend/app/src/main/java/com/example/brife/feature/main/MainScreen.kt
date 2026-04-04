@@ -37,7 +37,9 @@ import com.example.brife.feature.home.NewsLongViewModel
 import com.example.brife.feature.home.NewsLongViewModelFactory
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
 import com.example.brife.feature.onboarding.OnboardingSubInterestRoute
+import com.example.brife.feature.profile.ProfileEditScreen
 import com.example.brife.feature.profile.categoryItemFromId
+import com.example.brife.feature.profile.profileImageUrlFromDrawableRes
 import com.example.brife.navigation.NavRoutes
 import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppTopBar
@@ -77,6 +79,7 @@ fun MainScreen(
         NavRoutes.EXPLORE,
         NavRoutes.ARCHIVE,
         NavRoutes.PROFILE,
+        NavRoutes.PROFILE_EDIT,
         NavRoutes.ONBOARDING_INTEREST_RESET -> initialRoute
         else -> NavRoutes.HOME
     }
@@ -85,6 +88,7 @@ fun MainScreen(
     val isInterestResetRoute = currentRoute == NavRoutes.ONBOARDING_INTEREST_RESET ||
             currentRoute?.startsWith("${NavRoutes.ONBOARDING_SUB_INTEREST_RESET}/") == true
     val isArchiveDetailRoute = currentRoute?.startsWith("${NavRoutes.ARCHIVE_DETAIL}/") == true
+    val isProfileEditRoute = currentRoute == NavRoutes.PROFILE_EDIT
 
     val backgroundColor =
         if (currentRoute == NavRoutes.HOME) Color.Transparent else Color.White
@@ -106,6 +110,7 @@ fun MainScreen(
     var pendingRouteForLogin by remember { mutableStateOf<String?>(null) }
     var pendingIndexForLogin by remember { mutableStateOf<Int?>(null) }
     var returnRouteAfterGuestArchiveSheet by remember { mutableStateOf<String?>(null) }
+    var returnRouteAfterGuestProfileEditSheet by remember { mutableStateOf<String?>(null) }
     var forceResetHomePagerKey by remember { mutableStateOf(0) }
     LaunchedEffect(isLoggedIn) {
         if (!isLoggedIn) {
@@ -114,6 +119,7 @@ fun MainScreen(
             pendingRouteForLogin = null
             pendingIndexForLogin = null
             returnRouteAfterGuestArchiveSheet = null
+            returnRouteAfterGuestProfileEditSheet = null
         }
     }
     // ------------------------------------------------
@@ -160,6 +166,8 @@ fun MainScreen(
             onboardingStorage.getSelectedCategoryIds().mapNotNull { categoryItemFromId(it) }
         )
     }
+    var profileEditUserName by remember { mutableStateOf("브리프") }
+    var profileEditImageRes by remember { mutableStateOf(com.example.brife.R.drawable.img_profile_avatar) }
 
     fun navigateTo(route: String) {
         navController.navigate(route) {
@@ -180,9 +188,16 @@ fun MainScreen(
         ) {
             navigateTo(returnRouteAfterGuestArchiveSheet ?: NavRoutes.HOME)
         }
+        if (!isLoggedIn &&
+            pendingRouteForLogin == NavRoutes.PROFILE_EDIT &&
+            currentRoute == NavRoutes.PROFILE_EDIT
+        ) {
+            navigateTo(returnRouteAfterGuestProfileEditSheet ?: NavRoutes.PROFILE)
+        }
         pendingRouteForLogin = null
         pendingIndexForLogin = null
         returnRouteAfterGuestArchiveSheet = null
+        returnRouteAfterGuestProfileEditSheet = null
     }
 
     LaunchedEffect(initialRoute) {
@@ -214,11 +229,14 @@ fun MainScreen(
                         onMoreClick = { showArchiveMoreSheet = true }
                     )
                 }
+                isProfileEditRoute -> {
+                    // ProfileEditScreen 내부 전용 TopBar 사용
+                }
                 // PROFILE: topbar 없음 (요구사항)
             }
         },
         bottomBar = {
-            if (!isNewsLongRoute && !isInterestResetRoute && !isArchiveDeleteMode && !isArchiveDetailRoute) {
+            if (!isNewsLongRoute && !isInterestResetRoute && !isArchiveDeleteMode && !isArchiveDetailRoute && !isProfileEditRoute) {
                 AppNavigationBar(
                     selectedIndex = if (showLoginBottomSheet) {
                         // 바텀시트가 떠 있을 때는 현재 실제 경로에 따른 인덱스 유지
@@ -342,9 +360,44 @@ fun MainScreen(
                     onResetInterestClick = {
                         navController.navigate(NavRoutes.ONBOARDING_INTEREST_RESET)
                     },
+                    onEditProfileImageClick = { username, imageRes ->
+                        profileEditUserName = username
+                        profileEditImageRes = imageRes
+                        if (isLoggedIn) {
+                            navController.navigate(NavRoutes.PROFILE_EDIT)
+                        } else {
+                            returnRouteAfterGuestProfileEditSheet = NavRoutes.PROFILE
+                            navController.navigate(NavRoutes.PROFILE_EDIT)
+                            pendingRouteForLogin = NavRoutes.PROFILE_EDIT
+                            pendingIndexForLogin = null
+                            showLoginBottomSheet = true
+                        }
+                    },
                     onLoginClick = {
                         // ★ 타입 불일치 해결: 파라미터 없이 호출되는 콜백을 인자 2개짜리 함수로 연결
                         onNavigateToLogin(NavRoutes.PROFILE, null)
+                    }
+                )
+            }
+
+            composable(NavRoutes.PROFILE_EDIT) {
+                ProfileEditScreen(
+                    username = profileEditUserName,
+                    selectedImageRes = profileEditImageRes,
+                    isGuestPreview = !isLoggedIn,
+                    onBackClick = { navController.popBackStack() },
+                    onSaveClick = { imageRes ->
+                        if (!isLoggedIn) return@ProfileEditScreen
+                        scope.launch {
+                            val profileImageUrl = profileImageUrlFromDrawableRes(imageRes)
+                            val result = userRepository.updateProfile(profileImageUrl = profileImageUrl)
+                            if (result.isSuccess) {
+                                profileEditImageRes = imageRes
+                                navController.popBackStack()
+                            } else {
+                                Log.w("MainScreen", "프로필 이미지 저장 실패: ${result.exceptionOrNull()?.message}")
+                            }
+                        }
                     }
                 )
             }
@@ -557,6 +610,7 @@ fun MainScreen(
                 onLoginClick = {
                     showLoginBottomSheet = false
                     returnRouteAfterGuestArchiveSheet = null
+                    returnRouteAfterGuestProfileEditSheet = null
                     // ★ AppNavGraph에 복귀 정보를 넘기며 로그인 화면으로 이동
                     onNavigateToLogin(pendingRouteForLogin, pendingIndexForLogin)
                 },

@@ -19,12 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,21 +38,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brife.R
-import com.example.brife.ui.component.AppNavigationBar
 import com.example.brife.ui.component.AppText
 import com.example.brife.ui.theme.BorderDefault
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.PrimaryNormal
 import com.example.brife.ui.theme.TextBody
 import com.example.brife.ui.theme.TextSubtitle
-import com.example.brife.ui.theme.TextTitle
 
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     uiState: ProfileUiState = mockGuestProfileState,
     onLoginClick: () -> Unit = {},
-    onResetInterestClick: () -> Unit = {}
+    onResetInterestClick: () -> Unit = {},
+    onEditProfileImageClick: () -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -62,11 +63,9 @@ fun ProfileScreen(
     ) {
         Spacer(modifier = Modifier.height(100.dp))
 
-        // 프로필 아바타 — 상단 중앙 고정
-        Image(
-            painter = painterResource(id = R.drawable.img_profile_avatar),
-            contentDescription = "프로필 아바타",
-            modifier = Modifier.size(130.dp)
+        ProfileImageBox(
+            imageRes = uiState.profileImageRes,
+            onEditClick = onEditProfileImageClick
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -88,9 +87,35 @@ fun ProfileScreen(
     }
 }
 
-// ────────────────────────────────────────────
-// 비로그인 콘텐츠
-// ────────────────────────────────────────────
+@Composable
+private fun ProfileImageBox(
+    imageRes: Int,
+    onEditClick: () -> Unit
+) {
+    Box(modifier = Modifier.size(130.dp)) {
+        Image(
+            painter = painterResource(id = imageRes),
+            contentDescription = "프로필 이미지",
+            modifier = Modifier.fillMaxSize()
+        )
+
+        IconButton(
+            onClick = onEditClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .size(34.dp)
+                .background(Color.White, CircleShape)
+                .border(1.dp, BorderDefault, CircleShape)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_profile_edit),
+                contentDescription = "프로필 이미지 수정",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+}
 
 @Composable
 private fun GuestContent(
@@ -107,7 +132,6 @@ private fun GuestContent(
 
     Spacer(modifier = Modifier.height(12.dp))
 
-    // 로그인 버튼: white background, PrimaryNormal stroke, radius 30
     Button(
         onClick = onLoginClick,
         modifier = Modifier
@@ -137,10 +161,6 @@ private fun GuestContent(
     ResetInterestBox(onClick = onResetInterestClick)
 }
 
-// ────────────────────────────────────────────
-// 로그인 콘텐츠
-// ────────────────────────────────────────────
-
 @Composable
 private fun LoggedInContent(
     uiState: ProfileUiState,
@@ -169,15 +189,6 @@ private fun LoggedInContent(
     ResetInterestBox(onClick = onResetInterestClick)
 }
 
-// ────────────────────────────────────────────
-// 공통 컴포넌트
-// ────────────────────────────────────────────
-
-/**
- * 관심사 박스
- * - 가로 한 줄, 각 항목(아이콘 + 카테고리명) 사이 세로 구분선
- * - 1~3개 항목 대응
- */
 @Composable
 private fun InterestBox(interests: List<ProfileCategoryItem>) {
     if (interests.isEmpty()) return
@@ -213,13 +224,12 @@ private fun InterestBox(interests: List<ProfileCategoryItem>) {
                 )
             }
 
-            // 마지막 항목 이후에는 구분선 없음
             if (index < interests.lastIndex) {
                 Box(
                     modifier = Modifier
                         .width(1.dp)
                         .fillMaxHeight()
-                        .padding(vertical = 12.dp) // 👈 핵심
+                        .padding(vertical = 12.dp)
                         .background(BorderDefault)
                 )
             }
@@ -227,10 +237,6 @@ private fun InterestBox(interests: List<ProfileCategoryItem>) {
     }
 }
 
-/**
- * 회원정보 박스 (로그인 상태 전용)
- * - "회원정보" 레이블 + 이름 / 계정 이메일 행
- */
 @Composable
 private fun MemberInfoBox(
     userName: String,
@@ -290,11 +296,6 @@ private fun MemberInfoBox(
     }
 }
 
-/**
- * 관심사 재설정 박스
- * - InterestBox와 동일한 border/radius/background 스타일
- * - 높이는 InterestBox보다 낮게 (padding 조정)
- */
 @Composable
 private fun ResetInterestBox(onClick: () -> Unit) {
     Row(
@@ -321,15 +322,7 @@ private fun ResetInterestBox(onClick: () -> Unit) {
     }
 }
 
-// ────────────────────────────────────────────
-// Preview
-// ────────────────────────────────────────────
-
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-    name = "1. 비로그인 상태"
-)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ProfileScreenGuestPreview() {
     BrifeTheme {
@@ -337,16 +330,10 @@ fun ProfileScreenGuestPreview() {
     }
 }
 
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-    name = "2. 로그인 상태"
-)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ProfileScreenLoggedInPreview() {
     BrifeTheme {
         ProfileScreen(uiState = mockLoggedInProfileState)
     }
 }
-
-

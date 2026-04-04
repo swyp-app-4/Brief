@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,7 +43,6 @@ import com.example.brife.ui.component.AppText
 import com.example.brife.ui.theme.BorderStrong
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.PrimaryNormal
-import com.example.brife.ui.theme.TextBody
 import com.example.brife.ui.theme.TextTitle
 
 private data class ProfileImageOption(
@@ -65,6 +62,7 @@ private val profileImageOptions = listOf(
 fun ProfileEditScreen(
     username: String,
     @DrawableRes selectedImageRes: Int = R.drawable.img_profile_avatar,
+    isGuestPreview: Boolean = false,
     onBackClick: () -> Unit = {},
     onSaveClick: (Int) -> Unit = {}
 ) {
@@ -119,6 +117,7 @@ fun ProfileEditScreen(
                     ProfileImageGridItem(
                         imageRes = option.imageRes,
                         isSelected = option.imageRes == currentSelectedImageRes,
+                        enabled = !isGuestPreview,
                         onClick = { currentSelectedImageRes = option.imageRes }
                     )
                 }
@@ -178,20 +177,20 @@ private fun ProfileEditTopBar(
 private fun ProfileImageGridItem(
     @DrawableRes imageRes: Int,
     isSelected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(20.dp))
             .border(
                 width = if (isSelected) 2.dp else 1.dp,
                 color = if (isSelected) PrimaryNormal else BorderStrong,
                 shape = RoundedCornerShape(20.dp)
             )
-            .background(Color.White)
-            .clickable(onClick = onClick),
+            .background(Color.White, RoundedCornerShape(20.dp))
+            .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Image(
@@ -200,7 +199,6 @@ private fun ProfileImageGridItem(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(10.dp)
-                .clip(CircleShape)
         )
     }
 }
@@ -215,4 +213,3 @@ private fun ProfileEditScreenPreview() {
         )
     }
 }
-

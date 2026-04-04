@@ -12,7 +12,7 @@ data class InterestRequest(
 // PATCH /users/me
 data class UpdateProfileRequest(
     val nickname: String? = null,
-    val profileImageUrl: String? = null
+    val  profileImageUrl: String? = null
 )
 
 
