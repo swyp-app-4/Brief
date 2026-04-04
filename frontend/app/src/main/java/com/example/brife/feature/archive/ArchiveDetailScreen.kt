@@ -44,6 +44,8 @@ data class ArchiveNewsItem(
     val summary: String,
     val time: String,
     val company: String,
+    val category: String = "",
+    val subCategory: String = "",
     val imageUrl: Int,
     val newsId: Long = 0L
 )
@@ -427,6 +429,18 @@ fun ArchiveNewsCard(
     item: ArchiveNewsItem,
     onClick: (() -> Unit)? = null
 ) {
+    val imageRes = remember(item.category, item.subCategory, item.newsId, item.imageUrl) {
+        if (item.category.isNotBlank() || item.subCategory.isNotBlank()) {
+            LongFormImageProvider.getStableImageRes(
+                item.category,
+                item.subCategory,
+                item.newsId
+            )
+        } else {
+            item.imageUrl
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -472,7 +486,7 @@ fun ArchiveNewsCard(
             Spacer(modifier = Modifier.width(16.dp))
 
             Image(
-                painter = painterResource(id = item.imageUrl),
+                painter = painterResource(id = imageRes),
                 contentDescription = "뉴스 이미지",
                 modifier = Modifier
                     .size(78.dp)

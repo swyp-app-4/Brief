@@ -45,9 +45,11 @@ class ArchiveDetailViewModel(
                                     time = detail.publishedDate.ifBlank { item.savedAt.ifBlank { "-" } },
                                     company = "${detail.sourceCount}개 언론사",
                                     // index 대신 newsId를 사용하여 모든 화면에서 동일 이미지 유지
+                                    category = detail.groupName,
+                                    subCategory = detail.categoryName,
                                     imageUrl = LongFormImageProvider.getStableImageRes(
                                         detail.groupName,
-                                        "", // subCategory 정보가 필요한 경우 detail에서 가져오도록 확장 가능
+                                        detail.categoryName,
                                         item.contentId
                                     ),
                                     newsId = item.contentId
@@ -61,6 +63,8 @@ class ArchiveDetailViewModel(
                                     summary = "",
                                     time = item.savedAt,
                                     company = "",
+                                    category = "",
+                                    subCategory = "",
                                     imageUrl = LongFormImageProvider.getStableImageRes("", "", item.contentId),
                                     newsId = item.contentId
                                 )

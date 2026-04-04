@@ -324,8 +324,9 @@ fun MainScreen(
                     onNewsClick = { archiveItem ->
                         selectedNewsItem = com.example.brife.feature.home.HomeNewsCardItem(
                             newsId = archiveItem.newsId,
-                            category = archiveItem.company,
-                            imageRes = archiveItem.imageUrl,
+                            category = archiveItem.category,
+                            subCategory = archiveItem.subCategory,
+                            imageRes = null,
                             title = archiveItem.title,
                             notice = "",
                             summaryPoints = emptyList(),
@@ -418,8 +419,9 @@ fun MainScreen(
                     onNewsClick = { archiveItem ->
                         selectedNewsItem = com.example.brife.feature.home.HomeNewsCardItem(
                             newsId = archiveItem.newsId,
-                            category = archiveItem.company,
-                            imageRes = archiveItem.imageUrl,
+                            category = archiveItem.category,
+                            subCategory = archiveItem.subCategory,
+                            imageRes = null,
                             title = archiveItem.title,
                             notice = "",
                             summaryPoints = emptyList(),
@@ -499,7 +501,7 @@ fun MainScreen(
 
                 // selectedNewsItem이 null이어도 newsId로 fallback 항목 생성
                 // → 위젯 deeplink 진입 시 race condition 방어 + 항상 API 재조회 보장
-                val item = selectedNewsItem ?: HomeNewsCardItem(
+                val item = selectedNewsItem?.takeIf { it.newsId == newsId } ?: HomeNewsCardItem(
                     newsId = newsId,
                     category = "",
                     imageRes = null,
