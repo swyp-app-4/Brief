@@ -4,18 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="0dp">
 
     <!-- 타이틀: 카드 영역 바깥 (13→14sp로 소폭 확대) -->
     <TextView
         android:id="@+id/widget_tv_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="6dp"
         android:textColor="#0D1B3E"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:maxLines="2"
+        android:maxLines="1"
         android:ellipsize="end" />
 
     <!-- 요약 카드 영역 (파란 배경 / 카드 높이 줄이기: weight=1→wrap_content + 패딩 축소) -->
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="@drawable/widget_card_bg"
-        android:padding="16dp"
+        android:padding="13dp"
         android:gravity="center_vertical">
 
         <TextView
@@ -32,7 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#4A5568"
-            android:textSize="12sp"
+            android:textSize="15sp"
             android:maxLines="1"
             android:ellipsize="end" />
 
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:textColor="#4A5568"
-            android:textSize="12sp"
+            android:textSize="15sp"
             android:maxLines="1"
             android:ellipsize="end" />
 
@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:textColor="#4A5568"
-            android:textSize="12sp"
+            android:textSize="15sp"
             android:maxLines="1"
             android:ellipsize="end" />
 
