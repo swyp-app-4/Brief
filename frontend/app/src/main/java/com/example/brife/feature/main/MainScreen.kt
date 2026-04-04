@@ -79,8 +79,8 @@ fun MainScreen(
         NavRoutes.EXPLORE,
         NavRoutes.ARCHIVE,
         NavRoutes.PROFILE,
-        NavRoutes.PROFILE_EDIT,
         NavRoutes.ONBOARDING_INTEREST_RESET -> initialRoute
+        NavRoutes.PROFILE_EDIT -> NavRoutes.PROFILE
         else -> NavRoutes.HOME
     }
 
@@ -192,7 +192,7 @@ fun MainScreen(
             pendingRouteForLogin == NavRoutes.PROFILE_EDIT &&
             currentRoute == NavRoutes.PROFILE_EDIT
         ) {
-            navigateTo(returnRouteAfterGuestProfileEditSheet ?: NavRoutes.PROFILE)
+            navController.popBackStack()
         }
         pendingRouteForLogin = null
         pendingIndexForLogin = null
