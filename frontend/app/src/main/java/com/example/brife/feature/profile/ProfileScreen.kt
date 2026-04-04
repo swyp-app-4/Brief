@@ -246,7 +246,7 @@ private fun MemberInfoBox(
     ) {
         AppText(
             text = "회원정보",
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.titleSmall,
             color = TextSubtitle
         )
 
