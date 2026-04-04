@@ -2,6 +2,7 @@ package com.example.brife.feature.main
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -249,8 +250,13 @@ fun MainScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(Color.White)
+//    ) {
         Scaffold(
-        containerColor = backgroundColor,
+        containerColor = Color.White,
         topBar = {
             when {
                 currentRoute == NavRoutes.HOME -> {
@@ -264,9 +270,11 @@ fun MainScreen(
                     AppTopBar(
                         title = "보관함",
                         showLogo = false,
+                        showBack = true,
+                        showMore = true,
                         showSettings = false,
                         centerTitle = true,
-                        showMore = isLoggedIn,
+                        showSearch = false,
                         onMoreClick = { showArchiveMoreSheet = true }
                     )
                 }
@@ -698,7 +706,9 @@ private fun GuestLoginPreviewOverlay(
                     AppTopBar(
                         title = "보관함",
                         showLogo = false,
+                        showBack = false,
                         showSettings = false,
+                        showSearch = false,
                         centerTitle = true,
                         showMore = false
                     )
