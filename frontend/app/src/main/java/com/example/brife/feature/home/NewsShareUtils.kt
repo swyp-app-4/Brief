@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
@@ -17,15 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.FileProvider
+import com.example.brife.R
 import java.io.File
 import java.io.FileOutputStream
 
-/**
- * Window 영역을 Bitmap으로 캡처한다. (HomeScreen 카드 공유 등 viewport 내 콘텐츠용)
- *
- * - API 26+: PixelCopy 사용 (하드웨어 가속된 Compose View에서도 정상 동작)
- * - 미만: Canvas 소프트웨어 렌더링 폴백
- */
 fun captureWindowBitmap(
     context: Context,
     view: View,
@@ -69,17 +66,6 @@ private fun softwareDraw(view: View, cropRect: Rect?): Bitmap {
     }
 }
 
-/**
- * 주어진 Composable을 화면 밖에서 전체 높이로 렌더링한 뒤 Bitmap으로 캡처한다.
- *
- * PixelCopy는 현재 GPU 프레임버퍼(viewport)만 복사하므로 스크롤 전체 캡처 불가.
- * 이 함수는 ComposeView를 decor view에 화면 밖으로 추가해 실제 Compose 레이아웃을
- * 전체 높이로 수행한 뒤, 소프트웨어 Canvas로 전체 Bitmap을 생성한다.
- *
- * @param context Activity Context
- * @param onCaptured 캡처 완료 시 Bitmap 전달 (메인 스레드)
- * @param content 캡처할 Composable — 스크롤 없이 자연 높이로 렌더링되어야 함
- */
 fun captureComposableContent(
     context: Context,
     onCaptured: (Bitmap) -> Unit,
@@ -94,9 +80,8 @@ fun captureComposableContent(
             screenWidth,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
-        translationX = screenWidth.toFloat() // 화면 오른쪽 밖으로 이동 — 사용자에게 보이지 않음
+        translationX = screenWidth.toFloat()
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-        // 부착 전에 SOFTWARE 레이어 설정 — draw(canvas) 가 하드웨어 레이어 없이 동작하도록
         setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         setContent { content() }
     }
@@ -111,19 +96,15 @@ fun captureComposableContent(
                 .takeIf { it.isAlive }
                 ?.removeOnGlobalLayoutListener(layoutListener)
 
-            // Compose 첫 프레임 완료 대기
             handler.postDelayed({
                 try {
                     if (!composeView.isAttachedToWindow) return@postDelayed
 
-                    // FrameLayout WRAP_CONTENT 는 자식에게 AT_MOST(parentHeight) 제약을 줘서
-                    // 화면 높이를 초과하는 콘텐츠가 잘린다.
-                    // UNSPECIFIED 모드로 재측정하면 Compose 가 전체 콘텐츠 높이를 반환한다.
                     composeView.measure(
                         View.MeasureSpec.makeMeasureSpec(screenWidth, View.MeasureSpec.EXACTLY),
                         View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
                     )
-                    val fullHeight = composeView.measuredHeight.coerceIn(1, 12_000) // OOM 방지
+                    val fullHeight = composeView.measuredHeight.coerceIn(1, 12_000)
                     composeView.layout(
                         composeView.left,
                         composeView.top,
@@ -138,7 +119,7 @@ fun captureComposableContent(
 
                     decorView.removeView(composeView)
                     onCaptured(bitmap)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     if (composeView.isAttachedToWindow) decorView.removeView(composeView)
                 }
             }, 300L)
@@ -147,14 +128,12 @@ fun captureComposableContent(
     composeView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
 }
 
-/**
- * Bitmap을 cache 디렉토리에 저장하고 시스템 공유 시트로 이미지를 공유한다.
- */
 fun shareImageBitmap(context: Context, bitmap: Bitmap, extraText: String = "") {
+    val sharedBitmap = bitmap.withShareWatermark(context)
     val cachePath = File(context.cacheDir, "shared_images").also { it.mkdirs() }
     val imageFile = File(cachePath, "share_${System.currentTimeMillis()}.png")
     FileOutputStream(imageFile).use { fos ->
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+        sharedBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
     }
 
     val uri = FileProvider.getUriForFile(
@@ -170,4 +149,23 @@ fun shareImageBitmap(context: Context, bitmap: Bitmap, extraText: String = "") {
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
     context.startActivity(Intent.createChooser(intent, null))
+}
+
+private fun Bitmap.withShareWatermark(context: Context): Bitmap {
+    val baseBitmap = if (config == Bitmap.Config.ARGB_8888) this else copy(Bitmap.Config.ARGB_8888, false)
+    val resultBitmap = baseBitmap.copy(Bitmap.Config.ARGB_8888, true)
+    val watermarkBitmap = BitmapFactory.decodeResource(
+        context.resources,
+        R.drawable.img_share_watermark
+    ) ?: return resultBitmap
+
+    val marginPx = (14f * context.resources.displayMetrics.density).toInt()
+    val left = (resultBitmap.width - watermarkBitmap.width - marginPx).coerceAtLeast(0)
+    val top = (resultBitmap.height - watermarkBitmap.height - marginPx).coerceAtLeast(0)
+
+    val canvas = Canvas(resultBitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+    canvas.drawBitmap(watermarkBitmap, left.toFloat(), top.toFloat(), paint)
+    watermarkBitmap.recycle()
+    return resultBitmap
 }
