@@ -294,7 +294,6 @@ fun MainScreen(
                                 } else {
                                     // 요구사항: 이동 없이 바텀시트만 등장
                                     returnRouteAfterGuestArchiveSheet = currentRoute
-                                    navigateTo(NavRoutes.ARCHIVE)
                                     pendingRouteForLogin = NavRoutes.ARCHIVE
                                     pendingIndexForLogin = null
                                     showLoginBottomSheet = true
@@ -396,7 +395,6 @@ fun MainScreen(
                             navController.navigate(NavRoutes.PROFILE_EDIT)
                         } else {
                             returnRouteAfterGuestProfileEditSheet = NavRoutes.PROFILE
-                            navController.navigate(NavRoutes.PROFILE_EDIT)
                             pendingRouteForLogin = NavRoutes.PROFILE_EDIT
                             pendingIndexForLogin = null
                             showLoginBottomSheet = true
