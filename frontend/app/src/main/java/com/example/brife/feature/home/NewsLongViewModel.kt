@@ -133,22 +133,31 @@ class NewsLongViewModel(
             }
 
             foldersToRemove.forEach { folder ->
-                val archiveItemId = folder.archiveItemId
-                if (archiveItemId == null || folder.id == 0L) {
+                val resolvedArchiveId = resolveArchiveId(folder)
+                val resolvedArchiveItemId = resolveArchiveItemId(
+                    folder = folder,
+                    archiveId = resolvedArchiveId,
+                    newsId = newsId
+                )
+
+                if (resolvedArchiveId == null || resolvedArchiveItemId == null) {
                     hasFailure = true
                     Log.e(
                         "NewsLongViewModel",
-                        "removeFromFolder skipped: archiveId=${folder.id}, itemId=$archiveItemId"
+                        "removeFromFolder skipped: archiveId=${folder.id}, itemId=${folder.archiveItemId}"
                     )
                     return@forEach
                 }
 
-                val result = archiveRepository.deleteArchiveItem(folder.id, archiveItemId)
+                val result = archiveRepository.deleteArchiveItem(
+                    resolvedArchiveId,
+                    resolvedArchiveItemId
+                )
                 if (result.isFailure) {
                     hasFailure = true
                     Log.e(
                         "NewsLongViewModel",
-                        "removeFromFolder failed: archiveId=${folder.id}, itemId=$archiveItemId, error=${result.exceptionOrNull()?.message}"
+                        "removeFromFolder failed: archiveId=$resolvedArchiveId, itemId=$resolvedArchiveItemId, error=${result.exceptionOrNull()?.message}"
                     )
                 }
             }
@@ -241,5 +250,29 @@ class NewsLongViewModel(
                 mappedFolders
             }
         }
+    }
+
+    private suspend fun resolveArchiveId(folder: BookmarkFolderUiModel): Long? {
+        if (folder.id != 0L) return folder.id
+        if (!folder.isFavorite) return null
+
+        return archiveRepository.getFolders()
+            .getOrNull()
+            ?.firstOrNull { it.isFavorite }
+            ?.archiveId
+    }
+
+    private suspend fun resolveArchiveItemId(
+        folder: BookmarkFolderUiModel,
+        archiveId: Long?,
+        newsId: Long
+    ): Long? {
+        if (archiveId == null) return null
+        if (folder.archiveItemId != null) return folder.archiveItemId
+
+        return archiveRepository.getItems(archiveId)
+            .getOrNull()
+            ?.firstOrNull { it.contentId == newsId }
+            ?.id
     }
 }
