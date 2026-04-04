@@ -28,9 +28,10 @@ fun ArchiveDetailRoute(
             authLocalStorage = AuthLocalStorage(context)
         )
     }
+    val isFavorite = folderName == "즐겨찾기"
     val viewModel: ArchiveDetailViewModel = viewModel(
         key = "archive_detail_$archiveId",
-        factory = ArchiveDetailViewModelFactory(archiveId, repository)
+        factory = ArchiveDetailViewModelFactory(archiveId, isFavorite, repository)
     )
     val newsItems by viewModel.newsItems.collectAsState()
 

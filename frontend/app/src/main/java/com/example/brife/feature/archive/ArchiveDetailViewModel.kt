@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 
 class ArchiveDetailViewModel(
     private val archiveId: Long,
+    private val isFavorite: Boolean,
     private val repository: ArchiveRepository
 ) : ViewModel() {
 
@@ -85,7 +86,11 @@ class ArchiveDetailViewModel(
             )
 
             selectedIds.forEach { itemId ->
-                val result = repository.deleteArchiveItem(archiveId, itemId)
+                val result = if (isFavorite) {
+                    repository.deleteFromFavorites(itemId)
+                } else {
+                    repository.deleteArchiveItem(archiveId, itemId)
+                }
 
                 if (result.isSuccess) {
                     _newsItems.value = _newsItems.value.filter { it.archiveItemId != itemId }
