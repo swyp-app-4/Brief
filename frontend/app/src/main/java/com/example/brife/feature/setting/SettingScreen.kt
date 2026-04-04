@@ -108,7 +108,7 @@ fun SettingScreen(
                     SettingTextItem(
                         label = if (isWithdrawing) "탈퇴 처리 중..." else "회원탈퇴",
                         onClick = { if (!isWithdrawing) showWithdrawSheet = true },
-                        color = if (isWithdrawing) TextCaption else Negative
+                        color = TextCaption
                     )
                 } else {
                     SettingTextItem(
