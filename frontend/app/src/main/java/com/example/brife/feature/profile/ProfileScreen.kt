@@ -18,14 +18,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -92,28 +91,23 @@ private fun ProfileImageBox(
     imageRes: Int,
     onEditClick: () -> Unit
 ) {
-    Box(modifier = Modifier.size(130.dp)) {
+    Box(modifier = Modifier.size(140.dp)) {
         Image(
             painter = painterResource(id = imageRes),
             contentDescription = "프로필 이미지",
             modifier = Modifier.fillMaxSize()
         )
 
-        IconButton(
-            onClick = onEditClick,
+        Icon(
+            painter = painterResource(id = R.drawable.ic_profile_edit),
+            contentDescription = "프로필 이미지 수정",
+            tint = Color.Unspecified,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .size(34.dp)
-                .background(Color.White, CircleShape)
-                .border(1.dp, BorderDefault, CircleShape)
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_profile_edit),
-                contentDescription = "프로필 이미지 수정",
-                tint = Color.Unspecified,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+                .offset(x = (-6).dp, y = (-6).dp)
+                .size(24.dp)
+                .clickable(onClick = onEditClick)
+        )
     }
 }
 

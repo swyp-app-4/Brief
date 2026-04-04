@@ -86,12 +86,12 @@ fun ProfileEditScreen(
                 .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.size(28.dp))
+            Spacer(modifier = Modifier.size(50.dp))
 
             Image(
                 painter = painterResource(id = currentSelectedImageRes),
                 contentDescription = "현재 선택한 프로필 이미지",
-                modifier = Modifier.size(164.dp)
+                modifier = Modifier.size(140.dp)
             )
 
             Spacer(modifier = Modifier.size(20.dp))
@@ -103,7 +103,7 @@ fun ProfileEditScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.size(32.dp))
+            Spacer(modifier = Modifier.size(40.dp))
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
