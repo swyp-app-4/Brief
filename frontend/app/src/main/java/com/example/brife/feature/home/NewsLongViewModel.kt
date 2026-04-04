@@ -18,6 +18,9 @@ class NewsLongViewModel(
     private val _folders = MutableStateFlow<List<BookmarkFolderUiModel>>(emptyList())
     val folders: StateFlow<List<BookmarkFolderUiModel>> = _folders.asStateFlow()
 
+    private val _isSavingFolders = MutableStateFlow(false)
+    val isSavingFolders: StateFlow<Boolean> = _isSavingFolders.asStateFlow()
+
     private val _sections = MutableStateFlow<List<NewsDetailSection>>(emptyList())
     val sections: StateFlow<List<NewsDetailSection>> = _sections.asStateFlow()
 
@@ -33,7 +36,6 @@ class NewsLongViewModel(
     private val _articleCount = MutableStateFlow(0)
     val articleCount: StateFlow<Int> = _articleCount.asStateFlow()
 
-    // 위젯 진입 시 selectedNewsItem.title = "" 이므로 API 응답으로 보정
     private val _title = MutableStateFlow("")
     val title: StateFlow<String> = _title.asStateFlow()
 
@@ -43,57 +45,22 @@ class NewsLongViewModel(
     private val _sectionsError = MutableStateFlow(false)
     val sectionsError: StateFlow<Boolean> = _sectionsError.asStateFlow()
 
-    // preselectedArchiveId: ArchiveDetail에서 진입 시 해당 폴더를 isSelected=true로 초기화
-    // newsId: Home/Explore 진입 시 이미 저장된 폴더를 자동 감지하여 isSelected=true로 설정
     fun loadFolders(preselectedArchiveId: Long? = null, newsId: Long? = null) {
         viewModelScope.launch {
-            Log.d("NewsLongViewModel", "폴더 목록 로드 시작 (preselect=$preselectedArchiveId, newsId=$newsId)")
-            archiveRepository.getFolders()
-                .onSuccess { archiveFolders ->
-                    Log.d("NewsLongViewModel", "폴더 목록 로드 성공: ${archiveFolders.size}개")
-
-                    // 이미 저장된 폴더 ID 집합 결정
-                    val savedArchiveIds: Set<Long> = when {
-                        // ArchiveDetail 진입: 바로 해당 폴더 ID 사용
-                        preselectedArchiveId != null -> setOf(preselectedArchiveId)
-                        // Home/Explore 진입: 각 폴더 아이템을 조회하여 해당 newsId 포함 여부 확인
-                        newsId != null -> archiveFolders.mapNotNull { folder ->
-                            val result = archiveRepository.getItems(folder.archiveId)
-                            if (result.isSuccess && result.getOrNull()?.any { it.contentId == newsId } == true) {
-                                folder.archiveId
-                            } else null
-                        }.toSet()
-                        else -> emptySet()
-                    }
-
-                    val mapped = archiveFolders
-                        .sortedByDescending { it.isFavorite }
-                        .map { folder ->
-                            BookmarkFolderUiModel(
-                                id = folder.archiveId,
-                                name = folder.folderName,
-                                newsCount = folder.itemCount,
-                                isSelected = folder.archiveId in savedArchiveIds,
-                                isFavorite = folder.isFavorite
-                            )
-                        }
-                    // 즐겨찾기 폴더가 없으면 최상단에 폴백으로 추가
-                    _folders.value = if (mapped.none { it.isFavorite }) {
-                        listOf(
-                            BookmarkFolderUiModel(
-                                id = 0L,
-                                name = "즐겨찾기",
-                                newsCount = 0,
-                                isSelected = false,
-                                isFavorite = true
-                            )
-                        ) + mapped
-                    } else {
-                        mapped
-                    }
+            Log.d(
+                "NewsLongViewModel",
+                "loadFolders start: preselectedArchiveId=$preselectedArchiveId, newsId=$newsId"
+            )
+            fetchBookmarkFolders(preselectedArchiveId, newsId)
+                .onSuccess { mappedFolders ->
+                    _folders.value = mappedFolders
+                    Log.d(
+                        "NewsLongViewModel",
+                        "loadFolders success: count=${mappedFolders.size}"
+                    )
                 }
-                .onFailure { e ->
-                    Log.e("NewsLongViewModel", "폴더 목록 로드 실패: ${e.message}")
+                .onFailure { error ->
+                    Log.e("NewsLongViewModel", "loadFolders failed: ${error.message}", error)
                 }
         }
     }
@@ -112,43 +79,99 @@ class NewsLongViewModel(
                     _title.value = detail.title
                     _isSectionsLoading.value = false
                 }
-                .onFailure { e ->
-                    Log.e("NewsLongViewModel", "섹션 로드 실패: newsId=$newsId, ${e.message}")
+                .onFailure { error ->
+                    Log.e("NewsLongViewModel", "loadSections failed: newsId=$newsId", error)
                     _isSectionsLoading.value = false
                     _sectionsError.value = true
                 }
         }
     }
 
-    fun saveToFolders(newsId: Long, selectedFolders: List<BookmarkFolderUiModel>) {
-        if (selectedFolders.isEmpty()) return
+    fun saveToFolders(
+        newsId: Long,
+        targetFolders: List<BookmarkFolderUiModel>,
+        onComplete: (Boolean, Boolean) -> Unit = { _, _ -> }
+    ) {
+        if (_isSavingFolders.value) {
+            onComplete(false, _folders.value.any { it.isSelected })
+            return
+        }
+
         viewModelScope.launch {
-            Log.d("NewsLongViewModel", "저장 시작: newsId=$newsId, 선택된 폴더 수=${selectedFolders.size}")
-            selectedFolders.forEach { folder ->
-                Log.d("NewsLongViewModel", "저장 요청: archiveId=${folder.id}, isFavorite=${folder.isFavorite}")
+            _isSavingFolders.value = true
+
+            val currentFoldersById = _folders.value.associateBy { it.id }
+            val currentSelectedFolders = currentFoldersById.values.filter { it.isSelected }
+            val currentSelectedIds = currentSelectedFolders.map { it.id }.toSet()
+            val targetSelectedIds = targetFolders
+                .filter { it.isSelected }
+                .map { it.id }
+                .toSet()
+
+            val foldersToAdd = targetFolders.filter { folder ->
+                folder.isSelected && folder.id !in currentSelectedIds
+            }
+            val foldersToRemove = currentSelectedFolders.filter { folder ->
+                folder.id !in targetSelectedIds
+            }
+
+            var hasFailure = false
+
+            foldersToAdd.forEach { folder ->
                 val result = if (folder.isFavorite) {
                     archiveRepository.addToFavorites(newsId)
                 } else {
                     archiveRepository.addToFolder(folder.id, newsId)
                 }
-                result
-                    .onSuccess {
-                        Log.d("NewsLongViewModel", "저장 성공: archiveId=${folder.id}")
-                    }
-                    .onFailure { e ->
-                        Log.e("NewsLongViewModel", "저장 실패: archiveId=${folder.id}, error=${e.message}")
-                    }
+                if (result.isFailure) {
+                    hasFailure = true
+                    Log.e(
+                        "NewsLongViewModel",
+                        "addToFolder failed: archiveId=${folder.id}, error=${result.exceptionOrNull()?.message}"
+                    )
+                }
             }
+
+            foldersToRemove.forEach { folder ->
+                val archiveItemId = folder.archiveItemId
+                if (archiveItemId == null || folder.id == 0L) {
+                    hasFailure = true
+                    Log.e(
+                        "NewsLongViewModel",
+                        "removeFromFolder skipped: archiveId=${folder.id}, itemId=$archiveItemId"
+                    )
+                    return@forEach
+                }
+
+                val result = archiveRepository.deleteArchiveItem(folder.id, archiveItemId)
+                if (result.isFailure) {
+                    hasFailure = true
+                    Log.e(
+                        "NewsLongViewModel",
+                        "removeFromFolder failed: archiveId=${folder.id}, itemId=$archiveItemId, error=${result.exceptionOrNull()?.message}"
+                    )
+                }
+            }
+
+            fetchBookmarkFolders(newsId = newsId)
+                .onSuccess { refreshedFolders ->
+                    _folders.value = refreshedFolders
+                }
+                .onFailure { error ->
+                    hasFailure = true
+                    Log.e("NewsLongViewModel", "reloadFolders failed after save", error)
+                }
+
+            _isSavingFolders.value = false
+            onComplete(!hasFailure, _folders.value.any { it.isSelected })
         }
     }
 
     fun createFolder(folderName: String) {
         viewModelScope.launch {
-            Log.d("NewsLongViewModel", "폴더 생성: name=$folderName")
+            Log.d("NewsLongViewModel", "createFolder: name=$folderName")
             archiveRepository.createFolder(folderName)
                 .onSuccess { newFolder ->
-                    Log.d("NewsLongViewModel", "폴더 생성 성공: archiveId=${newFolder.archiveId}")
-                    // 새로 생성된 폴더를 자동 선택 상태로 목록에 추가
                     _folders.value = _folders.value + BookmarkFolderUiModel(
                         id = newFolder.archiveId,
                         name = newFolder.folderName,
@@ -157,9 +180,66 @@ class NewsLongViewModel(
                         isFavorite = false
                     )
                 }
-                .onFailure { e ->
-                    Log.e("NewsLongViewModel", "폴더 생성 실패: ${e.message}")
+                .onFailure { error ->
+                    Log.e("NewsLongViewModel", "createFolder failed: ${error.message}", error)
                 }
+        }
+    }
+
+    private suspend fun fetchBookmarkFolders(
+        preselectedArchiveId: Long? = null,
+        newsId: Long? = null
+    ): Result<List<BookmarkFolderUiModel>> {
+        return archiveRepository.getFolders().map { archiveFolders ->
+            val savedArchiveIds = mutableSetOf<Long>()
+            val archiveItemIdsByArchiveId = mutableMapOf<Long, Long>()
+
+            when {
+                preselectedArchiveId != null -> {
+                    savedArchiveIds += preselectedArchiveId
+                }
+
+                newsId != null -> {
+                    archiveFolders.forEach { folder ->
+                        val savedItem = archiveRepository.getItems(folder.archiveId)
+                            .getOrNull()
+                            .orEmpty()
+                            .firstOrNull { it.contentId == newsId }
+
+                        if (savedItem != null) {
+                            savedArchiveIds += folder.archiveId
+                            archiveItemIdsByArchiveId[folder.archiveId] = savedItem.id
+                        }
+                    }
+                }
+            }
+
+            val mappedFolders = archiveFolders
+                .sortedByDescending { it.isFavorite }
+                .map { folder ->
+                    BookmarkFolderUiModel(
+                        id = folder.archiveId,
+                        name = folder.folderName,
+                        newsCount = folder.itemCount,
+                        isSelected = folder.archiveId in savedArchiveIds,
+                        isFavorite = folder.isFavorite,
+                        archiveItemId = archiveItemIdsByArchiveId[folder.archiveId]
+                    )
+                }
+
+            if (mappedFolders.none { it.isFavorite }) {
+                listOf(
+                    BookmarkFolderUiModel(
+                        id = 0L,
+                        name = "즐겨찾기",
+                        newsCount = 0,
+                        isSelected = false,
+                        isFavorite = true
+                    )
+                ) + mappedFolders
+            } else {
+                mappedFolders
+            }
         }
     }
 }

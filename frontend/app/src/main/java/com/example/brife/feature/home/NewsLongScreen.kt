@@ -76,11 +76,15 @@ fun NewsLongScreen(
     isLoggedIn: Boolean = false,
     autoOpenBookmark: Boolean = false,
     folders: List<BookmarkFolderUiModel> = emptyList(),
+    isSavingFolders: Boolean = false,
     sections: List<NewsDetailSection> = emptyList(),
     isSectionsLoading: Boolean = false,
     sectionsError: Boolean = false,
     onRetryLoadSections: () -> Unit = {},
-    onSaveToFolders: (selectedFolders: List<BookmarkFolderUiModel>) -> Unit = {},
+    onSaveToFolders: (
+        targetFolders: List<BookmarkFolderUiModel>,
+        onCompleted: (Boolean) -> Unit
+    ) -> Unit = { _, onCompleted -> onCompleted(false) },
     onCreateFolder: (folderName: String) -> Unit = {},
     onShareClick: () -> Unit = {},
     onNavigateToArchive: () -> Unit = {},
@@ -141,11 +145,16 @@ fun NewsLongScreen(
     }
 
     LaunchedEffect(folders) {
-        val existingIds = folderItems.map { it.id }.toSet()
-        val newlyAdded = folders.filter { it.id !in existingIds }
-        if (newlyAdded.isNotEmpty()) {
-            folderItems = folderItems + newlyAdded
-            tempFolders = tempFolders + newlyAdded
+        folderItems = folders
+        tempFolders = if (showBookmarkSheet && !isSavingFolders) {
+            val tempSelectionsById = tempFolders.associateBy { it.id }
+            folders.map { folder ->
+                tempSelectionsById[folder.id]
+                    ?.let { existing -> folder.copy(isSelected = existing.isSelected) }
+                    ?: folder
+            }
+        } else {
+            folders
         }
     }
 
@@ -219,6 +228,7 @@ fun NewsLongScreen(
         if (showBookmarkSheet) {
             NewsBookmarkBottomSheet(
                 folders = tempFolders,
+                isSaving = isSavingFolders,
                 onDismissRequest = { showBookmarkSheet = false },
                 onMyFolderClick = {
                     showBookmarkSheet = false
@@ -237,10 +247,13 @@ fun NewsLongScreen(
                     }
                 },
                 onSaveClick = {
-                    val selectedFolders = tempFolders.filter { it.isSelected }
-                    onSaveToFolders(selectedFolders)
-                    folderItems = tempFolders
-                    showBookmarkSheet = false
+                    onSaveToFolders(tempFolders) { isSuccess ->
+                        if (isSuccess) {
+                            showBookmarkSheet = false
+                        } else {
+                            tempFolders = folderItems
+                        }
+                    }
                 }
             )
         }

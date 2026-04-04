@@ -231,7 +231,7 @@ private fun WithdrawConfirmDialog(
         title = {
             AppText(
                 text = "정말로 탈퇴하시겠습니까?",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 color = TextTitle,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -251,7 +251,7 @@ private fun WithdrawConfirmDialog(
                 AppText(
                     text = "확인",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = PrimaryNormal
+                    color = TextCaption
                 )
             }
         },
@@ -260,7 +260,7 @@ private fun WithdrawConfirmDialog(
                 AppText(
                     text = "취소",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextCaption
+                    color = PrimaryNormal
                 )
             }
         }

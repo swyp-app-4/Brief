@@ -79,5 +79,12 @@ class WidgetActionReceiver : BroadcastReceiver() {
             current.add(newsId.toString())
             prefs.edit().putStringSet(KEY_BOOKMARKED, current).apply()
         }
+
+        fun removeBookmarkedId(context: Context, newsId: Long) {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val current = prefs.getStringSet(KEY_BOOKMARKED, emptySet())?.toMutableSet() ?: mutableSetOf()
+            current.remove(newsId.toString())
+            prefs.edit().putStringSet(KEY_BOOKMARKED, current).apply()
+        }
     }
 }

@@ -522,6 +522,7 @@ fun MainScreen(
                     factory = NewsLongViewModelFactory(archiveRepository)
                 )
                 val newsLongFolders by newsLongViewModel.folders.collectAsState()
+                val isSavingFolders by newsLongViewModel.isSavingFolders.collectAsState()
                 val newsLongSections by newsLongViewModel.sections.collectAsState()
                 val newsLongGroupName by newsLongViewModel.groupName.collectAsState()
                 val newsLongCategoryName by newsLongViewModel.categoryName.collectAsState()
@@ -555,16 +556,22 @@ fun MainScreen(
                     isLoggedIn = isLoggedIn,
                     autoOpenBookmark = openBookmark && isLoggedIn,
                     folders = newsLongFolders,
+                    isSavingFolders = isSavingFolders,
                     sections = newsLongSections,
                     isSectionsLoading = isSectionsLoading,
                     sectionsError = sectionsError,
                     onRetryLoadSections = { newsLongViewModel.loadSections(newsId) },
-                    onSaveToFolders = { selectedFolders ->
-                        newsLongViewModel.saveToFolders(item.newsId, selectedFolders)
-                        // 저장 성공 시 위젯 북마크 상태 active로 동기화
-                        if (selectedFolders.isNotEmpty()) {
-                            WidgetActionReceiver.saveBookmarkedId(context, item.newsId)
-                            WidgetRefreshHelper.refreshAll(context)
+                    onSaveToFolders = { targetFolders, onCompleted ->
+                        newsLongViewModel.saveToFolders(item.newsId, targetFolders) { isSuccess, hasAnySavedFolder ->
+                            if (isSuccess) {
+                                if (hasAnySavedFolder) {
+                                    WidgetActionReceiver.saveBookmarkedId(context, item.newsId)
+                                } else {
+                                    WidgetActionReceiver.removeBookmarkedId(context, item.newsId)
+                                }
+                                WidgetRefreshHelper.refreshAll(context)
+                            }
+                            onCompleted(isSuccess)
                         }
                     },
                     onCreateFolder = { folderName ->
