@@ -95,7 +95,7 @@ fun HomeScreen(
     // - scrollToPage (애니메이션 없음): 역방향 애니메이션 중 재트리거 원천 차단
     val maxAccessiblePage = 2
     val isGuestLockedOnThirdCard =
-        !isLoggedIn && !isLoading && pagerState.currentPage >= maxAccessiblePage
+        !isLoggedIn && !isLoading && pagerState.settledPage >= maxAccessiblePage
     val guestForwardBlocker = remember(isGuestLockedOnThirdCard, forceResetToThirdPageKey) {
         object : NestedScrollConnection {
             private var promptedThisGesture = false
