@@ -89,21 +89,3 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
-
-// .env 파일을 읽어 bootRun 환경변수로 주입
-bootRun {
-	def envFile = file('.env')
-	println "[bootRun] .env exists: ${envFile.exists()}, path: ${envFile.absolutePath}"
-	if (envFile.exists()) {
-		envFile.readLines().each { line ->
-			def trimmed = line.trim()
-			if (trimmed && !trimmed.startsWith('#') && trimmed.contains('=')) {
-				def idx = trimmed.indexOf('=')
-				def key = trimmed.substring(0, idx).trim()
-				def val = trimmed.substring(idx + 1).trim()
-				println "[bootRun] env: $key=***"
-				environment(key, val)
-			}
-		}
-	}
-}

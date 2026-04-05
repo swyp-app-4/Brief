@@ -86,7 +86,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         for (Category category : categories) {
             String keyword = category.getEffectiveQuery();
             CompletableFuture<Void> future = CompletableFuture
-                    .supplyAsync(() -> clusteringService.clusterAll(fetchFromNaver(keyword), keyword), crawlingExecutor)
+                    .supplyAsync(() -> clusteringService.clusterAll(fetchMerged(keyword), keyword), crawlingExecutor)
                     .thenAccept(clusters -> {
                         for (List<RawArticleDto> articles : clusters) {
                             queue.add(KeywordGroupDto.builder()
@@ -110,6 +110,21 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         log.info("[Reader] 총 {}개 키워드 그룹 큐 적재 완료", queue.size());
+    }
+
+    // | 구분 키워드별 각각 호출 후 sourceUrl 기준 중복 제거해서 합침
+    private List<RawArticleDto> fetchMerged(String query) {
+        String[] keywords = query.split("\\|");
+        if (keywords.length == 1) {
+            return fetchFromNaver(query.trim());
+        }
+        Map<String, RawArticleDto> merged = new java.util.LinkedHashMap<>();
+        for (String kw : keywords) {
+            for (RawArticleDto article : fetchFromNaver(kw.trim())) {
+                merged.putIfAbsent(article.getSourceUrl(), article);
+            }
+        }
+        return new ArrayList<>(merged.values());
     }
 
     private List<RawArticleDto> fetchFromNaver(String keyword) {
