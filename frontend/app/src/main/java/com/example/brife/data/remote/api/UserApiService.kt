@@ -9,6 +9,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
+import retrofit2.http.POST
 import retrofit2.http.PUT
 
 interface UserApiService {
@@ -18,6 +19,13 @@ interface UserApiService {
     suspend fun getMyProfile(
         @Header("Authorization") authorization: String
     ): Response<UserProfileResponse>
+
+    // POST /users/me/interests — 온보딩 최초 관심사 저장 (신규회원 전용)
+    @POST("users/me/interests")
+    suspend fun saveInterests(
+        @Header("Authorization") authorization: String,
+        @Body request: InterestRequest
+    ): Response<Unit>
 
     // PUT /users/me/interests — 관심사 재설정 (온보딩 이후 변경 시)
     @PUT("users/me/interests")

@@ -34,6 +34,27 @@ class UserRepository(
         }
     }
 
+    // POST /users/me/interests — 신규회원 최초 관심사 저장 (accessToken 직접 지정)
+    suspend fun saveInterests(
+        accessToken: String,
+        categoryIds: List<Long>,
+        groupIds: List<Long>
+    ): Result<Unit> {
+        return try {
+            val response = api.saveInterests(
+                authorization = bearerToken(accessToken),
+                request = InterestRequest(categoryIds = categoryIds, groupIds = groupIds)
+            )
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("관심사 저장 실패: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     // PUT /users/me/interests — 관심사 재설정
     suspend fun updateInterests(categoryIds: List<Long>, groupIds: List<Long>): Result<Unit> {
         val token = bearerToken()
@@ -53,7 +74,7 @@ class UserRepository(
         }
     }
 
-    // DELETE /users/me — 회원 탈퇴
+    // PUT /users/me/interests — 기존회원 로그인 직후 (accessToken 직접 전달)
     suspend fun updateInterests(
         accessToken: String,
         categoryIds: List<Long>,
@@ -67,7 +88,7 @@ class UserRepository(
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception("愿?ъ궗 ?낅뜲?댄듃 ?ㅽ뙣: ${response.code()}"))
+                Result.failure(Exception("관심사 업데이트 실패: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
