@@ -9,6 +9,7 @@ data class HomeNewsCardItem(
     val newsId: Long = 0L,
     val category: String,
     val subCategory: String = "",
+    val imageRes: Int? = null,
     val title: String,
     val notice: String,
     val summaryPoints: List<String>,

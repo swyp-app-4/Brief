@@ -13,6 +13,8 @@ class UserRepository(
     private fun bearerToken(): String? =
         authLocalStorage.getAccessToken()?.let { "Bearer $it" }
 
+    private fun bearerToken(accessToken: String): String = "Bearer $accessToken"
+
     // 토큰 존재 여부로 로그인 상태 판단
     fun isLoggedIn(): Boolean = authLocalStorage.isLoggedIn()
 
@@ -26,6 +28,27 @@ class UserRepository(
                 Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("프로필 조회 실패: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // POST /users/me/interests — 신규회원 최초 관심사 저장 (accessToken 직접 지정)
+    suspend fun saveInterests(
+        accessToken: String,
+        categoryIds: List<Long>,
+        groupIds: List<Long>
+    ): Result<Unit> {
+        return try {
+            val response = api.saveInterests(
+                authorization = bearerToken(accessToken),
+                request = InterestRequest(categoryIds = categoryIds, groupIds = groupIds)
+            )
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("관심사 저장 실패: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -51,7 +74,27 @@ class UserRepository(
         }
     }
 
-    // DELETE /users/me — 회원 탈퇴
+    // PUT /users/me/interests — 기존회원 로그인 직후 (accessToken 직접 전달)
+    suspend fun updateInterests(
+        accessToken: String,
+        categoryIds: List<Long>,
+        groupIds: List<Long>
+    ): Result<Unit> {
+        return try {
+            val response = api.updateInterests(
+                authorization = bearerToken(accessToken),
+                request = InterestRequest(categoryIds = categoryIds, groupIds = groupIds)
+            )
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("관심사 업데이트 실패: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun deleteUser(): Result<Unit> {
         val token = bearerToken()
             ?: return Result.failure(Exception("로그인이 필요합니다."))

@@ -52,6 +52,7 @@ fun HomeNewsCardContent(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
+            .clickable { onDetailClick() }
             .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Row(

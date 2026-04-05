@@ -10,16 +10,23 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.brife.data.local.SearchHistoryLocalStorage
 import com.example.brife.data.remote.NetworkModule
 import com.example.brife.data.repository.ExploreRepository
+import com.example.brife.feature.archive.ArchiveNewsItem
 
 @Composable
 fun ExploreRoute(
+    onNewsClick: ((ArchiveNewsItem) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val viewModel: ExploreViewModel = viewModel(
         factory = ExploreViewModelFactory(
             searchHistoryStorage = SearchHistoryLocalStorage(context),
-            exploreRepository = remember { ExploreRepository(NetworkModule.exploreApiService) }
+            exploreRepository = remember {
+                ExploreRepository(
+                    NetworkModule.exploreApiService,
+                    NetworkModule.newsApiService
+                )
+            }
         )
     )
     val uiState by viewModel.uiState.collectAsState()
@@ -36,6 +43,7 @@ fun ExploreRoute(
         onDeleteRecentQuery = viewModel::onDeleteRecentQuery,
         onClearAllRecentQueries = viewModel::onClearAllRecentQueries,
         onRecentQueryClick = viewModel::onRecentQueryClick,
+        onNewsClick = onNewsClick,
         modifier = modifier
     )
 }

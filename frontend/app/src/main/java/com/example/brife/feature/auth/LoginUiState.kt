@@ -9,7 +9,8 @@ data class LoginUiState(
     val isNewUser: Boolean = false,
     val errorMessage: String? = null,
     val isTermsSuccess: Boolean = false,
-    val needTermsAgreement: Boolean = false
+    val needTermsAgreement: Boolean = false,
+    val termsNavigationNonce: Int = 0
 )
 
 

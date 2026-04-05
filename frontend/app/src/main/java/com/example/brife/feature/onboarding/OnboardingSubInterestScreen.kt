@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -196,20 +198,38 @@ private fun SubCategorySectionView(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Image(
-                painter = painterResource(id = iconRes),
-                contentDescription = categoryName,
-                modifier = Modifier.size(22.dp)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = categoryName,
+                    modifier = Modifier.size(22.dp)
+                )
 
-            Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(10.dp))
 
-            AppText(
-                text = categoryName,
-                style = MaterialTheme.typography.bodyLarge
-            )
+                AppText(
+                    text = categoryName,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            if (needsCollapse) {
+                val arrowScaleY = if (expanded) 1f else -1f
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_setting_arrow_up),
+                    contentDescription = if (expanded) "접기" else "펼치기",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable { onExpandToggle() }
+                        .graphicsLayer {
+                            scaleY = arrowScaleY
+                        }
+                )
+            }
         }
 
         FlowRow(
@@ -222,22 +242,6 @@ private fun SubCategorySectionView(
                     text = subCategory.name,
                     selected = selectedIds.contains(subCategory.id),
                     onClick = { onChipClick(subCategory.id) }
-                )
-            }
-
-            // +N 버튼 (접힘 상태에서만 표시)
-            if (needsCollapse && !expanded) {
-                MoreChip(
-                    text = "+$hiddenCount",
-                    onClick = onExpandToggle
-                )
-            }
-
-            // 접기 버튼 (펼침 상태에서만 표시)
-            if (needsCollapse && expanded) {
-                MoreChip(
-                    text = "접기",
-                    onClick = onExpandToggle
                 )
             }
         }
@@ -269,28 +273,6 @@ private fun SubCategoryChip(
     }
 }
 
-// +N / 접기 버튼 — SubCategoryChip과 동일한 크기, 비선택 스타일
-@Composable
-private fun MoreChip(
-    text: String,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
-        color = ComponentDefault,
-        border = BorderStroke(width = 0.dp, color = Color.Transparent)
-    ) {
-        AppText(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = PrimaryNormal,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
-        )
-    }
-}
 
 private fun getInterestIconRes(groupName: String): Int {
     return when (groupName) {

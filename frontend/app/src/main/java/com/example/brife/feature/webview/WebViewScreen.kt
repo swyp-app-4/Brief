@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,6 +52,9 @@ fun WebViewScreen(
                         domStorageEnabled = true       // Notion SPA의 localStorage 접근에 필요
                         useWideViewPort = true         // 페이지 viewport 메타태그 적용
                         loadWithOverviewMode = true    // 화면 너비에 맞게 축소 허용
+                        allowFileAccess = true
+                        allowContentAccess = true
+                        mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                     }
                     loadUrl(url)
                 }

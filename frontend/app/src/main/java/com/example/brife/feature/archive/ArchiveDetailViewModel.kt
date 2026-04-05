@@ -3,8 +3,8 @@ package com.example.brife.feature.archive
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.brife.feature.home.LongFormImageProvider
 import com.example.brife.data.repository.ArchiveRepository
+import com.example.brife.feature.home.LongFormImageProvider
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 
 class ArchiveDetailViewModel(
     private val archiveId: Long,
+    private val isFavorite: Boolean,
     private val repository: ArchiveRepository
 ) : ViewModel() {
 
@@ -32,33 +33,37 @@ class ArchiveDetailViewModel(
             _isLoading.value = true
             repository.getItems(archiveId, sort)
                 .onSuccess { items ->
-                    Log.d("ArchiveDetailVM", "아이템 ${items.size}개 로드 → 뉴스 상세 병렬 조회")
-                    val mapped = items.mapIndexed { index, item ->
+                    Log.d("ArchiveDetailVM", "loaded archive items: count=${items.size}")
+                    val mapped = items.map { item ->
                         async {
                             val detail = repository.getNewsDetail(item.contentId).getOrNull()
                             if (detail != null) {
                                 ArchiveNewsItem(
                                     archiveItemId = item.id,
-                                    title = detail.title,
+                                    title = detail.title.ifBlank { "뉴스 #${item.contentId}" },
                                     summary = "",
-                                    time = detail.publishedDate,
+                                    time = detail.publishedDate.ifBlank { item.savedAt.ifBlank { "-" } },
                                     company = "${detail.sourceCount}개 언론사",
+                                    category = detail.groupName,
+                                    subCategory = detail.categoryName,
                                     imageUrl = LongFormImageProvider.getStableImageRes(
                                         detail.groupName,
-                                        index
+                                        detail.categoryName,
+                                        item.contentId
                                     ),
                                     newsId = item.contentId
                                 )
                             } else {
-                                // 뉴스 상세 조회 실패 시 최소 정보로 표시
-                                Log.w("ArchiveDetailVM", "뉴스 상세 조회 실패: contentId=${item.contentId}")
+                                Log.w("ArchiveDetailVM", "getNewsDetail failed: contentId=${item.contentId}")
                                 ArchiveNewsItem(
                                     archiveItemId = item.id,
                                     title = "뉴스 #${item.contentId}",
                                     summary = "",
                                     time = item.savedAt,
                                     company = "",
-                                    imageUrl = LongFormImageProvider.getStableImageRes("", index),
+                                    category = "",
+                                    subCategory = "",
+                                    imageUrl = LongFormImageProvider.getStableImageRes("", "", item.contentId),
                                     newsId = item.contentId
                                 )
                             }
@@ -67,31 +72,41 @@ class ArchiveDetailViewModel(
                     _newsItems.value = mapped
                 }
                 .onFailure { e ->
-                    Log.e("ArchiveDetailVM", "아이템 로드 실패: ${e.message}")
+                    Log.e("ArchiveDetailVM", "loadItems failed: ${e.message}")
                     _newsItems.value = emptyList()
                 }
             _isLoading.value = false
         }
     }
 
-    fun deleteItems(selectedIds: Set<Long>) {
+    fun deleteItems(
+        selectedIds: Set<Long>,
+        onCompleted: (List<Long>) -> Unit = {}
+    ) {
         viewModelScope.launch {
-            Log.d("ArchiveDetail", "삭제 요청 selectedIds=$selectedIds, archiveId=$archiveId")
-            Log.d(
-                "ArchiveDetail",
-                "현재 목록=${_newsItems.value.map { "archiveItemId=${it.archiveItemId}, newsId=${it.newsId}, title=${it.title}" }}"
-            )
+            Log.d("ArchiveDetail", "delete request selectedIds=$selectedIds, archiveId=$archiveId")
 
+            val deletedNewsIds = mutableListOf<Long>()
             selectedIds.forEach { itemId ->
-                val result = repository.deleteArchiveItem(archiveId, itemId)
+                val newsId = _newsItems.value.firstOrNull { it.archiveItemId == itemId }?.newsId
+                val result = if (isFavorite) {
+                    repository.deleteFromFavorites(itemId)
+                } else {
+                    repository.deleteArchiveItem(archiveId, itemId)
+                }
 
                 if (result.isSuccess) {
+                    if (newsId != null) {
+                        deletedNewsIds += newsId
+                    }
                     _newsItems.value = _newsItems.value.filter { it.archiveItemId != itemId }
-                    Log.d("ArchiveDetail", "삭제 성공: itemId=$itemId")
+                    Log.d("ArchiveDetail", "delete success: itemId=$itemId")
                 } else {
-                    Log.e("ArchiveDetail", "삭제 실패: itemId=$itemId, error=${result.exceptionOrNull()}")
+                    Log.e("ArchiveDetail", "delete failed: itemId=$itemId, error=${result.exceptionOrNull()}")
                 }
             }
+
+            onCompleted(deletedNewsIds)
         }
     }
 }

@@ -19,6 +19,7 @@ import com.example.brife.data.repository.UserRepository
 fun ProfileRoute(
     onResetInterestClick: () -> Unit = {},
     onLoginClick: () -> Unit = {},
+    onEditProfileImageClick: (String, Int) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -46,6 +47,12 @@ fun ProfileRoute(
         modifier = modifier,
         uiState = uiState,
         onResetInterestClick = onResetInterestClick,
-        onLoginClick = onLoginClick
+        onLoginClick = onLoginClick,
+        onEditProfileImageClick = {
+            onEditProfileImageClick(
+                uiState.userName.ifBlank { "브리프" },
+                uiState.profileImageRes
+            )
+        }
     )
 }

@@ -40,6 +40,12 @@ class OnboardingLocalStorage(context: Context) {
         return prefs.getBoolean("has_completed_onboarding", false)
     }
 
+    fun hasSavedInterests(): Boolean {
+        return getSelectedCategoryIds().isNotEmpty() ||
+            getSelectedSubCategoryIds().isNotEmpty() ||
+            hasCompletedOnboarding()
+    }
+
     fun clearOnboarding() {
         prefs.edit().clear().apply()
     }

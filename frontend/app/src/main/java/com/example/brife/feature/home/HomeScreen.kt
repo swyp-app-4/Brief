@@ -1,5 +1,6 @@
 package com.example.brife.feature.home
 
+import android.graphics.Rect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,16 +12,28 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
@@ -35,19 +48,37 @@ fun HomeScreen(
     newsList: List<HomeNewsCardItem>,
     isLoggedIn: Boolean,
     isLoading: Boolean = false,
+    initialPage: Int = 0,
+    forceResetToThirdPageKey: Int = 0,
     onLoginRequired: () -> Unit,
     onLoginClick: () -> Unit = {},
     onDetailClick: (HomeNewsCardItem) -> Unit,
     onShareClick: (HomeNewsCardItem) -> Unit = {},
     topPadding: Dp = 0.dp
 ) {
-    var showBottomSheet by remember { mutableStateOf(false) }
-    // 한 세션 내에서 로그인 유도 바텀시트를 이미 표시했는지 여부
-    // "더 둘러보기" 클릭 후 다음 페이지로 넘어가도 다시 표시되지 않음
-    var loginPromptShown by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val view = LocalView.current
+
+//    var showBottomSheet by remember { mutableStateOf(false) }
+//    // 한 세션 내에서 로그인 유도 바텀시트를 이미 표시했는지 여부
+//    // "더 둘러보기" 클릭 후 다음 페이지로 넘어가도 다시 표시되지 않음
+//    var loginPromptShown by remember { mutableStateOf(false) }
 
     val pageCount = if (isLoading) 1 else newsList.size
-    val pagerState = rememberPagerState(pageCount = { pageCount })
+    var restoredPage by rememberSaveable { mutableIntStateOf(initialPage) }
+
+    // pagerState 초기화 시 initialPage 지원
+    val pagerState = rememberPagerState(
+        initialPage = restoredPage.coerceIn(0, (pageCount - 1).coerceAtLeast(0)),
+        pageCount = { pageCount }
+    )
+
+    LaunchedEffect(pagerState, pageCount) {
+        snapshotFlow { pagerState.settledPage }
+            .collect { page ->
+                restoredPage = page.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
+            }
+    }
 
     // 현재 페이지 category 기반으로 가운데 일러스트 결정
     // 로딩 중에는 img_home_life 고정
@@ -66,12 +97,78 @@ fun HomeScreen(
     }
 
 
-    LaunchedEffect(pagerState.currentPage, isLoggedIn) {
-        if (!isLoggedIn && !loginPromptShown && pagerState.currentPage >= 3) {
-            loginPromptShown = true
-            onLoginRequired()
+    // 비로그인 시 3번째 카드까지만 실제 열람 가능
+    // targetPage 기반으로 4번째 이상 이동 시도를 감지 → 즉시 복귀 + 바텀시트
+    // - distinctUntilChanged 미사용: 시도할 때마다 매번 트리거
+    // - scrollToPage (애니메이션 없음): 역방향 애니메이션 중 재트리거 원천 차단
+    val maxAccessiblePage = 2
+    val isGuestLockedOnThirdCard =
+        !isLoggedIn && !isLoading && pagerState.settledPage >= maxAccessiblePage
+    val guestForwardBlocker = remember(isGuestLockedOnThirdCard, forceResetToThirdPageKey) {
+        object : NestedScrollConnection {
+            private var promptedThisGesture = false
+
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (!isGuestLockedOnThirdCard) return Offset.Zero
+
+                if (available.x < 0f) {
+                    if (!promptedThisGesture) {
+                        promptedThisGesture = true
+                        onLoginRequired()
+                    }
+                    return Offset(x = available.x, y = 0f)
+                }
+
+                if (available.x > 0f) {
+                    promptedThisGesture = false
+                }
+                return Offset.Zero
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                if (!isGuestLockedOnThirdCard) return Velocity.Zero
+
+                if (available.x < 0f) {
+                    if (!promptedThisGesture) {
+                        promptedThisGesture = true
+                        onLoginRequired()
+                    }
+                    return Velocity(x = available.x, y = 0f)
+                }
+
+                promptedThisGesture = false
+                return Velocity.Zero
+            }
+
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                promptedThisGesture = false
+                return Velocity.Zero
+            }
         }
     }
+
+    LaunchedEffect(isLoggedIn, pagerState) {
+        snapshotFlow { pagerState.currentPage to pagerState.targetPage }
+            .collect { (currentPage, targetPage) ->
+                if (!isLoggedIn && (currentPage > maxAccessiblePage || targetPage > maxAccessiblePage)) {
+                    onLoginRequired()
+                    pagerState.scrollToPage(maxAccessiblePage)
+                }
+            }
+    }
+
+    LaunchedEffect(isLoggedIn, pageCount) {
+        if (!isLoggedIn && pagerState.currentPage > maxAccessiblePage) {
+            pagerState.scrollToPage(maxAccessiblePage)
+        }
+    }
+
+    LaunchedEffect(forceResetToThirdPageKey, isLoggedIn) {
+        if (!isLoggedIn && forceResetToThirdPageKey > 0) {
+            pagerState.scrollToPage(maxAccessiblePage)
+        }
+    }
+
 
 
 
@@ -121,7 +218,9 @@ fun HomeScreen(
             } else {
                 HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .nestedScroll(guestForwardBlocker),
                     contentPadding = PaddingValues(horizontal = 36.dp),
                     pageSpacing = 12.dp,
                     beyondViewportPageCount = 1
@@ -129,6 +228,9 @@ fun HomeScreen(
                     val pageOffset =
                         (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
                     val absOffset = pageOffset.absoluteValue
+
+                    // 카드 이미지 공유를 위해 카드 영역의 window 내 좌표를 추적
+                    var cardCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
                     Card(
                         modifier = Modifier
@@ -148,7 +250,8 @@ fun HomeScreen(
                                     stop = 1f,
                                     fraction = 1f - absOffset.coerceIn(0f, 1f)
                                 )
-                            },
+                            }
+                            .onGloballyPositioned { cardCoords = it },
                         shape = RoundedCornerShape(20.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -159,12 +262,24 @@ fun HomeScreen(
                             HomeNewsCardContent(
                                 item = newsList[page],
                                 modifier = Modifier.fillMaxWidth(),
-                                onShareClick = { onShareClick(newsList[page]) },
+                                onShareClick = {
+                                    val coords = cardCoords ?: return@HomeNewsCardContent
+                                    val bounds = coords.boundsInWindow()
+                                    val srcRect = Rect(
+                                        bounds.left.toInt(),
+                                        bounds.top.toInt(),
+                                        bounds.right.toInt(),
+                                        bounds.bottom.toInt()
+                                    )
+                                    captureWindowBitmap(context, view, srcRect) { bitmap ->
+                                        shareImageBitmap(context, bitmap, newsList[page].title)
+                                    }
+                                },
                                 onDetailClick = { onDetailClick(newsList[page]) }
                             )
                         }
                     }
-                }
+                    }
 
                 Spacer(modifier = Modifier.height(18.dp))
 
@@ -313,41 +428,3 @@ private fun illustrationResForCategory(category: String): Int = when {
 }
 
 
-
-// ─────────────────────────────────────────────────────────────
-// Preview
-// ─────────────────────────────────────────────────────────────
-
-@Preview(
-    showBackground = true,
-    device = "spec:width=1080px,height=2340px,dpi=440",
-    name = "1. 홈 화면 (메인 레이아웃 적용)"
-)
-@Composable
-fun HomeScreenInMainPreview() {
-    BrifeTheme {
-        MainScreen(
-            onLogout = {},
-            onNavigateToLogin = {},
-            onNavigateToNewsLong = {}
-        )
-    }
-}
-
-@Preview(
-    showBackground = true,
-    device = "spec:width=1080px,height=2340px,dpi=440",
-    name = "2. 홈 화면 - 로딩 스켈레톤"
-)
-@Composable
-fun HomeScreenSkeletonPreview() {
-    BrifeTheme {
-        HomeScreen(
-            newsList = emptyList(),
-            isLoggedIn = false,
-            isLoading = true,
-            onLoginRequired = {},
-            onDetailClick = {}
-        )
-    }
-}
