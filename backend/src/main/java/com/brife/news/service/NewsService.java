@@ -17,8 +17,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,38 +39,64 @@ public class NewsService {
     private final UserInterestRepository userInterestRepository;
     private final ObjectMapper objectMapper;
 
-    // categoryIds, groupIds 혼합 지원 (둘 다 없으면 빈 리스트)
+    // categoryIds, groupIds 혼합 지원. 대분류별 최소 1개 보장 후 sourceCount 순으로 5개 채움
     public List<WidgetNewsDto> getTop5News(List<Long> categoryIds, List<Long> groupIds) {
         List<Long> mergedIds = new ArrayList<>(categoryIds);
 
         if (!groupIds.isEmpty()) {
-            categoryRepository.findByCategoryGroup_IdIn(groupIds)
-                    .stream()
-                    .map(c -> c.getId())
-                    .filter(id -> !mergedIds.contains(id))
-                    .forEach(mergedIds::add);
+            for (Long groupId : groupIds) {
+                List<Long> subIds = categoryRepository.findByCategoryGroup_IdIn(List.of(groupId))
+                        .stream().map(c -> c.getId()).toList();
+
+                // 해당 대분류 하위에 선택된 소분류가 있으면 소분류만 적용, 없으면 대분류 전체 추가
+                boolean hasSelectedSub = subIds.stream().anyMatch(categoryIds::contains);
+                if (!hasSelectedSub) {
+                    subIds.stream()
+                            .filter(id -> !mergedIds.contains(id))
+                            .forEach(mergedIds::add);
+                }
+            }
         }
 
         if (mergedIds.isEmpty()) return List.of();
 
-        List<WidgetNewsDto> result = summarizedNewsRepository.findMaxCreatedAt()
+        // 후보 풀 20개 확보
+        List<SummarizedNews> candidates = summarizedNewsRepository.findMaxCreatedAt()
                 .map(lastBatch -> summarizedNewsRepository
-                        .findTop5ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
+                        .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
                                 mergedIds, lastBatch.minusHours(BATCH_WINDOW_HOURS)))
-                .orElse(List.of())
-                .stream()
-                .map(news -> WidgetNewsDto.from(news, extractBodyPreview(news.getBody())))
-                .toList();
+                .orElse(List.of());
 
-        if (result.size() < 5) {
-            result = summarizedNewsRepository
-                    .findTop5ByCategoryIdInOrderBySourceCountDesc(mergedIds)
-                    .stream()
-                    .map(news -> WidgetNewsDto.from(news, extractBodyPreview(news.getBody())))
-                    .toList();
+        if (candidates.size() < 5) {
+            candidates = summarizedNewsRepository.findTop20ByCategoryIdInOrderBySourceCountDesc(mergedIds);
         }
 
-        return result;
+        // 대분류별 1개 보장 (sourceCount 높은 순으로 정렬된 candidates에서 그룹당 첫 번째)
+        Map<Long, SummarizedNews> groupPicks = new LinkedHashMap<>();
+        for (SummarizedNews news : candidates) {
+            Long gId = news.getCategory().getCategoryGroup().getId();
+            groupPicks.putIfAbsent(gId, news);
+        }
+
+        List<SummarizedNews> result = new ArrayList<>(groupPicks.values());
+        Set<Long> usedIds = result.stream()
+                .map(SummarizedNews::getId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        // 남은 슬롯을 sourceCount 순으로 채움
+        candidates.stream()
+                .filter(n -> !usedIds.contains(n.getId()))
+                .limit(5 - result.size())
+                .forEach(result::add);
+
+        // 최대 5개 제한
+        if (result.size() > 5) {
+            result = result.subList(0, 5);
+        }
+
+        return result.stream()
+                .map(news -> WidgetNewsDto.from(news, extractBodyPreview(news.getBody())))
+                .toList();
     }
 
     public List<WidgetNewsDto> getRecommendedNews(Long userId) {
