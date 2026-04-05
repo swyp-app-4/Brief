@@ -41,7 +41,6 @@ class AuthLocalStorage(context: Context) {
             .remove("access_token")
             .remove("refresh_token")
             .remove("login_method")
-            .remove("has_agreed_terms")
             .apply()
     }
 
