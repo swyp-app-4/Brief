@@ -1,8 +1,8 @@
 package com.example.brife.feature.auth
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,15 +16,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -34,15 +32,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.brife.R
+import com.example.brife.ui.component.AppText
 import com.example.brife.ui.theme.BgDefault
 import com.example.brife.ui.theme.BrifeTheme
 import com.example.brife.ui.theme.TextBody
-import com.example.brife.ui.component.AppText
 
 private val SulphurPoint = FontFamily(
     Font(R.font.sulphur_point_bold, FontWeight.Bold)
 )
-
 
 @Composable
 fun LoginScreen(
@@ -76,41 +73,36 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            SocialLoginButton(
-                text = if (uiState.isLoading) "로그인 중..." else "카카오로 로그인",
-                backgroundColor = Color(0xFFFEE500),
-                contentColor = Color(0xFF191919),
-                iconRes = R.drawable.ic_kakao_login,
-                enabled = !uiState.isLoading,
-                onClick = {
-                    if (!uiState.isLoading) {
-                        onKakaoClick()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SocialLoginIconButton(
+                    iconRes = R.drawable.ic_naver_login,
+                    contentDescription = "네이버 로그인",
+                    enabled = !uiState.isLoading,
+                    onClick = onNaverClick
+                )
+
+                SocialLoginIconButton(
+                    iconRes = R.drawable.ic_kakao_login,
+                    contentDescription = "카카오 로그인",
+                    enabled = !uiState.isLoading,
+                    onClick = {
+                        if (!uiState.isLoading) {
+                            onKakaoClick()
+                        }
                     }
-                }
-            )
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            SocialLoginButton(
-                text = if (uiState.isLoading) "로그인 중..." else "네이버로 로그인",
-                backgroundColor = Color(0xFF03C75A),
-                contentColor = Color.White,
-                iconRes = R.drawable.ic_naver_login,
-                enabled = !uiState.isLoading,
-                onClick = onNaverClick
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            SocialLoginButton(
-                text = if (uiState.isLoading) "로그인 중..." else "Google로 로그인",
-                backgroundColor = Color.White,
-                contentColor = Color(0xFF464646),
-                borderColor = Color(0xFFE3E5E8),
-                iconRes = R.drawable.ic_google_login,
-                enabled = !uiState.isLoading,
-                onClick = onGoogleClick
-            )
+                SocialLoginIconButton(
+                    iconRes = R.drawable.ic_google_login,
+                    contentDescription = "구글 로그인",
+                    enabled = !uiState.isLoading,
+                    onClick = onGoogleClick
+                )
+            }
 
             uiState.errorMessage?.let {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -120,11 +112,9 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.error
                 )
             }
-
         }
     }
 }
-
 
 @Composable
 private fun LogoSection() {
@@ -158,9 +148,9 @@ private fun LogoSection() {
             style = MaterialTheme.typography.titleSmall,
             color = TextBody
         )
+        Spacer(modifier = Modifier.height(180.dp))
     }
 }
-
 
 @Composable
 private fun SocialLoginDivider() {
@@ -192,53 +182,24 @@ private fun SocialLoginDivider() {
 }
 
 @Composable
-private fun SocialLoginButton(
-    text: String,
-    backgroundColor: Color,
-    contentColor: Color,
-    @DrawableRes iconRes: Int? = null,
-    borderColor: Color = Color.Transparent,
+private fun SocialLoginIconButton(
+    iconRes: Int,
+    contentDescription: String,
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp),
-        shape = RoundedCornerShape(14.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = backgroundColor,
-            contentColor = contentColor
-        ),
-        border = if (borderColor != Color.Transparent) {
-            androidx.compose.foundation.BorderStroke(1.dp, borderColor)
-        } else {
-            null
-        },
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+            .size(56.dp)
+            .alpha(if (enabled) 1f else 0.5f)
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (iconRes != null) {
-                Image(
-                    painter = painterResource(id = iconRes),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.CenterStart)
-                )
-            }
-
-            AppText(
-                text = text,
-                style = MaterialTheme.typography.labelLarge,
-                color = contentColor,
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
+        Image(
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            modifier = Modifier.size(40.dp)
+        )
     }
 }
 
