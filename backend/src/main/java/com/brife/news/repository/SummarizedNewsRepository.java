@@ -23,11 +23,11 @@ public interface SummarizedNewsRepository extends JpaRepository<SummarizedNews, 
     Optional<LocalDateTime> findMaxCreatedAt();
 
     @EntityGraph(attributePaths = {"category", "category.categoryGroup"})
-    List<SummarizedNews> findTop5ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
+    List<SummarizedNews> findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
             List<Long> categoryIds, LocalDateTime since);
 
     @EntityGraph(attributePaths = {"category", "category.categoryGroup"})
-    List<SummarizedNews> findTop5ByCategoryIdInOrderBySourceCountDesc(List<Long> categoryIds);
+    List<SummarizedNews> findTop20ByCategoryIdInOrderBySourceCountDesc(List<Long> categoryIds);
 
     @NativeQuery(value = """
             SELECT * FROM summarized_news
