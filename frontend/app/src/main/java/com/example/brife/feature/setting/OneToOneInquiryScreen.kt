@@ -122,6 +122,7 @@ fun OneToOneInquiryScreen(
             content.isNotBlank() &&
             isPrivacyChecked
 
+
     val inquiryTypeError = showValidationErrors && selectedInquiryType.isBlank()
     val nameError = showValidationErrors && name.isBlank()
     val emailError = showValidationErrors && email.isBlank()
