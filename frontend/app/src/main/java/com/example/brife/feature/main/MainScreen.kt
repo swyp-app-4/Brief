@@ -265,30 +265,35 @@ fun MainScreen(
         Scaffold(
         containerColor = Color.White,
         topBar = {
-            when {
-                currentRoute == NavRoutes.HOME -> {
-                    AppTopBar(onSettingClick = onNavigateToSetting)
+            // 보관함 게스트 프리뷰 오버레이 활성 중에는 Scaffold topBar를 렌더링하지 않음.
+            // 오버레이의 ArchivePreviewTopBar가 "보관함" 텍스트만 표시하므로
+            // Scaffold topBar의 아이콘(뒤로가기, 더보기, 로고, 설정 등)이 뒤에서 보이는 문제를 원천 차단.
+            if (guestPreviewRoute != NavRoutes.ARCHIVE) {
+                when {
+                    currentRoute == NavRoutes.HOME -> {
+                        AppTopBar(onSettingClick = onNavigateToSetting)
+                    }
+                    isNewsLongRoute -> {
+                        // NewsLongScreen이 자체 TopBar를 가지고 있으므로 렌더링하지 않음
+                        // (MainScreen이 빈 AppTopBar를 렌더링하면 터치 이벤트를 가로챔)
+                    }
+                    currentRoute == NavRoutes.ARCHIVE -> {
+                        AppTopBar(
+                            title = "보관함",
+                            showLogo = false,
+                            showBack = true,
+                            showMore = true,
+                            showSettings = false,
+                            centerTitle = true,
+                            showSearch = false,
+                            onMoreClick = { showArchiveMoreSheet = true }
+                        )
+                    }
+                    isProfileEditRoute -> {
+                        // ProfileEditScreen 내부 전용 TopBar 사용
+                    }
+                    // PROFILE: topbar 없음 (요구사항)
                 }
-                isNewsLongRoute -> {
-                    // NewsLongScreen이 자체 TopBar를 가지고 있으므로 렌더링하지 않음
-                    // (MainScreen이 빈 AppTopBar를 렌더링하면 터치 이벤트를 가로챔)
-                }
-                currentRoute == NavRoutes.ARCHIVE -> {
-                    AppTopBar(
-                        title = "보관함",
-                        showLogo = false,
-                        showBack = true,
-                        showMore = true,
-                        showSettings = false,
-                        centerTitle = true,
-                        showSearch = false,
-                        onMoreClick = { showArchiveMoreSheet = true }
-                    )
-                }
-                isProfileEditRoute -> {
-                    // ProfileEditScreen 내부 전용 TopBar 사용
-                }
-                // PROFILE: topbar 없음 (요구사항)
             }
         },
         bottomBar = {
@@ -718,7 +723,8 @@ private fun GuestLoginPreviewOverlay(
                         favoriteArchiveId = 0L,
                         favoriteItemCount = 0,
                         onFolderAdd = {},
-                        onNavigateToDetail = { _, _ -> }
+                        onNavigateToDetail = { _, _ -> },
+                        showTopBar = false
                     )
                 }
             }

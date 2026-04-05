@@ -67,7 +67,8 @@ fun ArchiveScreen(
     onConfirmDelete: () -> Unit = {},
     isRenameMode: Boolean = false,
     onFolderRename: (archiveId: Long, newName: String) -> Unit = { _, _ -> },
-    onCancelRename: () -> Unit = {}
+    onCancelRename: () -> Unit = {},
+    showTopBar: Boolean = true
 ) {
     val folderCount = folders.size + 1
     val isSelectionMode = isDeleteMode || isRenameMode
