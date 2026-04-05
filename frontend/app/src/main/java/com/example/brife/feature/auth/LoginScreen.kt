@@ -80,7 +80,7 @@ fun LoginScreen(
                 text = if (uiState.isLoading) "로그인 중..." else "카카오로 로그인",
                 backgroundColor = Color(0xFFFEE500),
                 contentColor = Color(0xFF191919),
-                iconRes = R.drawable.ic_kakao,
+                iconRes = R.drawable.ic_kakao_login,
                 enabled = !uiState.isLoading,
                 onClick = {
                     if (!uiState.isLoading) {
@@ -95,7 +95,7 @@ fun LoginScreen(
                 text = if (uiState.isLoading) "로그인 중..." else "네이버로 로그인",
                 backgroundColor = Color(0xFF03C75A),
                 contentColor = Color.White,
-                iconRes = R.drawable.ic_naver,
+                iconRes = R.drawable.ic_naver_login,
                 enabled = !uiState.isLoading,
                 onClick = onNaverClick
             )
@@ -107,7 +107,7 @@ fun LoginScreen(
                 backgroundColor = Color.White,
                 contentColor = Color(0xFF464646),
                 borderColor = Color(0xFFE3E5E8),
-                iconRes = R.drawable.ic_google,
+                iconRes = R.drawable.ic_google_login,
                 enabled = !uiState.isLoading,
                 onClick = onGoogleClick
             )
@@ -242,13 +242,12 @@ private fun SocialLoginButton(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, showSystemUi = true, name = "Login - Default")
 @Composable
-private fun LoginScreenPreview() {
+private fun LoginScreenDefaultPreview() {
     BrifeTheme {
         LoginScreen(
             uiState = LoginUiState()
-
         )
     }
 }
