@@ -18,6 +18,7 @@ import com.example.brife.data.repository.ArchiveRepository
 fun ArchiveRoute(
     modifier: Modifier = Modifier,
     isLoggedIn: Boolean,
+    sessionVersion: Int = 0,
     reloadVersion: Int = 0,
     isDeleteMode: Boolean,
     isRenameMode: Boolean,
@@ -55,12 +56,15 @@ fun ArchiveRoute(
         )
     }
     val viewModel: ArchiveViewModel = viewModel(
+        key = "archive_$sessionVersion",
         factory = ArchiveViewModelFactory(repository)
     )
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(reloadVersion) {
-        if (isLoggedIn && reloadVersion > 0) viewModel.loadFolders()
+    LaunchedEffect(sessionVersion, reloadVersion, isLoggedIn) {
+        if (isLoggedIn) {
+            viewModel.loadFolders()
+        }
     }
 
     var selectedFolderIds by remember { mutableStateOf(setOf<Long>()) }

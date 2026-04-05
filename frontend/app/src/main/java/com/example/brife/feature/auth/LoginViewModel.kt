@@ -10,7 +10,14 @@ import com.example.brife.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+
+sealed interface LoginNavigationEvent {
+    data object NavigateToHome : LoginNavigationEvent
+    data object NavigateToTerms : LoginNavigationEvent
+}
 
 class LoginViewModel(
     private val repository: AuthRepository,
@@ -21,11 +28,12 @@ class LoginViewModel(
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+    private val _navigationEvent = Channel<LoginNavigationEvent>(capacity = Channel.BUFFERED)
+    val navigationEvent = _navigationEvent.receiveAsFlow()
 
     fun loginWithKakao(accessToken: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-            _uiState.value = _uiState.value.copy(pendingLoginMethod = "kakao")
+            resetForLoginAttempt("kakao")
 
             Log.d("INTEREST_DEBUG", "loginWithKakao: accessToken.length=${accessToken.length}")
 
@@ -50,8 +58,7 @@ class LoginViewModel(
 
     fun loginWithNaver(accessToken: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-            _uiState.value = _uiState.value.copy(pendingLoginMethod = "naver")
+            resetForLoginAttempt("naver")
 
             Log.d("INTEREST_DEBUG", "loginWithNaver: accessToken.length=${accessToken.length}")
 
@@ -76,8 +83,7 @@ class LoginViewModel(
 
     fun loginWithGoogle(idToken: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-            _uiState.value = _uiState.value.copy(pendingLoginMethod = "google")
+            resetForLoginAttempt("google")
 
             Log.d("INTEREST_DEBUG", "loginWithGoogle: idToken.length=${idToken.length}")
 
@@ -107,30 +113,46 @@ class LoginViewModel(
         )
     }
 
+    private fun resetForLoginAttempt(loginMethod: String) {
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            pendingLoginMethod = loginMethod,
+            pendingAccessToken = null,
+            pendingRefreshToken = null,
+            isLoginSuccess = false,
+            isNewUser = false,
+            errorMessage = null,
+            isTermsSuccess = false,
+            needTermsAgreement = false
+        )
+    }
+
+    // LoginViewModel.kt
+
     private fun handleLoginSuccess(
         accessToken: String,
         refreshToken: String,
         isNewUser: Boolean
     ) {
-        val hasAgreed = authLocalStorage.hasAgreedTerms()
-        Log.d("INTEREST_DEBUG", "handleLoginSuccess: isNewUser=$isNewUser, hasAgreedTerms=$hasAgreed")
+        // 서버가 신규유저라고 하거나, 로컬에 약관 동의 기록이 없는 경우 반드시 약관 화면으로
+        val needToAgree = isNewUser || !authLocalStorage.hasAgreedTerms()
 
-        if (isNewUser && !hasAgreed) {
-            // 신규회원 + 약관 미동의 → 약관 화면으로
+        if (needToAgree) {
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
-                isNewUser = true,
+                isNewUser = isNewUser, // 서버 응답 값 유지 (이후 온보딩 분기용)
                 pendingAccessToken = accessToken,
                 pendingRefreshToken = refreshToken,
-                needTermsAgreement = true
+                needTermsAgreement = true,
+                termsNavigationNonce = _uiState.value.termsNavigationNonce + 1
             )
+            _navigationEvent.trySend(LoginNavigationEvent.NavigateToTerms)
         } else {
-            // 기존회원 OR (신규회원이지만 기기에 약관 동의 기록 있음)
             completeLogin(
                 accessToken = accessToken,
                 refreshToken = refreshToken,
                 persistTermsAgreement = true,
-                isNewUser = isNewUser
+                isNewUser = false
             )
         }
     }
@@ -160,6 +182,7 @@ class LoginViewModel(
             isNewUser = false,
             errorMessage = null
         )
+        _navigationEvent.trySend(LoginNavigationEvent.NavigateToHome)
 
         // ② 로컬 관심사가 없으면 동기화 불필요
         if (subCategoryIds.isEmpty() && groupIds.isEmpty()) {

@@ -404,6 +404,7 @@ fun MainScreen(
                 ArchiveRoute(
                     modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
                     isLoggedIn = isLoggedIn,
+                    sessionVersion = sessionVersion,
                     reloadVersion = archiveReloadVersion,
                     isDeleteMode = isArchiveDeleteMode,
                     isRenameMode = isArchiveRenameMode,

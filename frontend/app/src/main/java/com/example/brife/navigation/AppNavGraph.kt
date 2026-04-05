@@ -82,12 +82,29 @@ fun AppNavGraph(
     var pendingHomeIndex by rememberSaveable { mutableStateOf(0) }
     var pendingExternalRoute by rememberSaveable { mutableStateOf<String?>(null) }
 
+    fun clearArchiveLocalState() {
+        WidgetActionReceiver.clearBookmarkedIds(context)
+        WidgetRefreshHelper.refreshAll(context)
+    }
+
+    fun clearLocalSessionState(clearAllAuth: Boolean) {
+        if (clearAllAuth) {
+            authLocalStorage.clear()
+        } else {
+            authLocalStorage.clearAuthOnly()
+        }
+        searchHistoryLocalStorage.clearAll()
+        clearArchiveLocalState()
+        pendingInternalRoute = null
+        pendingHomeIndex = 0
+        pendingExternalRoute = null
+    }
+
     LaunchedEffect(isLoggedIn) {
         if (previousLoggedInState != isLoggedIn) {
             mainSessionVersion++
             if (!isLoggedIn) {
-                WidgetActionReceiver.clearBookmarkedIds(context)
-                WidgetRefreshHelper.refreshAll(context)
+                clearArchiveLocalState()
             }
             previousLoggedInState = isLoggedIn
         }
@@ -235,7 +252,9 @@ fun AppNavGraph(
                         navigateAfterLogin()
                     },
                     onNavigateToTerms = {
-                        navController.navigate(NavRoutes.LOGIN_TERMS)
+                        navController.navigate(NavRoutes.LOGIN_TERMS) {
+                            launchSingleTop = true
+                        }
                     }
                 )
             }
@@ -293,7 +312,7 @@ fun AppNavGraph(
                         if (refreshToken != null) {
                             authRepository.logout(refreshToken)
                         }
-                        authLocalStorage.clearAuthOnly()
+                        clearLocalSessionState(clearAllAuth = false)
 
                         // 전역 상태 변수 업데이트 -> MainScreen 및 하위 탭들이 즉시 Recomposition됨
                         isLoggedIn = false
@@ -306,7 +325,9 @@ fun AppNavGraph(
                     pendingExternalRoute = null
                     pendingInternalRoute = route
                     pendingHomeIndex = index ?: 0
-                    navController.navigate(NavRoutes.LOGIN)
+                    navController.navigate(NavRoutes.AUTH) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavigateToNewsLong = { index ->
                     navController.navigate("${NavRoutes.NEWS_LONG}/$index")
@@ -333,7 +354,9 @@ fun AppNavGraph(
                     pendingInternalRoute = null
                     pendingHomeIndex = 0
                     pendingExternalRoute = NavRoutes.SETTING
-                    navController.navigate(NavRoutes.LOGIN)
+                    navController.navigate(NavRoutes.AUTH) {
+                        launchSingleTop = true
+                    }
                 },
                 onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) },
                 onInquiryClick = { navController.navigate(NavRoutes.INQUIRY) },
@@ -352,7 +375,7 @@ fun AppNavGraph(
                             authRepository.logout(refreshToken)
                         }
                         // 1. 로컬 데이터 삭제
-                        authLocalStorage.clearAuthOnly()
+                        clearLocalSessionState(clearAllAuth = false)
 
                         // 2. 상태값 변경 -> SettingScreen UI 즉시 갱신
                         isLoggedIn = false
@@ -408,10 +431,7 @@ fun AppNavGraph(
                         }
 
                         // 3. 로컬 데이터 완전 초기화 (약관 동의 상태 포함)
-                        authLocalStorage.clear()
-                        searchHistoryLocalStorage.clearAll()
-                        WidgetActionReceiver.clearBookmarkedIds(context)
-                        WidgetRefreshHelper.refreshAll(context)
+                        clearLocalSessionState(clearAllAuth = true)
 
                         // ★ 4. UI 즉시 반영을 위한 상태 업데이트 (이 부분이 핵심)
                         isLoggedIn = false

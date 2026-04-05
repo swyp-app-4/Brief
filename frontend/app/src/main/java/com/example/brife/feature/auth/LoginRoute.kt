@@ -30,16 +30,12 @@ fun LoginRoute(
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(uiState.isLoginSuccess) {
-        if (uiState.isLoginSuccess) {
-            onNavigateToHome()
-        }
-    }
-
-    LaunchedEffect(uiState.needTermsAgreement) {
-        if (uiState.needTermsAgreement) {
-            onNavigateToTerms()
-            viewModel.consumeTermsNavigation()
+    LaunchedEffect(viewModel) {
+        viewModel.navigationEvent.collect { event ->
+            when (event) {
+                LoginNavigationEvent.NavigateToHome -> onNavigateToHome()
+                LoginNavigationEvent.NavigateToTerms -> onNavigateToTerms()
+            }
         }
     }
 
