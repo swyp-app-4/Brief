@@ -16,10 +16,6 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    init {
-        loadHomeNews()
-    }
-
     fun loadHomeNews() {
         viewModelScope.launch {
             _uiState.value = HomeUiState(isLoading = true)

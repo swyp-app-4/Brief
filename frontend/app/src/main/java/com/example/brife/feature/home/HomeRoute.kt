@@ -43,6 +43,13 @@ fun HomeRoute(
     )
     val uiState by viewModel.uiState.collectAsState()
 
+    // isLoggedIn이 변경될 때마다 홈 뉴스 재로드 (로그인/로그아웃 시 최신 관심사 반영)
+    // 초기 로드 역할도 겸함 (HomeViewModel에서 init 블록 제거)
+    LaunchedEffect(isLoggedIn) {
+        Log.d("HomeRoute", "isLoggedIn=$isLoggedIn → 홈 뉴스 로드")
+        viewModel.loadHomeNews()
+    }
+
     // reloadVersion이 0보다 커지면 관심사 재설정 완료 신호 → 홈 뉴스 재로드
     LaunchedEffect(reloadVersion) {
         if (reloadVersion > 0) {
