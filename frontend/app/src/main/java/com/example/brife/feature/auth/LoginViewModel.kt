@@ -35,11 +35,9 @@ class LoginViewModel(
         viewModelScope.launch {
             resetForLoginAttempt("kakao")
 
-            Log.d("INTEREST_DEBUG", "loginWithKakao: accessToken.length=${accessToken.length}")
 
             repository.loginWithKakao(accessToken)
                 .onSuccess { response ->
-                    Log.d("INTEREST_DEBUG", "kakao login success: isNewUser=${response.isNewUser}")
                     handleLoginSuccess(
                         accessToken = response.accessToken,
                         refreshToken = response.refreshToken,
@@ -47,7 +45,6 @@ class LoginViewModel(
                     )
                 }
                 .onFailure { throwable ->
-                    Log.e("INTEREST_DEBUG", "kakao login failed: ${throwable.message}")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = throwable.message
@@ -60,11 +57,9 @@ class LoginViewModel(
         viewModelScope.launch {
             resetForLoginAttempt("naver")
 
-            Log.d("INTEREST_DEBUG", "loginWithNaver: accessToken.length=${accessToken.length}")
 
             repository.loginWithNaver(accessToken)
                 .onSuccess { response ->
-                    Log.d("INTEREST_DEBUG", "naver login success: isNewUser=${response.isNewUser}")
                     handleLoginSuccess(
                         accessToken = response.accessToken,
                         refreshToken = response.refreshToken,
@@ -72,7 +67,6 @@ class LoginViewModel(
                     )
                 }
                 .onFailure { throwable ->
-                    Log.e("INTEREST_DEBUG", "naver login failed: ${throwable.message}")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = throwable.message
@@ -85,11 +79,9 @@ class LoginViewModel(
         viewModelScope.launch {
             resetForLoginAttempt("google")
 
-            Log.d("INTEREST_DEBUG", "loginWithGoogle: idToken.length=${idToken.length}")
 
             repository.loginWithGoogle(idToken)
                 .onSuccess { response ->
-                    Log.d("INTEREST_DEBUG", "google login success: isNewUser=${response.isNewUser}")
                     handleLoginSuccess(
                         accessToken = response.accessToken,
                         refreshToken = response.refreshToken,
@@ -97,7 +89,6 @@ class LoginViewModel(
                     )
                 }
                 .onFailure { throwable ->
-                    Log.e("INTEREST_DEBUG", "google login failed: ${throwable.message}")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = throwable.message
@@ -159,8 +150,10 @@ class LoginViewModel(
 
     /**
      * 로그인 완료 처리.
-     * ① 토큰 저장(persistAuthState) + 로그인 성공 상태를 먼저 설정 → 로그인 자체를 완료
-     * ② 관심사 동기화는 로그인 성공 이후 best-effort 처리 → 실패해도 로그인 유지
+     * ① 토큰 저장(persistAuthState)
+     * ② 관심사 동기화(PUT/POST) → 서버 반영 완료 후 NavigateToHome 발송
+     *    → 실패해도 로그인은 유지 (홈으로 이동)
+     * 이 순서를 지켜야 홈 뉴스 GET이 관심사 PUT보다 먼저 나가는 레이스 컨디션을 방지
      */
     private fun completeLogin(
         accessToken: String,
@@ -171,45 +164,30 @@ class LoginViewModel(
         val subCategoryIds = onboardingLocalStorage.getSelectedSubCategoryIds()
         val groupIds = onboardingLocalStorage.getSelectedCategoryIds()
 
-        Log.d("INTEREST_DEBUG", "completeLogin: isNewUser=$isNewUser, subCategoryIds=$subCategoryIds, groupIds=$groupIds")
-        Log.d("INTEREST_DEBUG", "completeLogin: accessToken.isNotBlank=${accessToken.isNotBlank()}")
-
-        // ① 로그인 완료 먼저 처리 (토큰 저장 + 성공 상태)
+        // ① 토큰 저장 (성공 상태는 동기화 완료 후 설정)
         persistAuthState(accessToken, refreshToken, persistTermsAgreement)
-        _uiState.value = _uiState.value.copy(
-            isLoading = false,
-            isLoginSuccess = true,
-            isNewUser = false,
-            errorMessage = null
-        )
-        _navigationEvent.trySend(LoginNavigationEvent.NavigateToHome)
 
-        // ② 로컬 관심사가 없으면 동기화 불필요
-        if (subCategoryIds.isEmpty() && groupIds.isEmpty()) {
-            Log.d("INTEREST_DEBUG", "completeLogin: no local interests, skipping sync")
-            return
-        }
-
-        // ③ 관심사 동기화는 로그인 이후 별도 실행 (실패해도 로그인 상태 유지)
+        // ② 관심사 동기화 → 완료 후 홈으로 이동
         viewModelScope.launch {
-            Log.d("INTEREST_DEBUG", "completeLogin sync start: isNewUser=$isNewUser, body={categoryIds=$subCategoryIds, groupIds=$groupIds}")
-
-            val interestResult = if (isNewUser) {
-                // 신규회원: POST /users/me/interests (최초 저장)
-                userRepository.saveInterests(accessToken, subCategoryIds, groupIds)
-            } else {
-                // 기존회원: PUT /users/me/interests (재설정)
-                userRepository.updateInterests(accessToken, subCategoryIds, groupIds)
+            if (subCategoryIds.isNotEmpty() || groupIds.isNotEmpty()) {
+                if (isNewUser) {
+                    // 신규회원: POST /users/me/interests
+                    userRepository.saveInterests(accessToken, subCategoryIds, groupIds)
+                } else {
+                    // 기존회원: PUT /users/me/interests
+                    userRepository.updateInterests(accessToken, subCategoryIds, groupIds)
+                }
+                // 실패해도 로그인은 계속 진행 (best-effort)
             }
 
-            if (interestResult.isSuccess) {
-                Log.d("INTEREST_DEBUG", "completeLogin interest sync success")
-            } else {
-                val errMsg = interestResult.exceptionOrNull()?.message ?: "unknown"
-                Log.e("INTEREST_DEBUG", "completeLogin interest sync failed (login already succeeded): $errMsg")
-                // 로그인은 이미 완료 — 관심사 동기화 실패는 로그인을 막지 않음
-                // 사용자는 이미 홈으로 이동했으며, 프로필에서 관심사 재설정 가능
-            }
+            // ③ 동기화 완료 후 홈으로 이동 → 이 시점에 서버에 최신 관심사 반영됨
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                isLoginSuccess = true,
+                isNewUser = false,
+                errorMessage = null
+            )
+            _navigationEvent.trySend(LoginNavigationEvent.NavigateToHome)
         }
     }
 
@@ -221,15 +199,12 @@ class LoginViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
-            Log.d("INTEREST_DEBUG", "agreeTerms: calling POST /auth/terms")
 
             repository.agreeTerms(accessToken)
                 .onSuccess {
-                    Log.d("INTEREST_DEBUG", "agreeTerms: POST /auth/terms success")
                     completeTermsLogin(accessToken, refreshToken)
                 }
                 .onFailure { throwable ->
-                    Log.e("INTEREST_DEBUG", "agreeTerms: POST /auth/terms failed: ${throwable.message}")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = throwable.message
@@ -240,8 +215,9 @@ class LoginViewModel(
 
     /**
      * 약관 동의 완료 후 처리.
-     * ① 토큰 저장 + 약관 동의 성공 상태를 먼저 설정 → 로그인 자체를 완료
-     * ② 관심사 동기화는 이후 best-effort 처리 → 실패해도 로그인 유지
+     * ① 토큰 저장
+     * ② 관심사 동기화(POST) → 완료 후 isTermsSuccess = true 설정
+     *    → 실패해도 로그인 유지 (best-effort)
      * 약관 동의 직후는 항상 신규회원이므로 POST /users/me/interests 사용
      */
     private fun completeTermsLogin(
@@ -251,40 +227,27 @@ class LoginViewModel(
         val subCategoryIds = onboardingLocalStorage.getSelectedSubCategoryIds()
         val groupIds = onboardingLocalStorage.getSelectedCategoryIds()
 
-        Log.d("INTEREST_DEBUG", "completeTermsLogin: subCategoryIds=$subCategoryIds, groupIds=$groupIds")
-        Log.d("INTEREST_DEBUG", "completeTermsLogin: accessToken.isNotBlank=${accessToken.isNotBlank()}")
-
-        // ① 약관 동의 완료 먼저 처리 (토큰 저장 + 성공 상태)
+        // ① 토큰 저장
         persistAuthState(
             accessToken = accessToken,
             refreshToken = refreshToken,
             persistTermsAgreement = true
         )
-        _uiState.value = _uiState.value.copy(
-            isLoading = false,
-            needTermsAgreement = false,
-            isTermsSuccess = true
-        )
 
-        // ② 로컬 관심사가 없으면 동기화 불필요
-        if (subCategoryIds.isEmpty() && groupIds.isEmpty()) {
-            Log.d("INTEREST_DEBUG", "completeTermsLogin: no local interests, skipping sync")
-            return
-        }
-
-        // ③ 관심사 동기화는 로그인 이후 별도 실행 (신규회원 → POST)
+        // ② 관심사 동기화 → 완료 후 상태 전환
         viewModelScope.launch {
-            Log.d("INTEREST_DEBUG", "completeTermsLogin sync start: body={categoryIds=$subCategoryIds, groupIds=$groupIds}")
-
-            val interestResult = userRepository.saveInterests(accessToken, subCategoryIds, groupIds)
-
-            if (interestResult.isSuccess) {
-                Log.d("INTEREST_DEBUG", "completeTermsLogin interest sync success")
-            } else {
-                val errMsg = interestResult.exceptionOrNull()?.message ?: "unknown"
-                Log.e("INTEREST_DEBUG", "completeTermsLogin interest sync failed (login already succeeded): $errMsg")
-                // 로그인은 이미 완료 — 관심사 동기화 실패는 로그인을 막지 않음
+            if (subCategoryIds.isNotEmpty() || groupIds.isNotEmpty()) {
+                // 신규회원: POST /users/me/interests
+                userRepository.saveInterests(accessToken, subCategoryIds, groupIds)
+                // 실패해도 로그인은 계속 진행 (best-effort)
             }
+
+            // ③ 동기화 완료 후 상태 전환 → LoginTermsRoute가 홈으로 이동
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                needTermsAgreement = false,
+                isTermsSuccess = true
+            )
         }
     }
 
@@ -303,7 +266,6 @@ class LoginViewModel(
         _uiState.value.pendingLoginMethod.takeIf { it.isNotEmpty() }?.let {
             authLocalStorage.saveLoginMethod(it)
         }
-        Log.d("INTEREST_DEBUG", "persistAuthState: token saved, isLoggedIn=${authLocalStorage.isLoggedIn()}")
     }
 
     fun consumeTermsNavigation() {

@@ -50,21 +50,14 @@ class NewsLongViewModel(
 
     fun loadFolders(preselectedArchiveId: Long? = null, newsId: Long? = null) {
         viewModelScope.launch {
-            Log.d(
-                "NewsLongViewModel",
-                "loadFolders start: preselectedArchiveId=$preselectedArchiveId, newsId=$newsId"
-            )
+
             fetchBookmarkFolders(preselectedArchiveId, newsId)
                 .onSuccess { mappedFolders ->
                     _folders.value = mappedFolders
                     _savedFolderIds.value = mappedFolders.filter { it.isSelected }.map { it.id }.toSet()
-                    Log.d(
-                        "NewsLongViewModel",
-                        "loadFolders success: count=${mappedFolders.size}"
-                    )
+
                 }
                 .onFailure { error ->
-                    Log.e("NewsLongViewModel", "loadFolders failed: ${error.message}", error)
                 }
         }
     }
@@ -84,7 +77,6 @@ class NewsLongViewModel(
                     _isSectionsLoading.value = false
                 }
                 .onFailure { error ->
-                    Log.e("NewsLongViewModel", "loadSections failed: newsId=$newsId", error)
                     _isSectionsLoading.value = false
                     _sectionsError.value = true
                 }
@@ -132,10 +124,7 @@ class NewsLongViewModel(
                 }
                 if (result.isFailure) {
                     hasFailure = true
-                    Log.e(
-                        "NewsLongViewModel",
-                        "addToFolder failed: archiveId=${folder.id}, error=${result.exceptionOrNull()?.message}"
-                    )
+
                 }
             }
 
@@ -149,10 +138,7 @@ class NewsLongViewModel(
 
                 if (resolvedArchiveId == null || resolvedArchiveItemId == null) {
                     hasFailure = true
-                    Log.e(
-                        "NewsLongViewModel",
-                        "removeFromFolder skipped: archiveId=${folder.id}, itemId=${folder.archiveItemId}"
-                    )
+
                     return@forEach
                 }
 
@@ -162,10 +148,7 @@ class NewsLongViewModel(
                 )
                 if (result.isFailure) {
                     hasFailure = true
-                    Log.e(
-                        "NewsLongViewModel",
-                        "removeFromFolder failed: archiveId=$resolvedArchiveId, itemId=$resolvedArchiveItemId, error=${result.exceptionOrNull()?.message}"
-                    )
+
                 }
             }
 
@@ -176,7 +159,6 @@ class NewsLongViewModel(
                 }
                 .onFailure { error ->
                     hasFailure = true
-                    Log.e("NewsLongViewModel", "reloadFolders failed after save", error)
                 }
 
             _isSavingFolders.value = false
@@ -189,7 +171,6 @@ class NewsLongViewModel(
         onSuccess: (BookmarkFolderUiModel) -> Unit = {}
     ) {
         viewModelScope.launch {
-            Log.d("NewsLongViewModel", "createFolder: name=$folderName")
             archiveRepository.createFolder(folderName)
                 .onSuccess { newFolder ->
                     val createdFolder = BookmarkFolderUiModel(
@@ -205,7 +186,6 @@ class NewsLongViewModel(
                     onSuccess(createdFolder)
                 }
                 .onFailure { error ->
-                    Log.e("NewsLongViewModel", "createFolder failed: ${error.message}", error)
                 }
         }
     }

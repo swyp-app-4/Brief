@@ -33,7 +33,6 @@ class ArchiveDetailViewModel(
             _isLoading.value = true
             repository.getItems(archiveId, sort)
                 .onSuccess { items ->
-                    Log.d("ArchiveDetailVM", "loaded archive items: count=${items.size}")
                     val mapped = items.map { item ->
                         async {
                             val detail = repository.getNewsDetail(item.contentId).getOrNull()
@@ -54,7 +53,6 @@ class ArchiveDetailViewModel(
                                     newsId = item.contentId
                                 )
                             } else {
-                                Log.w("ArchiveDetailVM", "getNewsDetail failed: contentId=${item.contentId}")
                                 ArchiveNewsItem(
                                     archiveItemId = item.id,
                                     title = "뉴스 #${item.contentId}",
@@ -72,7 +70,6 @@ class ArchiveDetailViewModel(
                     _newsItems.value = mapped
                 }
                 .onFailure { e ->
-                    Log.e("ArchiveDetailVM", "loadItems failed: ${e.message}")
                     _newsItems.value = emptyList()
                 }
             _isLoading.value = false
@@ -84,7 +81,6 @@ class ArchiveDetailViewModel(
         onCompleted: (List<Long>) -> Unit = {}
     ) {
         viewModelScope.launch {
-            Log.d("ArchiveDetail", "delete request selectedIds=$selectedIds, archiveId=$archiveId")
 
             val deletedNewsIds = mutableListOf<Long>()
             selectedIds.forEach { itemId ->
@@ -100,9 +96,7 @@ class ArchiveDetailViewModel(
                         deletedNewsIds += newsId
                     }
                     _newsItems.value = _newsItems.value.filter { it.archiveItemId != itemId }
-                    Log.d("ArchiveDetail", "delete success: itemId=$itemId")
                 } else {
-                    Log.e("ArchiveDetail", "delete failed: itemId=$itemId, error=${result.exceptionOrNull()}")
                 }
             }
 

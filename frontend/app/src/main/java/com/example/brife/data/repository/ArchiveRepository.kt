@@ -22,10 +22,8 @@ class ArchiveRepository(
         val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
         return try {
             val response = api.getArchives(token)
-            Log.d("ArchiveRepository", "getFolders: code=${response.code()}")
             if (response.isSuccessful) {
                 val folders = response.body()?.map {
-                    Log.d("ArchiveRepository", "folder: id=${it.id}, folderName=${it.folderName}, itemCount=${it.itemCount}, favorite=${it.favorite}")
                     ArchiveFolderUiModel(
                         archiveId = it.id,
                         folderName = it.folderName,
@@ -33,14 +31,11 @@ class ArchiveRepository(
                         isFavorite = it.favorite
                     )
                 } ?: emptyList()
-                Log.d("ArchiveRepository", "getFolders: 총 ${folders.size}개")
                 Result.success(folders)
             } else {
-                Log.e("ArchiveRepository", "getFolders: 실패 code=${response.code()}")
                 Result.failure(Exception("폴더 목록 조회 실패: ${response.code()}"))
             }
         } catch (e: Exception) {
-            Log.e("ArchiveRepository", "getFolders: exception=${e.message}")
             Result.failure(e)
         }
     }
@@ -117,13 +112,10 @@ class ArchiveRepository(
     suspend fun addToFavorites(contentId: Long): Result<Unit> {
         val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
         return try {
-            Log.d("ArchiveRepository", "addToFavorites: contentId=$contentId")
             val response = api.addToFavorites(token, AddArchiveItemRequest(contentId))
-            Log.d("ArchiveRepository", "addToFavorites: code=${response.code()}")
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception("즐겨찾기 추가 실패: ${response.code()}"))
         } catch (e: Exception) {
-            Log.e("ArchiveRepository", "addToFavorites: exception=${e.message}")
             Result.failure(e)
         }
     }
@@ -131,13 +123,10 @@ class ArchiveRepository(
     suspend fun addToFolder(archiveId: Long, contentId: Long): Result<Unit> {
         val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
         return try {
-            Log.d("ArchiveRepository", "addToFolder: archiveId=$archiveId, contentId=$contentId")
             val response = api.addToArchive(token, archiveId, AddArchiveItemRequest(contentId))
-            Log.d("ArchiveRepository", "addToFolder: code=${response.code()}")
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception("폴더 저장 실패: ${response.code()}"))
         } catch (e: Exception) {
-            Log.e("ArchiveRepository", "addToFolder: exception=${e.message}")
             Result.failure(e)
         }
     }
@@ -151,7 +140,6 @@ class ArchiveRepository(
                 Result.failure(Exception("뉴스 상세 조회 실패: ${response.code()}"))
             }
         } catch (e: Exception) {
-            Log.e("ArchiveRepository", "getNewsDetail: contentId=$contentId, exception=${e.message}")
             Result.failure(e)
         }
     }
@@ -159,13 +147,10 @@ class ArchiveRepository(
     suspend fun deleteFromFavorites(itemId: Long): Result<Unit> {
         val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
         return try {
-            Log.d("ArchiveRepository", "deleteFromFavorites: itemId=$itemId")
             val response = api.deleteFavoriteItem(token, itemId)
-            Log.d("ArchiveRepository", "deleteFromFavorites: code=${response.code()}")
             if (response.isSuccessful) Result.success(Unit)
             else Result.failure(Exception("즐겨찾기 아이템 삭제 실패: ${response.code()}"))
         } catch (e: Exception) {
-            Log.e("ArchiveRepository", "deleteFromFavorites: exception=${e.message}", e)
             Result.failure(e)
         }
     }
@@ -173,22 +158,16 @@ class ArchiveRepository(
     suspend fun deleteArchiveItem(archiveId: Long, itemId: Long): Result<Unit> {
         val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
         return try {
-            Log.d("ArchiveRepository", "deleteArchiveItem: archiveId=$archiveId, itemId=$itemId")
             val response = api.deleteArchiveItem(token, archiveId, itemId)
-            Log.d(
-                "ArchiveRepository",
-                "deleteArchiveItem: code=${response.code()}, success=${response.isSuccessful}"
-            )
+
 
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
                 val errorBody = response.errorBody()?.string()
-                Log.e("ArchiveRepository", "deleteArchiveItem: errorBody=$errorBody")
                 Result.failure(Exception("아이템 삭제 실패: ${response.code()} / $errorBody"))
             }
         } catch (e: Exception) {
-            Log.e("ArchiveRepository", "deleteArchiveItem: exception=${e.message}", e)
             Result.failure(e)
         }
     }

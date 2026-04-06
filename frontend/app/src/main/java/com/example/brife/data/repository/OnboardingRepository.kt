@@ -30,7 +30,6 @@ class OnboardingRepository(
     suspend fun saveInterests(categoryIds: List<Long>): Result<Unit> {
         return try {
             localStorage.saveSelectedCategoryIds(categoryIds)
-            Log.d("OnboardingRepo", "saved categoryIds locally: $categoryIds")
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -75,7 +74,6 @@ class OnboardingRepository(
         return try {
             localStorage.saveSelectedSubCategoryIds(subCategoryIds)
             localStorage.saveOnboardingCompleted(true)
-            Log.d("OnboardingRepo", "saved subCategoryIds locally: $subCategoryIds, parentIds: $parentCategoryIds")
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

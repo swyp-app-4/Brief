@@ -25,11 +25,9 @@ class HomeViewModel(
             _uiState.value = HomeUiState(isLoading = true)
             homeRepository.getHomeNews()
                 .onSuccess { newsList ->
-                    Log.d("HomeViewModel", "uiState 반영: ${newsList.size}개")
                     _uiState.value = HomeUiState(newsList = newsList, isLoading = false)
                 }
                 .onFailure { e ->
-                    Log.e("HomeViewModel", "뉴스 로드 실패: ${e.message}", e)
                     _uiState.value = HomeUiState(
                         newsList = emptyList(),
                         isLoading = false,

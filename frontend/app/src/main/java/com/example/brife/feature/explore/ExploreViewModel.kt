@@ -40,7 +40,6 @@ class ExploreViewModel(
         viewModelScope.launch {
             exploreRepository.getLatestNews()
                 .onSuccess { items ->
-                    Log.d("ExploreViewModel", "loadLatestNews: ${items.size}개 수신")
                     val archiveItems = items.map { item ->
                         async {
                             item.toArchiveNewsItem(
@@ -54,7 +53,6 @@ class ExploreViewModel(
                     _uiState.value = ExploreUiState.Default(recentNewsList = archiveItems, lastUpdatedTime = lastUpdatedDate)
                 }
                 .onFailure { e ->
-                    Log.e("ExploreViewModel", "loadLatestNews 실패: ${e.message} → mock 데이터 사용")
                     _uiState.value = ExploreUiState.Default(recentNewsList = exploreMockNewsList, lastUpdatedTime = "")
                 }
         }
@@ -93,7 +91,6 @@ class ExploreViewModel(
         viewModelScope.launch {
             exploreRepository.searchNews(trimmed)
                 .onSuccess { items ->
-                    Log.d("ExploreViewModel", "searchNews '${trimmed}': ${items.size}개 수신")
                     val archiveItems = items.map { item ->
                         async {
                             item.toArchiveNewsItem(
@@ -108,7 +105,6 @@ class ExploreViewModel(
                     }
                 }
                 .onFailure { e ->
-                    Log.e("ExploreViewModel", "searchNews '${trimmed}' 실패: ${e.message}")
                     _uiState.value = ExploreUiState.NetworkError(trimmed)
                 }
         }
