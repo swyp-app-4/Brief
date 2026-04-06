@@ -85,6 +85,7 @@ fun AppNavGraph(
     fun clearArchiveLocalState() {
         WidgetActionReceiver.clearBookmarkedIds(context)
         WidgetRefreshHelper.refreshAll(context)
+
     }
 
     fun clearLocalSessionState(clearAllAuth: Boolean) {
@@ -95,6 +96,7 @@ fun AppNavGraph(
         }
         searchHistoryLocalStorage.clearAll()
         clearArchiveLocalState()
+
         pendingInternalRoute = null
         pendingHomeIndex = 0
         pendingExternalRoute = null
@@ -391,6 +393,17 @@ fun AppNavGraph(
                         withdrawErrorMessage = null
 
                         val currentMethod = authLocalStorage.getLoginMethod()
+//                        val deleteResult = userRepository.deleteUser()
+//                        if (deleteResult.isSuccess) {
+//                            clearLocalSessionState(clearAllAuth = true)
+//
+//                            // 순서 중요: 세션 버전을 먼저 올려 ViewModel key를 변경하고, 로그인을 false로 만듦
+//                            mainSessionVersion++
+//                            isLoggedIn = false
+//                            loginMethod = ""
+//                            isWithdrawing = false
+//                            isWithdrawn = true
+//                        }
 
                         // 1. 카카오 사용자면 SDK unlink 먼저
                         if (currentMethod == "kakao") {
