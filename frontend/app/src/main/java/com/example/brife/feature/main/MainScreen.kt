@@ -232,7 +232,9 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(sessionVersion, mainStartDestination, initialRoute) {
+    LaunchedEffect(sessionVersion, mainStartDestination, initialRoute, initialDeepLinkNewsId) {
+        if (initialDeepLinkNewsId != null) return@LaunchedEffect  // 딥링크가 있으면 이 effect 무시
+
         showLoginBottomSheet = false
         showArchiveMoreSheet = false
         isArchiveDeleteMode = false
@@ -243,6 +245,8 @@ fun MainScreen(
         returnRouteAfterGuestProfileEditSheet = null
         selectedNewsItem = null
         preselectedArchiveId = null
+
+
 
         navController.navigate(mainStartDestination) {
             popUpTo(navController.graph.startDestinationId) { inclusive = true }
