@@ -167,8 +167,16 @@ fun HomeScreen(
         }
     }
 
+    // 마지막으로 실제 처리한 reset key 추적
+    // remember (not rememberSaveable): HomeScreen 재진입 시 현재 key로 재초기화되어
+    // "이미 처리된 이벤트"로 인식 → 뒤로가기 복귀 시 불필요한 scrollToPage 방지
+    var lastProcessedResetKey by remember { mutableIntStateOf(forceResetToThirdPageKey) }
+
     LaunchedEffect(forceResetToThirdPageKey, isLoggedIn) {
-        if (!isLoggedIn && forceResetToThirdPageKey > 0) {
+        // 값이 실제로 새로 증가한 경우에만 page 제한 적용
+        // 재진입(뒤로가기 복귀) 시에는 lastProcessedResetKey == forceResetToThirdPageKey이므로 스킵
+        if (!isLoggedIn && forceResetToThirdPageKey > lastProcessedResetKey) {
+            lastProcessedResetKey = forceResetToThirdPageKey
             pagerState.scrollToPage(maxAccessiblePage)
         }
     }
