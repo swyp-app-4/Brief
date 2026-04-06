@@ -42,6 +42,8 @@ fun HomeRoute(
         )
     )
     val uiState by viewModel.uiState.collectAsState()
+    // B: 뒤로가기 후 홈 카드 위치 복원용 ViewModel 상태
+    val savedPageIndex by viewModel.savedPageIndex.collectAsState()
 
     // isLoggedIn이 변경될 때마다 홈 뉴스 재로드 (로그인/로그아웃 시 최신 관심사 반영)
     // 초기 로드 역할도 겸함 (HomeViewModel에서 init 블록 제거)
@@ -73,11 +75,13 @@ fun HomeRoute(
         newsList = uiState.newsList,
         isLoggedIn = isLoggedIn,
         isLoading = uiState.isLoading,
-        initialPage = initialPage, // ★ 추가
+        // B: 로그인 복귀용 initialPage가 명시된 경우 우선, 아니면 ViewModel 저장값 사용
+        initialPage = if (initialPage > 0) initialPage else savedPageIndex,
         forceResetToThirdPageKey = forceResetToThirdPageKey,
         onLoginRequired = onLoginRequired,
         onDetailClick = onDetailClick,
         onShareClick = onShareClick,
+        onPageChanged = { viewModel.savePageIndex(it) },
         topPadding = topPadding
     )
 }

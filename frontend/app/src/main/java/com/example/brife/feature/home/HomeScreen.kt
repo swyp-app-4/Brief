@@ -54,6 +54,7 @@ fun HomeScreen(
     onLoginClick: () -> Unit = {},
     onDetailClick: (HomeNewsCardItem) -> Unit,
     onShareClick: (HomeNewsCardItem) -> Unit = {},
+    onPageChanged: (Int) -> Unit = {},
     topPadding: Dp = 0.dp
 ) {
     val context = LocalContext.current
@@ -76,7 +77,10 @@ fun HomeScreen(
     LaunchedEffect(pagerState, pageCount) {
         snapshotFlow { pagerState.settledPage }
             .collect { page ->
-                restoredPage = page.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
+                val clamped = page.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
+                restoredPage = clamped
+                // B: 로딩 중 일시적 클램핑(page=0)은 저장하지 않음
+                if (!isLoading) onPageChanged(clamped)
             }
     }
 
