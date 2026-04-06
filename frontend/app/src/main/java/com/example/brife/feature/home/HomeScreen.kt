@@ -195,7 +195,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .offset(y = 30.dp)
+                    .offset(y = 40.dp)
             )
 
             // 빈 상태: 로딩 완료 후 뉴스가 없으면 디버깅용 메시지 표시
@@ -220,6 +220,7 @@ fun HomeScreen(
                     state = pagerState,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(455.dp)   // 카드 높이 변경되는 문제에 대해서 잠시 수정테스트를 위한 코드
                         .nestedScroll(guestForwardBlocker),
                     contentPadding = PaddingValues(horizontal = 36.dp),
                     pageSpacing = 12.dp,
