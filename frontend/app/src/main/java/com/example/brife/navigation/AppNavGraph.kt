@@ -28,6 +28,7 @@ import com.example.brife.feature.auth.LoginRoute
 import com.example.brife.feature.auth.kakaoUnlink
 import com.example.brife.feature.auth.googleClearCredentialState
 import com.example.brife.feature.auth.naverDisconnect
+import com.example.brife.feature.auth.naverLogout
 import com.example.brife.feature.main.MainScreen
 import com.example.brife.feature.onboarding.OnboardingGuideScreen
 import com.example.brife.feature.onboarding.OnboardingInterestRoute
@@ -314,6 +315,8 @@ fun AppNavGraph(
                         if (refreshToken != null) {
                             authRepository.logout(refreshToken)
                         }
+                        // 네이버 로그인이었으면 SDK 로컬 세션 정리 → 재로그인 시 계정 선택 화면 재노출
+                        if (loginMethod == "naver") naverLogout()
                         clearLocalSessionState(clearAllAuth = false)
 
                         // 전역 상태 변수 업데이트 -> MainScreen 및 하위 탭들이 즉시 Recomposition됨
@@ -376,14 +379,16 @@ fun AppNavGraph(
                         if (refreshToken != null) {
                             authRepository.logout(refreshToken)
                         }
-                        // 1. 로컬 데이터 삭제
+                        // 1. 네이버 로그인이었으면 SDK 로컬 세션 정리 → 재로그인 시 계정 선택 화면 재노출
+                        if (loginMethod == "naver") naverLogout()
+                        // 2. 로컬 데이터 삭제
                         clearLocalSessionState(clearAllAuth = false)
 
-                        // 2. 상태값 변경 -> SettingScreen UI 즉시 갱신
+                        // 3. 상태값 변경 -> SettingScreen UI 즉시 갱신
                         isLoggedIn = false
                         loginMethod = ""
 
-                        // 3. 안내 메시지
+                        // 4. 안내 메시지
                         Toast.makeText(context, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show()
                     }
                 },
