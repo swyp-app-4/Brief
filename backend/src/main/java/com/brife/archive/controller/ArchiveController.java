@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/archives")
+@RequestMapping("/api/v1/archives")
 @RequiredArgsConstructor
 @Tag(name = "Archive", description = "아카이브 (폴더 관리 / 뉴스 저장)")
 public class ArchiveController {
