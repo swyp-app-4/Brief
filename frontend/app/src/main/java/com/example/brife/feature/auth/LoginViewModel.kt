@@ -234,12 +234,14 @@ class LoginViewModel(
             persistTermsAgreement = true
         )
 
-        // ② 관심사 동기화 → 완료 후 상태 전환
+        // 수정 후: _uiState.value.isNewUser로 POST/PUT 분기
         viewModelScope.launch {
             if (subCategoryIds.isNotEmpty() || groupIds.isNotEmpty()) {
-                // 신규회원: POST /users/me/interests
-                userRepository.saveInterests(accessToken, subCategoryIds, groupIds)
-                // 실패해도 로그인은 계속 진행 (best-effort)
+                if (_uiState.value.isNewUser) {
+                    userRepository.saveInterests(accessToken, subCategoryIds, groupIds)   // POST
+                } else {
+                    userRepository.updateInterests(accessToken, subCategoryIds, groupIds) // PUT
+                }
             }
 
             // ③ 동기화 완료 후 상태 전환 → LoginTermsRoute가 홈으로 이동
