@@ -85,11 +85,7 @@ class ArchiveDetailViewModel(
             val deletedNewsIds = mutableListOf<Long>()
             selectedIds.forEach { itemId ->
                 val newsId = _newsItems.value.firstOrNull { it.archiveItemId == itemId }?.newsId
-                val result = if (isFavorite) {
-                    repository.deleteFromFavorites(itemId)
-                } else {
-                    repository.deleteArchiveItem(archiveId, itemId)
-                }
+                val result = repository.deleteArchiveItem(archiveId, itemId)
 
                 if (result.isSuccess) {
                     if (newsId != null) {

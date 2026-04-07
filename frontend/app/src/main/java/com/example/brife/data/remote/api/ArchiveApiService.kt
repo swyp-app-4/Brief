@@ -67,9 +67,9 @@ interface ArchiveApiService {
         @Path("itemId") itemId: Long
     ): Response<Unit>
 
-    @DELETE("archives/favorite/items/{itemId}")
-    suspend fun deleteFavoriteItem(
-        @Header("Authorization") authorization: String,
-        @Path("itemId") itemId: Long
-    ): Response<Unit>
+//    @DELETE("archives/favorite/items/{itemId}")
+//    suspend fun deleteFavoriteItem(
+//        @Header("Authorization") authorization: String,
+//        @Path("itemId") itemId: Long
+//    ): Response<Unit>
 }

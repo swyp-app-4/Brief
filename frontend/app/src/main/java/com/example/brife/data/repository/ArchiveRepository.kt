@@ -144,16 +144,16 @@ class ArchiveRepository(
         }
     }
 
-    suspend fun deleteFromFavorites(itemId: Long): Result<Unit> {
-        val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
-        return try {
-            val response = api.deleteFavoriteItem(token, itemId)
-            if (response.isSuccessful) Result.success(Unit)
-            else Result.failure(Exception("즐겨찾기 아이템 삭제 실패: ${response.code()}"))
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+//    suspend fun deleteFromFavorites(itemId: Long): Result<Unit> {
+//        val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
+//        return try {
+//            val response = api.deleteFavoriteItem(token, itemId)
+//            if (response.isSuccessful) Result.success(Unit)
+//            else Result.failure(Exception("즐겨찾기 아이템 삭제 실패: ${response.code()}"))
+//        } catch (e: Exception) {
+//            Result.failure(e)
+//        }
+//    }
 
     suspend fun deleteArchiveItem(archiveId: Long, itemId: Long): Result<Unit> {
         val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))

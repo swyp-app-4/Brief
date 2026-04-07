@@ -20,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -154,10 +155,16 @@ fun MainScreen(
     // ArchiveDetail에서 진입 시 해당 폴더 ID를 전달 → 북마크 아이콘 사전 활성화
     var preselectedArchiveId by remember { mutableStateOf<Long?>(null) }
 
+
+
     // 위젯 또는 딥링크로 진입 시 뉴스 상세 화면으로 자동 이동
     // deepLinkVersion을 키에 포함 → 동일 newsId 재진입 시에도 재실행 보장
+    var consumedDeepLinkVersion by rememberSaveable { mutableIntStateOf(-1) }
+
     LaunchedEffect(initialDeepLinkNewsId, deepLinkVersion) {
-        if (initialDeepLinkNewsId != null) {
+        if (initialDeepLinkNewsId != null && deepLinkVersion > consumedDeepLinkVersion) {
+            consumedDeepLinkVersion = deepLinkVersion
+
             preselectedArchiveId = null  // 위젯 진입 시 이전 ArchiveDetail 폴더 선택 상태 초기화
             selectedNewsItem = HomeNewsCardItem(
                 newsId = initialDeepLinkNewsId,
