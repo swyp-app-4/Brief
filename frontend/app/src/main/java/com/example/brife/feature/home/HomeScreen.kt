@@ -232,7 +232,7 @@ fun HomeScreen(
                     state = pagerState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(455.dp)   // 카드 높이 변경되는 문제에 대해서 잠시 수정테스트를 위한 코드
+                        .height(455.dp)
                         .nestedScroll(guestForwardBlocker),
                     contentPadding = PaddingValues(horizontal = 36.dp),
                     pageSpacing = 12.dp,
@@ -248,7 +248,7 @@ fun HomeScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .fillMaxHeight()
+                            .height(440.dp)   // 카드 자체 높이 고정
                             .zIndex(1f - absOffset.coerceIn(0f, 1f))
                             .graphicsLayer {
                                 val scale = lerp(
