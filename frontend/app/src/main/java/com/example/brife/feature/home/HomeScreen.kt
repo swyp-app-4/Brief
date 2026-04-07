@@ -248,7 +248,7 @@ fun HomeScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentHeight()
+                            .fillMaxHeight()
                             .zIndex(1f - absOffset.coerceIn(0f, 1f))
                             .graphicsLayer {
                                 val scale = lerp(
