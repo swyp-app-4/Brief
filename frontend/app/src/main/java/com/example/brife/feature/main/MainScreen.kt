@@ -698,7 +698,7 @@ fun MainScreen(
                 sheetState = sheetState,
                 onDismissRequest = { dismissLoginSheet() },
                 onLoginClick = {
-                    showLoginBottomSheet = false
+//                    showLoginBottomSheet = false
                     returnRouteAfterGuestArchiveSheet = null
                     returnRouteAfterGuestProfileEditSheet = null
                     // ★ AppNavGraph에 복귀 정보를 넘기며 로그인 화면으로 이동

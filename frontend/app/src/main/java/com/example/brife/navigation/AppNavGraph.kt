@@ -79,9 +79,14 @@ fun AppNavGraph(
     // --------------------------------------
 
     // 로그인 후 복귀할 위치 저장
-    var pendingInternalRoute by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingInternalRoute by rememberSaveable { mutableStateOf<String?>(null) }  // 로그인 성공 후 실제로 어디로 갈지 저장
+    // 실제 홈 이동 시 사용할 index
     var pendingHomeIndex by rememberSaveable { mutableStateOf(0) }
     var pendingExternalRoute by rememberSaveable { mutableStateOf<String?>(null) }
+    // 로그인 화면에서 뒤로왔을 때 어떤 preview/bottomsheet 상태를 복원할지 저장
+    var pendingLoginDestination by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingLoginHomeIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+
 
     fun clearArchiveLocalState() {
         WidgetActionReceiver.clearBookmarkedIds(context)
@@ -119,8 +124,11 @@ fun AppNavGraph(
     }
 
     fun navigateAfterLogin() {
-        val targetInternalRoute = pendingInternalRoute
-        val targetHomeIndex = pendingHomeIndex
+        // pendingLoginDestination: 로그인 유도 시 임시 보관된 목적지 (MainScreen initialRoute 변경 없이 보관)
+        // pendingInternalRoute: 딥링크/외부 진입 등 다른 경로로 세팅된 목적지
+        val targetInternalRoute = pendingLoginDestination ?: pendingInternalRoute
+//        val targetHomeIndex = pendingHomeIndex
+        val targetHomeIndex = pendingLoginHomeIndex ?: pendingHomeIndex
         val targetExternalRoute = pendingExternalRoute
 
         navController.navigate(NavRoutes.MAIN) {
@@ -129,6 +137,8 @@ fun AppNavGraph(
         }
 
         pendingInternalRoute = null
+        pendingLoginDestination = null
+        pendingLoginHomeIndex = null
         pendingHomeIndex = 0
         pendingExternalRoute = null
 
@@ -328,8 +338,10 @@ fun AppNavGraph(
                 },
                 onNavigateToLogin = { route, index ->
                     pendingExternalRoute = null
-                    pendingInternalRoute = route
-                    pendingHomeIndex = index ?: 0
+                    pendingLoginDestination = route
+//                    pendingInternalRoute = route
+//                    pendingHomeIndex = index ?: 0
+                    pendingLoginHomeIndex = index
                     navController.navigate(NavRoutes.AUTH) {
                         launchSingleTop = true
                     }
