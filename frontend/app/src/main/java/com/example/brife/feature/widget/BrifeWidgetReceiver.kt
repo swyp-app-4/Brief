@@ -16,6 +16,7 @@ class BrifeWidgetReceiver : AppWidgetProvider() {
     companion object {
         const val ACTION_PREV = "com.example.brife.WIDGET_PREV"
         const val ACTION_NEXT = "com.example.brife.WIDGET_NEXT"
+        const val ACTION_REFRESH_HEADER = "com.example.brife.WIDGET_REFRESH_HEADER"
         const val EXTRA_WIDGET_ID = "extra_widget_id"
 
         private const val PREF_NAME = "brife_widget_prefs"
@@ -45,6 +46,14 @@ class BrifeWidgetReceiver : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         val appWidgetManager = AppWidgetManager.getInstance(context)
+
+        // onDataSetChanged() 완료 후 newsId_$pos 가 prefs에 저장된 시점에 헤더를 재갱신
+        if (intent.action == ACTION_REFRESH_HEADER) {
+            val ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS) ?: return
+            ids.forEach { updateWidget(context, appWidgetManager, it) }
+            return
+        }
+
         val appWidgetId = intent.getIntExtra(EXTRA_WIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
 

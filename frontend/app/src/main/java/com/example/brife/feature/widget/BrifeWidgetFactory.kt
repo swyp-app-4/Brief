@@ -1,5 +1,7 @@
 package com.example.brife.feature.widget
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -97,6 +99,21 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
         val editor = prefs.edit()
         currentData.forEachIndexed { index, news -> editor.putLong("newsId_$index", news.newsId) }
         editor.apply()
+
+        // newsId_$pos 저장 완료 → 위젯 헤더 북마크 PendingIntent 재갱신
+        // (onUpdate에서 updateWidget이 먼저 실행되는 타이밍 문제 해결)
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val widgetIds = appWidgetManager.getAppWidgetIds(
+            ComponentName(context, BrifeWidgetReceiver::class.java)
+        )
+        if (widgetIds.isNotEmpty()) {
+            context.sendBroadcast(
+                Intent(context, BrifeWidgetReceiver::class.java).apply {
+                    action = BrifeWidgetReceiver.ACTION_REFRESH_HEADER
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
+                }
+            )
+        }
 
         // 서버에서 저장된 뉴스 ID를 조회하여 widget_prefs 북마크 상태 동기화
         // → 이미 앱에서 저장된 뉴스도 위젯에서 active 상태로 표시
