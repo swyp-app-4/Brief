@@ -350,7 +350,7 @@ private fun NewsLongContent(
                 contentAlignment = Alignment.Center
             ) {
                 AppText(
-                    text = "보통 요약은 ${item.articleCount}개 언론사의 보도를\n교차 검증해 AI가 재구성한 내용입니다.",
+                    text = "본 요약은 ${item.articleCount}개 언론사의 보도를\n교차 검증해 AI가 재구성한 내용입니다.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextCaption,
                     textAlign = TextAlign.Center
