@@ -81,8 +81,8 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.example.brife.WIDGET_PREV" />
-                <action android:name="com.example.brife.WIDGET_NEXT" />
+                <action android:name="swyp.brife.WIDGET_PREV" />
+                <action android:name="swyp.brife.WIDGET_NEXT" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

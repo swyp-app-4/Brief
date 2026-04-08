@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.brife"
+    namespace = "com.swyp.brife"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.brife"
+        applicationId = "com.swyp.brife"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
