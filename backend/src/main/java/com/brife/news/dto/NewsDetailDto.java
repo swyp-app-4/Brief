@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
+
 public record NewsDetailDto(
         Long id,
         String groupName,
@@ -14,10 +15,9 @@ public record NewsDetailDto(
         List<String> summaryList,
         List<SectionResponseDto> sections,
         int sourceCount,
-        List<String> sourceUrls,
         LocalDate publishedDate
 ) {
-    public static NewsDetailDto from(SummarizedNews news, List<SectionResponseDto> sections, List<String> sourceUrls) {
+    public static NewsDetailDto from(SummarizedNews news, List<SectionResponseDto> sections) {
         List<String> summaryList = List.of();
         if (news.getSummary() != null && !news.getSummary().isBlank()) {
             summaryList = Arrays.stream(news.getSummary().split("\\R"))
@@ -34,7 +34,6 @@ public record NewsDetailDto(
                 summaryList,
                 sections,
                 news.getSourceCount(),
-                sourceUrls,
                 news.getPublishedDate()
         );
     }

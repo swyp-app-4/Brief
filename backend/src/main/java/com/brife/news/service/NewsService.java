@@ -2,6 +2,7 @@ package com.brife.news.service;
 
 import com.brife.news.domain.SummarizedNews;
 import com.brife.news.dto.NewsDetailDto;
+import com.brife.news.dto.NewsSourceDto;
 import com.brife.news.dto.SectionDto;
 import com.brife.news.dto.SectionResponseDto;
 import com.brife.news.dto.WidgetNewsDto;
@@ -123,8 +124,14 @@ public class NewsService {
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 뉴스입니다. id=" + id));
 
         List<SectionResponseDto> sections = parseSections(news.getBody(), id);
-        List<String> sourceUrls = rawNewsRepository.findSourceUrlsBySummarizedNewsId(id);
-        return NewsDetailDto.from(news, sections, sourceUrls);
+        return NewsDetailDto.from(news, sections);
+    }
+
+    public List<NewsSourceDto> getNewsSources(Long id) {
+        if (!summarizedNewsRepository.existsById(id)) {
+            throw new NoSuchElementException("존재하지 않는 뉴스입니다. id=" + id);
+        }
+        return rawNewsRepository.findSourcesBySummarizedNewsId(id);
     }
 
     // 첫 번째 섹션 content 앞 150자
