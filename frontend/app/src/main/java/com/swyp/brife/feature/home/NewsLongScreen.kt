@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -62,6 +64,7 @@ import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.data.model.NewsDetailSection
 import com.swyp.brife.feature.archive.component.CreateFolderBottomSheet
 import com.swyp.brife.ui.component.AppText
+import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.component.CategoryChip
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.PrimaryNormal
@@ -161,6 +164,8 @@ fun NewsLongScreen(
         }
     }
 
+    val navBarBottomPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -170,7 +175,6 @@ fun NewsLongScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(scrollState)
-                .navigationBarsPadding()
         ) {
             NewsLongContent(
                 item = item,
@@ -181,7 +185,8 @@ fun NewsLongScreen(
                 onRetryLoadSections = onRetryLoadSections
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // 하단 고정 CTA 영역(위 패딩 12 + 버튼 50 + 아래 패딩 16 + nav bar)에 가려지지 않도록 여백 확보
+            Spacer(modifier = Modifier.height(12.dp + 50.dp + 16.dp + navBarBottomPadding))
         }
 
         if (isOverImageSection) {
@@ -227,6 +232,21 @@ fun NewsLongScreen(
                 )
             }
         )
+
+        // 하단 고정 CTA 영역
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .background(Color.White)
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+        ) {
+            PrimaryButton(
+                text = "관련 뉴스기사 보기",
+                onClick = { /* TODO */ }
+            )
+        }
 
         if (showBookmarkSheet) {
             NewsBookmarkBottomSheet(
