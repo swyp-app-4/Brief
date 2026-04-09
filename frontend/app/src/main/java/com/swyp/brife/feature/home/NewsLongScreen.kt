@@ -1,9 +1,12 @@
 package com.swyp.brife.feature.home
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +22,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,10 +33,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -62,6 +68,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.swyp.brife.R
 import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.data.model.NewsDetailSection
+import com.swyp.brife.data.model.NewsSourceItemResponse
 import com.swyp.brife.feature.archive.component.CreateFolderBottomSheet
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
@@ -92,6 +99,13 @@ fun NewsLongScreen(
         folderName: String,
         onCreated: (BookmarkFolderUiModel) -> Unit
     ) -> Unit = { _, _ -> },
+    sources: List<NewsSourceItemResponse> = emptyList(),
+    isSourcesLoading: Boolean = false,
+    sourcesError: Boolean = false,
+    showSourcesBottomSheet: Boolean = false,
+    onSourcesBottomSheetRequest: () -> Unit = {},
+    onSourcesBottomSheetDismiss: () -> Unit = {},
+    onRetryLoadSources: () -> Unit = {},
     onShareClick: () -> Unit = {},
     onNavigateToArchive: () -> Unit = {},
     onLoginRequired: () -> Unit = {},
@@ -244,7 +258,7 @@ fun NewsLongScreen(
         ) {
             PrimaryButton(
                 text = "관련 뉴스기사 보기",
-                onClick = { /* TODO */ }
+                onClick = { onSourcesBottomSheetRequest() }
             )
         }
 
@@ -292,6 +306,16 @@ fun NewsLongScreen(
                 },
                 currentFolderCount = folderItems.size,
                 existingFolders = folderItems.map { it.name }
+            )
+        }
+
+        if (showSourcesBottomSheet) {
+            NewsSourcesBottomSheet(
+                sources = sources,
+                isLoading = isSourcesLoading,
+                isError = sourcesError,
+                onDismissRequest = onSourcesBottomSheetDismiss,
+                onRetry = onRetryLoadSources
             )
         }
     }
@@ -639,5 +663,142 @@ private fun NewsLongShareContent(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NewsSourcesBottomSheet(
+    sources: List<NewsSourceItemResponse>,
+    isLoading: Boolean,
+    isError: Boolean,
+    onDismissRequest: () -> Unit,
+    onRetry: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val context = LocalContext.current
+
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
+        containerColor = Color.White
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+        ) {
+            AppText(
+                text = "관련 뉴스기사",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.Black,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+            )
+
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = PrimaryNormal)
+                    }
+                }
+
+                isError -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        AppText(
+                            text = "기사를 불러오지 못했어요.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextCaption
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextButton(onClick = onRetry) {
+                            AppText(
+                                text = "다시 시도",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = PrimaryNormal
+                            )
+                        }
+                    }
+                }
+
+                sources.isEmpty() -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AppText(
+                            text = "관련 뉴스기사가 없습니다.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextCaption
+                        )
+                    }
+                }
+
+                else -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 400.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        sources.forEach { source ->
+                            NewsSourceCard(
+                                title = source.title,
+                                onClick = {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(source.sourceUrl))
+                                    context.startActivity(intent)
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NewsSourceCard(
+    title: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFF5F9FF))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AppText(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Black,
+            modifier = Modifier.weight(1f),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Icon(
+            painter = painterResource(id = R.drawable.ic_arrow_right),
+            contentDescription = null,
+            tint = Color(0xFF9AA3AF)
+        )
     }
 }

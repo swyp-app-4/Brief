@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.data.model.NewsDetailSection
+import com.swyp.brife.data.model.NewsSourceItemResponse
 import com.swyp.brife.data.repository.ArchiveRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +47,38 @@ class NewsLongViewModel(
 
     private val _sectionsError = MutableStateFlow(false)
     val sectionsError: StateFlow<Boolean> = _sectionsError.asStateFlow()
+
+    private val _sources = MutableStateFlow<List<NewsSourceItemResponse>>(emptyList())
+    val sources: StateFlow<List<NewsSourceItemResponse>> = _sources.asStateFlow()
+
+    private val _isSourcesLoading = MutableStateFlow(false)
+    val isSourcesLoading: StateFlow<Boolean> = _isSourcesLoading.asStateFlow()
+
+    private val _sourcesError = MutableStateFlow(false)
+    val sourcesError: StateFlow<Boolean> = _sourcesError.asStateFlow()
+
+    private val _showSourcesBottomSheet = MutableStateFlow(false)
+    val showSourcesBottomSheet: StateFlow<Boolean> = _showSourcesBottomSheet.asStateFlow()
+
+    fun loadSources(newsId: Long) {
+        viewModelScope.launch {
+            _isSourcesLoading.value = true
+            _sourcesError.value = false
+            archiveRepository.getNewsSources(newsId)
+                .onSuccess { list ->
+                    _sources.value = list
+                    _isSourcesLoading.value = false
+                }
+                .onFailure {
+                    _isSourcesLoading.value = false
+                    _sourcesError.value = true
+                }
+        }
+    }
+
+    fun setShowSourcesBottomSheet(show: Boolean) {
+        _showSourcesBottomSheet.value = show
+    }
 
     fun loadFolders(preselectedArchiveId: Long? = null, newsId: Long? = null) {
         viewModelScope.launch {

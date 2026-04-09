@@ -5,6 +5,7 @@ import com.swyp.brife.data.model.AddArchiveItemRequest
 import com.swyp.brife.data.model.ArchiveItemResponse
 import com.swyp.brife.data.model.CreateArchiveRequest
 import com.swyp.brife.data.model.NewsDetailResponse
+import com.swyp.brife.data.model.NewsSourceItemResponse
 import com.swyp.brife.data.remote.api.ArchiveApiService
 import com.swyp.brife.data.remote.api.NewsApiService
 import com.swyp.brife.feature.archive.ArchiveFolderUiModel
@@ -144,6 +145,19 @@ class ArchiveRepository(
     }
 
 
+
+    suspend fun getNewsSources(newsId: Long): Result<List<NewsSourceItemResponse>> {
+        return try {
+            val response = newsApi.getNewsSources(newsId)
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: emptyList())
+            } else {
+                Result.failure(Exception("원문 기사 조회 실패: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     suspend fun deleteArchiveItem(archiveId: Long, itemId: Long): Result<Unit> {
         val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))

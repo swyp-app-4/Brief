@@ -606,6 +606,10 @@ fun MainScreen(
                 val newsLongTitle by newsLongViewModel.title.collectAsState()
                 val isSectionsLoading by newsLongViewModel.isSectionsLoading.collectAsState()
                 val sectionsError by newsLongViewModel.sectionsError.collectAsState()
+                val newsLongSources by newsLongViewModel.sources.collectAsState()
+                val isSourcesLoading by newsLongViewModel.isSourcesLoading.collectAsState()
+                val sourcesError by newsLongViewModel.sourcesError.collectAsState()
+                val showSourcesBottomSheet by newsLongViewModel.showSourcesBottomSheet.collectAsState()
 
                 // 로그인 상태일 때만 폴더 목록 로드, 섹션은 항상 로드
                 // ArchiveDetail 진입: preselectedArchiveId로 해당 폴더 isSelected=true
@@ -613,6 +617,7 @@ fun MainScreen(
                 LaunchedEffect(newsId) {
                     if (isLoggedIn) newsLongViewModel.loadFolders(preselectedArchiveId, newsId)
                     newsLongViewModel.loadSections(newsId)
+                    newsLongViewModel.loadSources(newsId)
                 }
 
                 // API 응답으로 누락 필드 보정
@@ -636,6 +641,13 @@ fun MainScreen(
                     isSectionsLoading = isSectionsLoading,
                     sectionsError = sectionsError,
                     onRetryLoadSections = { newsLongViewModel.loadSections(newsId) },
+                    sources = newsLongSources,
+                    isSourcesLoading = isSourcesLoading,
+                    sourcesError = sourcesError,
+                    showSourcesBottomSheet = showSourcesBottomSheet,
+                    onSourcesBottomSheetRequest = { newsLongViewModel.setShowSourcesBottomSheet(true) },
+                    onSourcesBottomSheetDismiss = { newsLongViewModel.setShowSourcesBottomSheet(false) },
+                    onRetryLoadSources = { newsLongViewModel.loadSources(newsId) },
                     onSaveToFolders = { targetFolders, onCompleted ->
                         newsLongViewModel.saveToFolders(item.newsId, targetFolders) { isSuccess, hasAnySavedFolder ->
                             if (isSuccess) {
