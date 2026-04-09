@@ -14,9 +14,10 @@ public record NewsDetailDto(
         List<String> summaryList,
         List<SectionResponseDto> sections,
         int sourceCount,
+        List<String> sourceUrls,
         LocalDate publishedDate
 ) {
-    public static NewsDetailDto from(SummarizedNews news, List<SectionResponseDto> sections) {
+    public static NewsDetailDto from(SummarizedNews news, List<SectionResponseDto> sections, List<String> sourceUrls) {
         List<String> summaryList = List.of();
         if (news.getSummary() != null && !news.getSummary().isBlank()) {
             summaryList = Arrays.stream(news.getSummary().split("\\R"))
@@ -33,6 +34,7 @@ public record NewsDetailDto(
                 summaryList,
                 sections,
                 news.getSourceCount(),
+                sourceUrls,
                 news.getPublishedDate()
         );
     }

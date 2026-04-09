@@ -85,8 +85,9 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
 
         for (Category category : categories) {
             String keyword = category.getEffectiveQuery();
+            int minClusterSize = resolveMinClusterSize(category.getName());
             CompletableFuture<Void> future = CompletableFuture
-                    .supplyAsync(() -> clusteringService.clusterAll(fetchMerged(keyword), keyword), crawlingExecutor)
+                    .supplyAsync(() -> clusteringService.clusterAll(fetchMerged(keyword), keyword, minClusterSize), crawlingExecutor)
                     .thenAccept(clusters -> {
                         for (List<RawArticleDto> articles : clusters) {
                             queue.add(KeywordGroupDto.builder()
@@ -110,6 +111,21 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         log.info("[Reader] 총 {}개 키워드 그룹 큐 적재 완료", queue.size());
+    }
+
+    // 소분류별 클러스터 최소 기사 수 설정
+    // - 생성수 많고 sourceCount 낮은 카테고리: 6 (품질 낮은 클러스터 제거)
+    // - 생성수 많고 sourceCount 보통인 카테고리: 5
+    // - 생성수 적은 카테고리: 3 (기준 완화)
+    // - 나머지: 4 (기본값)
+    private int resolveMinClusterSize(String categoryName) {
+        if (Set.of("사회일반", "세계일반", "국회/정당", "지역", "정치일반", "교육")
+                .contains(categoryName)) return 6;
+        if (Set.of("야구", "배구", "북한", "노동", "IT일반", "중기/벤처")
+                .contains(categoryName)) return 5;
+        if (Set.of("책", "아웃도어", "게임/리뷰", "e스포츠", "스포츠일반", "생활문화일반", "언론")
+                .contains(categoryName)) return 3;
+        return 4;
     }
 
     // | 구분 키워드별 각각 호출 후 sourceUrl 기준 중복 제거해서 합침
