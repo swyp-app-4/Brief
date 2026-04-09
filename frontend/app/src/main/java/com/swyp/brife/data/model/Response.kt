@@ -111,3 +111,9 @@ data class NewsDetailResponse(
     @SerializedName("sourceCount") val sourceCount: Int = 0,
     @SerializedName("publishedDate") val publishedDate: String = ""
 )
+
+
+data class NewsSourceItemResponse(
+    @SerializedName("title") val title: String = "",
+    @SerializedName("sourceUrl") val sourceUrl: String = ""
+)

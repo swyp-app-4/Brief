@@ -1,6 +1,7 @@
 package com.swyp.brife.data.remote.api
 
 import com.swyp.brife.data.model.NewsDetailResponse
+import com.swyp.brife.data.model.NewsSourceItemResponse
 import com.swyp.brife.data.model.RecommendedNewsResponse
 import retrofit2.Call
 import retrofit2.Response
@@ -30,4 +31,19 @@ interface NewsApiService {
     suspend fun getNewsDetailAsync(
         @Path("id") id: Long
     ): Response<NewsDetailResponse>
+
+
+
+
+    @GET("news/{id}/sources")
+    suspend fun getNewsSources(
+        @Path("id") id: Long
+    ): Response<List<NewsSourceItemResponse>>
+
+
+
+
+
 }
+
+
