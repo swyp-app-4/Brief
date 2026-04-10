@@ -95,4 +95,15 @@ class OnboardingSubInterestViewModel(
                 }
         }
     }
+
+    // 건너뛰기: 소분류를 빈 리스트로 저장한 뒤 다음 단계로 이동
+    fun skipSubInterests() {
+        viewModelScope.launch {
+            repository.saveSubInterests(
+                subCategoryIds = emptyList(),
+                parentCategoryIds = selectedParentCategoryIds
+            )
+            _uiState.value = _uiState.value.copy(isSuccess = true)
+        }
+    }
 }

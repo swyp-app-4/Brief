@@ -44,7 +44,7 @@ fun OnboardingSubInterestRoute(
             viewModel.toggleSubCategory(subCategoryId)
         },
         onSkipClick = {
-            onNextClick()
+            viewModel.skipSubInterests()
         },
         onSubmitClick = {
             viewModel.submitSubInterests()
