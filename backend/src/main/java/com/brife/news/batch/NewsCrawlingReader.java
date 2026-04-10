@@ -114,10 +114,6 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
     }
 
     // 소분류별 클러스터 최소 기사 수 설정
-    // - 생성수 많고 sourceCount 낮은 카테고리: 6 (품질 낮은 클러스터 제거)
-    // - 생성수 많고 sourceCount 보통인 카테고리: 5
-    // - 생성수 적은 카테고리: 3 (기준 완화)
-    // - 나머지: 4 (기본값)
     private int resolveMinClusterSize(String categoryName) {
         if (Set.of("사회일반", "세계일반", "국회/정당", "지역", "정치일반", "교육")
                 .contains(categoryName)) return 6;
@@ -128,7 +124,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         return 4;
     }
 
-    // | 구분 키워드별 각각 호출 후 sourceUrl 기준 중복 제거해서 합침
+    // 구분 키워드별 각각 호출 후 sourceUrl 기준 중복 제거해서 합침
     private List<RawArticleDto> fetchMerged(String query) {
         String[] keywords = query.split("\\|");
         if (keywords.length == 1) {
@@ -186,12 +182,28 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         String cleanDesc  = Jsoup.parse(item.getDescription()).text();
         String sourceUrl  = resolveSourceUrl(item);
 
+        String body = cleanDesc;
+        String pressName = "";
+        try {
+            Document doc = Jsoup.connect(sourceUrl)
+                    .timeout(5000)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .referrer("https://www.google.com")
+                    .get();
+            String extracted = articleExtractor.extractFromDoc(doc);
+            if (!extracted.isBlank()) body = extracted;
+            pressName = articleExtractor.extractPressName(doc);
+        } catch (Exception e) {
+            log.debug("[Reader] 원문 접속 실패 - url={}", sourceUrl);
+        }
+
         return RawArticleDto.builder()
                 .title(cleanTitle)
-                .description(fetchFullBody(sourceUrl, cleanDesc))
+                .description(body)
                 .sourceUrl(sourceUrl)
                 .naverUrl(item.getLink())
                 .pubDate(parseDate(item.getPubDate()))
+                .pressName(pressName)
                 .build();
     }
 
@@ -200,25 +212,6 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         return (item.getOriginalLink() != null && !item.getOriginalLink().isBlank())
                 ? item.getOriginalLink()
                 : item.getLink();
-    }
-
-    private String fetchFullBody(String sourceUrl, String fallback) {
-        try {
-            Document doc = Jsoup.connect(sourceUrl)
-                    .timeout(5000)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                    .referrer("https://www.google.com")
-                    .get();
-
-            String body = articleExtractor.extractFromDoc(doc);
-            if (!body.isBlank()) {
-                log.debug("[Reader] 본문 {}자 - url={}", body.length(), sourceUrl);
-                return body;
-            }
-        } catch (Exception e) {
-            log.debug("[Reader] 원문 접속 실패 - url={}", sourceUrl);
-        }
-        return fallback;
     }
 
     private LocalDateTime parseDate(String pubDate) {

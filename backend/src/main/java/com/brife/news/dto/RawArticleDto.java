@@ -13,4 +13,5 @@ public class RawArticleDto {
     private String sourceUrl;
     private String naverUrl;
     private LocalDateTime pubDate;
+    private String pressName;
 }

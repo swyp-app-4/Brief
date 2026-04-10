@@ -35,6 +35,9 @@ public class RawNews {
     @Column(nullable = false, length = 300)
     private String title;
 
+    @Column(name = "press_name", length = 100)
+    private String pressName;
+
     @Column(name = "source_url", nullable = false, length = 500)
     private String sourceUrl;
 
@@ -49,10 +52,11 @@ public class RawNews {
     private LocalDateTime createdAt;
 
     @Builder
-    public RawNews(Category category, String title,
+    public RawNews(Category category, String title, String pressName,
                    String sourceUrl, String naverUrl, LocalDateTime pubDate) {
         this.category = category;
         this.title = title;
+        this.pressName = pressName;
         this.sourceUrl = sourceUrl;
         this.naverUrl = naverUrl;
         this.pubDate = pubDate;
