@@ -115,5 +115,7 @@ data class NewsDetailResponse(
 
 data class NewsSourceItemResponse(
     @SerializedName("title") val title: String = "",
-    @SerializedName("sourceUrl") val sourceUrl: String = ""
+    @SerializedName("sourceUrl") val sourceUrl: String = "",
+    @SerializedName("publishedDate") val publishedDate: String = "",
+    @SerializedName("pressName") val pressName: String = ""
 )

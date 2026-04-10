@@ -757,6 +757,8 @@ private fun NewsSourcesBottomSheet(
                         sources.forEach { source ->
                             NewsSourceCard(
                                 title = source.title,
+                                publishedDate = source.publishedDate,
+                                pressName = source.pressName,
                                 onClick = {
                                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(source.sourceUrl))
                                     context.startActivity(intent)
@@ -775,8 +777,14 @@ private fun NewsSourcesBottomSheet(
 @Composable
 private fun NewsSourceCard(
     title: String,
+    publishedDate: String,
+    pressName: String,
     onClick: () -> Unit
 ) {
+    val metaText = listOf(publishedDate, pressName)
+        .filter { it.isNotBlank() }
+        .joinToString(" · ")
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -786,14 +794,23 @@ private fun NewsSourceCard(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AppText(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Black,
-            modifier = Modifier.weight(1f),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            AppText(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Black,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (metaText.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                AppText(
+                    text = metaText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextCaption
+                )
+            }
+        }
         Spacer(modifier = Modifier.width(8.dp))
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_right),
