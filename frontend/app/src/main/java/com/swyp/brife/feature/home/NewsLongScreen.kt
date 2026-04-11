@@ -690,7 +690,7 @@ private fun NewsSourcesBottomSheet(
         ) {
             AppText(
                 text = "관련 뉴스기사",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 color = Color.Black,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
             )
