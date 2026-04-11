@@ -781,7 +781,8 @@ private fun NewsSourceCard(
     pressName: String,
     onClick: () -> Unit
 ) {
-    val metaText = listOf(publishedDate, pressName)
+    val formattedDate = publishedDate.substringBefore("T").trim()
+    val metaText = listOf(formattedDate, pressName)
         .filter { it.isNotBlank() }
         .joinToString(" · ")
 
