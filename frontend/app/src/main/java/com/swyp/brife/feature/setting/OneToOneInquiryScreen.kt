@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -109,6 +110,7 @@ fun OneToOneInquiryScreen(
     }
     var subject by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
+    val targetEmail = inquiryEmailFor(selectedInquiryType)
     var isPrivacyChecked by remember { mutableStateOf(false) }
     var showInquiryTypeSheet by remember { mutableStateOf(false) }
     // 등록 버튼 클릭 후에만 에러 표시
@@ -191,6 +193,11 @@ fun OneToOneInquiryScreen(
                         )
                     }
                 }
+            }
+
+            // ① - 수신 이메일 안내 (항상 표시)
+            InquiryFieldSection(label = "문의 수신 이메일") {
+                InquiryReceiverEmailNotice()
             }
 
             // ② 이름 (로그인 유저는 nickname 초기값, 수정 가능)
@@ -415,6 +422,28 @@ private fun InquiryTypeField(
             painter = painterResource(id = R.drawable.ic_onetoone_fold),
             contentDescription = "문의 유형 선택",
             modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// 문의 수신 이메일 안내 박스 (readOnly 스타일, 항상 표시)
+// ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun InquiryReceiverEmailNotice() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, BorderStrong, RoundedCornerShape(12.dp))
+            .background(Color(0xFFF8F8F8), RoundedCornerShape(12.dp))
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AppText(
+            text = "brfggl@gmail.com",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSubtitle
         )
     }
 }
