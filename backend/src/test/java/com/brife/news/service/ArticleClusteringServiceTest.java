@@ -40,7 +40,7 @@ class ArticleClusteringServiceTest {
                 article("금리 인상 기준금리 한국은행")
         );
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, "경제");
+        List<RawArticleDto> result = clusteringService.cluster(articles, "경제", 3);
 
         assertThat(result).hasSize(3);
     }
@@ -62,7 +62,7 @@ class ArticleClusteringServiceTest {
                 article("양자 컴퓨터 IBM 플랫폼 출시")
         );
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, "양자");
+        List<RawArticleDto> result = clusteringService.cluster(articles, "양자", 3);
 
         assertThat(result).hasSizeLessThanOrEqualTo(10);
     }
@@ -80,7 +80,7 @@ class ArticleClusteringServiceTest {
                 article("대출 부동산 규제 심화")
         );
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, "경제");
+        List<RawArticleDto> result = clusteringService.cluster(articles, "경제", 3);
 
         assertThat(result).hasSize(3);
         assertThat(result).allMatch(a -> a.getTitle().contains("반도체") || a.getTitle().contains("삼성"));
@@ -95,7 +95,7 @@ class ArticleClusteringServiceTest {
                 article("경제 소비자 물가")
         );
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, "경제");
+        List<RawArticleDto> result = clusteringService.cluster(articles, "경제", 3);
 
         assertThat(result).isEmpty();
     }
@@ -110,7 +110,7 @@ class ArticleClusteringServiceTest {
                 article("한국은행 금리 인상 충격")
         );
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, "경제");
+        List<RawArticleDto> result = clusteringService.cluster(articles, "경제", 3);
 
         assertThat(result).isEmpty();
     }
@@ -124,7 +124,7 @@ class ArticleClusteringServiceTest {
                 article("SK하이닉스 영업이익 상승")
         );
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, "전자");
+        List<RawArticleDto> result = clusteringService.cluster(articles, "전자", 3);
 
         assertThat(result).isEmpty();
     }
@@ -134,7 +134,7 @@ class ArticleClusteringServiceTest {
     @Test
     @DisplayName("빈 리스트 입력 → 빈 리스트 반환")
     void cluster_returns_empty_for_empty_input() {
-        List<RawArticleDto> result = clusteringService.cluster(Collections.emptyList(), "경제");
+        List<RawArticleDto> result = clusteringService.cluster(Collections.emptyList(), "경제", 3);
 
         assertThat(result).isEmpty();
     }
@@ -142,7 +142,7 @@ class ArticleClusteringServiceTest {
     @Test
     @DisplayName("null 입력 → 빈 리스트 반환")
     void cluster_returns_empty_for_null_input() {
-        List<RawArticleDto> result = clusteringService.cluster(null, "경제");
+        List<RawArticleDto> result = clusteringService.cluster(null, "경제", 3);
 
         assertThat(result).isEmpty();
     }
@@ -156,7 +156,7 @@ class ArticleClusteringServiceTest {
                 article("반도체 삼성 HBM 실적")
         );
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, null);
+        List<RawArticleDto> result = clusteringService.cluster(articles, null, 3);
 
         assertThat(result).hasSize(3);
     }
@@ -170,7 +170,7 @@ class ArticleClusteringServiceTest {
         articles.add(article("삼성 반도체 HBM 증설"));
         articles.add(article("반도체 삼성 HBM 실적"));
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, "경제");
+        List<RawArticleDto> result = clusteringService.cluster(articles, "경제", 3);
 
         assertThat(result).hasSize(3);
         assertThat(result).noneMatch(a -> a.getTitle().isBlank());
@@ -185,7 +185,7 @@ class ArticleClusteringServiceTest {
                 article("한국은행 기준금리 동결 유지")
         );
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, "금리");
+        List<RawArticleDto> result = clusteringService.cluster(articles, "금리", 3);
 
         assertThat(result).hasSize(3);
     }
@@ -199,7 +199,7 @@ class ArticleClusteringServiceTest {
                 article("이것 무역 흑자")
         );
 
-        List<RawArticleDto> result = clusteringService.cluster(articles, "무역");
+        List<RawArticleDto> result = clusteringService.cluster(articles, "무역", 3);
 
         assertThat(result).isEmpty();
     }
@@ -220,7 +220,7 @@ class ArticleClusteringServiceTest {
                 article("한국은행 기준금리 동결 유지")
         );
 
-        List<List<RawArticleDto>> result = clusteringService.clusterAll(articles, "경제");
+        List<List<RawArticleDto>> result = clusteringService.clusterAll(articles, "경제", 3);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0)).hasSize(3);
@@ -238,7 +238,7 @@ class ArticleClusteringServiceTest {
                 article("또다른 무관한 내용의 기사")
         );
 
-        List<List<RawArticleDto>> result = clusteringService.clusterAll(articles, "경제");
+        List<List<RawArticleDto>> result = clusteringService.clusterAll(articles, "경제", 3);
 
         assertThat(result).hasSize(1);
     }
@@ -252,7 +252,7 @@ class ArticleClusteringServiceTest {
                 article("SK하이닉스 영업이익 상승")
         );
 
-        List<List<RawArticleDto>> result = clusteringService.clusterAll(articles, "전자");
+        List<List<RawArticleDto>> result = clusteringService.clusterAll(articles, "전자", 3);
 
         assertThat(result).isEmpty();
     }
@@ -260,7 +260,7 @@ class ArticleClusteringServiceTest {
     @Test
     @DisplayName("빈 리스트 입력 → clusterAll()이 빈 리스트 반환")
     void clusterAll_returns_empty_for_empty_input() {
-        List<List<RawArticleDto>> result = clusteringService.clusterAll(Collections.emptyList(), "경제");
+        List<List<RawArticleDto>> result = clusteringService.clusterAll(Collections.emptyList(), "경제", 3);
 
         assertThat(result).isEmpty();
     }

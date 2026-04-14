@@ -29,12 +29,12 @@ INSERT INTO category (category_group_id, name, query) VALUES
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '사건사고',     '경찰|검찰|구속|압수수색|재판'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '교육',         '교육부|교육청'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '노동',         '노동조합|고용노동부'),
-  ((SELECT id FROM category_group WHERE name = '시사/정치'), '언론',         '방통위|방심위'),
+  ((SELECT id FROM category_group WHERE name = '시사/정치'), '언론',         '언론사|방송사|미디어'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '환경',         '기후위기|환경부'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '인권/복지',    '보건복지부|인권위'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '식품/의료',    '식약처|의료계'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '지역',         '지자체|지방의회'),
-  ((SELECT id FROM category_group WHERE name = '시사/정치'), '사회일반',     '시민단체|저출산|고령화|갈등'),
+  ((SELECT id FROM category_group WHERE name = '시사/정치'), '사회일반',     '저출산|고령화|인구감소'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '세계일반',     '외신|특파원|유엔|UN'),
 
   -- 경제/재테크 (8개)

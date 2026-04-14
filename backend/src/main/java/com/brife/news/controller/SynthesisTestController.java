@@ -76,7 +76,7 @@ public class SynthesisTestController {
             return ResponseEntity.ok(Map.of("error", "Naver API에서 기사를 가져오지 못했습니다."));
         }
 
-        List<RawArticleDto> articles = clusteringService.cluster(raw, keyword);
+        List<RawArticleDto> articles = clusteringService.cluster(raw, keyword, 3);
         if (articles.isEmpty()) {
             return ResponseEntity.ok(Map.of("error",
                     "'" + keyword + "' 키워드로 동일 토픽 기사 3개 이상을 찾지 못했습니다."));
@@ -134,7 +134,7 @@ public class SynthesisTestController {
                 continue;
             }
 
-            List<RawArticleDto> articles = clusteringService.cluster(raw, keyword);
+            List<RawArticleDto> articles = clusteringService.cluster(raw, keyword, 3);
             if (articles.isEmpty()) {
                 results.add(Map.of("keyword", keyword, "error", "클러스터링 실패 (유사 기사 부족)"));
                 continue;
