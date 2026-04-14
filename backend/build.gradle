@@ -86,6 +86,14 @@ dependencies {
 	testRuntimeOnly    'org.junit.platform:junit-platform-launcher'
 }
 
+springBoot {
+	mainClass = 'com.brife.BriefBackendApplication'
+}
+
+tasks.named('bootJar') {
+	mainClass = 'com.brife.BriefBackendApplication'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
