@@ -1,7 +1,6 @@
 package com.brife.news.controller;
 
 import com.brife.news.dto.NewsDetailDto;
-import com.brife.news.dto.NewsSourceDto;
 import com.brife.news.dto.WidgetNewsDto;
 import com.brife.news.service.NewsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,12 +42,5 @@ public class NewsController {
     public ResponseEntity<NewsDetailDto> getNewsDetail(
             @Parameter(description = "뉴스 ID") @PathVariable Long id) {
         return ResponseEntity.ok(newsService.getNewsDetail(id));
-    }
-
-    @Operation(summary = "뉴스 원본 기사 목록 조회", description = "뉴스 ID로 원본 기사 제목 및 URL 목록 반환")
-    @GetMapping("/{id}/sources")
-    public ResponseEntity<List<NewsSourceDto>> getNewsSources(
-            @Parameter(description = "뉴스 ID") @PathVariable Long id) {
-        return ResponseEntity.ok(newsService.getNewsSources(id));
     }
 }

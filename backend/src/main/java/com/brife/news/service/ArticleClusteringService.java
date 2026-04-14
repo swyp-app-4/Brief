@@ -24,12 +24,12 @@ public class ArticleClusteringService {
     );
 
     // 카테고리에서 여러 토픽을 뽑을 때 씀. 클러스터 추출 → 제거 → 반복.
-    public List<List<RawArticleDto>> clusterAll(List<RawArticleDto> articles, String keyword, int minClusterSize) {
+    public List<List<RawArticleDto>> clusterAll(List<RawArticleDto> articles, String keyword) {
         List<List<RawArticleDto>> result = new ArrayList<>();
         List<RawArticleDto> remaining = new ArrayList<>(articles);
 
-        while (remaining.size() >= minClusterSize && result.size() < MAX_TOPICS_PER_BATCH) {
-            List<RawArticleDto> best = cluster(remaining, keyword, minClusterSize);
+        while (remaining.size() >= MIN_CLUSTER_SIZE && result.size() < MAX_TOPICS_PER_BATCH) {
+            List<RawArticleDto> best = cluster(remaining, keyword);
             if (best.isEmpty()) break;
             result.add(best);
             remaining.removeAll(best);
@@ -41,7 +41,7 @@ public class ArticleClusteringService {
     }
 
     // keyword 불용어
-    public List<RawArticleDto> cluster(List<RawArticleDto> articles, String keyword, int minClusterSize) {
+    public List<RawArticleDto> cluster(List<RawArticleDto> articles, String keyword) {
         if (articles == null || articles.isEmpty()) return Collections.emptyList();
 
         Set<String> stopWords = new HashSet<>(BASE_STOP_WORDS);
@@ -76,9 +76,9 @@ public class ArticleClusteringService {
             }
         }
 
-        if (bestCluster.size() < minClusterSize) {
-            log.info("[Clustering] 동일 토픽 기사 부족 ({}개 < 최소 {}개) - keyword={} 합성 스킵",
-                    bestCluster.size(), minClusterSize, keyword);
+        if (bestCluster.size() < MIN_CLUSTER_SIZE) {
+            log.info("[Clustering] 동일 토픽 기사 부족 ({}개) - keyword={} 합성 스킵",
+                    bestCluster.size(), keyword);
             return Collections.emptyList();
         }
 

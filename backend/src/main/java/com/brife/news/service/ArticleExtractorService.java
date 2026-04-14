@@ -59,12 +59,6 @@ public class ArticleExtractorService {
         }
     }
 
-    public String extractPressName(Document doc) {
-        String siteName = doc.select("meta[property=og:site_name]").attr("content");
-        if (!siteName.isBlank()) return siteName.trim();
-        return "";
-    }
-
     public String extractFromDoc(Document doc) {
         try {
             doc.select(NOISE_SELECTOR).remove();

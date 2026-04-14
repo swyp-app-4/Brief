@@ -2,12 +2,10 @@ package com.brife.news.service;
 
 import com.brife.news.domain.SummarizedNews;
 import com.brife.news.dto.NewsDetailDto;
-import com.brife.news.dto.NewsSourceDto;
 import com.brife.news.dto.SectionDto;
 import com.brife.news.dto.SectionResponseDto;
 import com.brife.news.dto.WidgetNewsDto;
 import com.brife.news.repository.CategoryRepository;
-import com.brife.news.repository.RawNewsRepository;
 import com.brife.news.repository.SummarizedNewsRepository;
 import com.brife.user.domain.UserInterest;
 import com.brife.user.repository.UserInterestRepository;
@@ -39,7 +37,6 @@ public class NewsService {
     private final SummarizedNewsRepository summarizedNewsRepository;
     private final CategoryRepository categoryRepository;
     private final UserInterestRepository userInterestRepository;
-    private final RawNewsRepository rawNewsRepository;
     private final ObjectMapper objectMapper;
 
     // categoryIds, groupIds 혼합 지원. 대분류별 최소 1개 보장 후 sourceCount 순으로 5개 채움
@@ -125,13 +122,6 @@ public class NewsService {
 
         List<SectionResponseDto> sections = parseSections(news.getBody(), id);
         return NewsDetailDto.from(news, sections);
-    }
-
-    public List<NewsSourceDto> getNewsSources(Long id) {
-        if (!summarizedNewsRepository.existsById(id)) {
-            throw new NoSuchElementException("존재하지 않는 뉴스입니다. id=" + id);
-        }
-        return rawNewsRepository.findSourcesBySummarizedNewsId(id);
     }
 
     // 첫 번째 섹션 content 앞 150자

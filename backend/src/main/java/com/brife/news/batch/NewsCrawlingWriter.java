@@ -43,7 +43,6 @@ public class NewsCrawlingWriter implements ItemWriter<ProcessedNewsDto> {
                         RawNews entity = RawNews.builder()
                                 .category(data.getCategory())
                                 .title(raw.getTitle())
-                                .pressName(raw.getPressName())
                                 .sourceUrl(raw.getSourceUrl())
                                 .naverUrl(raw.getNaverUrl())
                                 .pubDate(raw.getPubDate())
