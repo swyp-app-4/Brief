@@ -20,7 +20,7 @@ public class UserCleanupScheduler {
     private final UserInterestRepository userInterestRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @Scheduled(cron = "0 0 0 * * *")
+    // 소프트 삭제 전환 시 @Scheduled(cron = "0 0 0 * * *") 활성화
     @Transactional
     public void hardDeleteExpiredUsers() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(30);

@@ -11,6 +11,9 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     // 유저의 폴더 목록 전체 조회
     List<Archive> findByUserId(Long userId);
 
+    // 회원 탈퇴 시 유저의 모든 폴더 삭제 
+    void deleteByUserId(Long userId);
+
     // 유저의 즐겨찾기 폴더 조회
     Optional<Archive> findByUserIdAndIsFavoriteTrue(Long userId);
 
