@@ -336,7 +336,12 @@ fun MainScreen(
                             2 -> {
                                 if (isLoggedIn) {
                                     archiveReloadVersion++
-                                    navigateTo(NavRoutes.ARCHIVE)
+                                    // restoreState 를 사용하지 않아 항상 새 NavBackStackEntry 생성.
+                                    // 세션 변경(탈퇴/재로그인) 후에도 이전 ViewModel 이 복원되지 않는다.
+                                    navController.navigate(NavRoutes.ARCHIVE) {
+                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        launchSingleTop = true
+                                    }
                                 } else {
                                     // 요구사항: 이동 없이 바텀시트만 등장
                                     returnRouteAfterGuestArchiveSheet = currentRoute

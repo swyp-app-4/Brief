@@ -355,37 +355,4 @@ private fun SettingTextItem(label: String, onClick: () -> Unit, color: Color) {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, name = "Settings Logged In")
-@Composable
-fun SettingScreenPreview() {
-    BrifeTheme {
-        SettingScreen(
-            uiState = SettingUiState(loginMethod = "Google", appVersion = "1.0.0"),
-            isLoggedIn = true,
-            onBackClick = {}
-        )
-    }
-}
 
-@Preview(showBackground = true, showSystemUi = true, name = "Settings Guest")
-@Composable
-fun SettingScreenGuestPreview() {
-    BrifeTheme {
-        SettingScreen(
-            uiState = SettingUiState(appVersion = "1.0.0"),
-            isLoggedIn = false,
-            onBackClick = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "Settings Kakao")
-@Composable
-fun SettingScreenKakaoPreview() {
-    BrifeTheme {
-        SettingScreen(
-            uiState = SettingUiState(loginMethod = "Kakao", appVersion = "1.0.0"),
-            onBackClick = {}
-        )
-    }
-}

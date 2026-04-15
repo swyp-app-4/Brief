@@ -84,6 +84,7 @@ class ArchiveDetailViewModel(
             val deletedNewsIds = mutableListOf<Long>()
             selectedIds.forEach { itemId ->
                 val newsId = _newsItems.value.firstOrNull { it.archiveItemId == itemId }?.newsId
+
                 val result = repository.deleteArchiveItem(archiveId, itemId)
 
                 if (result.isSuccess) {
@@ -91,7 +92,6 @@ class ArchiveDetailViewModel(
                         deletedNewsIds += newsId
                     }
                     _newsItems.value = _newsItems.value.filter { it.archiveItemId != itemId }
-                } else {
                 }
             }
 
