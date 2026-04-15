@@ -106,39 +106,39 @@ fun AppTopBar(
 }
 
 // --- Preview 영역 ---
-
-@Preview(showBackground = true, name = "1. 홈 화면 (로고 + 설정)")
-@Composable
-fun HomeTopBarPreview() {
-    AppTopBar() // 이제 에러 없이 호출 가능
-}
-
-@Preview(showBackground = true, name = "2. 탐색 화면 (검색 + 설정)")
-@Composable
-fun ExploreTopBarPreview() {
-    // 쉼표 오류 수정 (에러 해결 3)
-    AppTopBar(showLogo = false, showSearch = true)
-}
-
-@Preview(showBackground = true, name = "3. 아카이브 화면 (중앙 텍스트 + 아이콘)")
-@Composable
-fun ArchiveTopBarPreview() {
-    AppTopBar(
-        title = "보관함",
-        showLogo = false,
-        showMore = true,
-        showSettings = false,
-        centerTitle = true
-
-    )
-}
-
-@Preview(showBackground = true, name = "4. 프로필 화면 (텍스트)")
-@Composable
-fun ProfileTopBarPreview() {
-    AppTopBar(
-        showLogo = true,
-        showSettings = false,
-        centerTitle = false
-    )
-}
+//
+//@Preview(showBackground = true, name = "1. 홈 화면 (로고 + 설정)")
+//@Composable
+//fun HomeTopBarPreview() {
+//    AppTopBar() // 이제 에러 없이 호출 가능
+//}
+//
+//@Preview(showBackground = true, name = "2. 탐색 화면 (검색 + 설정)")
+//@Composable
+//fun ExploreTopBarPreview() {
+//    // 쉼표 오류 수정 (에러 해결 3)
+//    AppTopBar(showLogo = false, showSearch = true)
+//}
+//
+//@Preview(showBackground = true, name = "3. 아카이브 화면 (중앙 텍스트 + 아이콘)")
+//@Composable
+//fun ArchiveTopBarPreview() {
+//    AppTopBar(
+//        title = "보관함",
+//        showLogo = false,
+//        showMore = true,
+//        showSettings = false,
+//        centerTitle = true
+//
+//    )
+//}
+//
+//@Preview(showBackground = true, name = "4. 프로필 화면 (텍스트)")
+//@Composable
+//fun ProfileTopBarPreview() {
+//    AppTopBar(
+//        showLogo = true,
+//        showSettings = false,
+//        centerTitle = false
+//    )
+//}
