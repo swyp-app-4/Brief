@@ -200,11 +200,6 @@ public class ArchiveService {
             throw new IllegalArgumentException("본인의 폴더만 수정할 수 있습니다.");
         }
 
-        // 즐겨찾기 폴더는 카드 삭제 불가
-        if (archive.isFavorite()) {
-            throw new IllegalArgumentException("즐겨찾기 폴더에서는 카드를 삭제할 수 없습니다.");
-        }
-
         ArchiveItem item = archiveItemRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("저장된 뉴스를 찾을 수 없습니다."));
 
@@ -219,11 +214,6 @@ public class ArchiveService {
 
         if (!archive.getUserId().equals(userId)) {
             throw new IllegalArgumentException("본인의 폴더만 수정할 수 있습니다.");
-        }
-
-        // 즐겨찾기 폴더는 카드 삭제 불가
-        if (archive.isFavorite()) {
-            throw new IllegalArgumentException("즐겨찾기 폴더에서는 카드를 삭제할 수 없습니다.");
         }
 
         archiveItemRepository.deleteAll(archive.getItems());
