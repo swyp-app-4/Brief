@@ -2,6 +2,7 @@ package com.brife.archive.repository;
 
 import com.brife.archive.entity.ArchiveItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -20,6 +21,11 @@ public interface ArchiveItemRepository extends JpaRepository<ArchiveItem, Long> 
     // 유저의 이번 주 저장 카드 수 (통계용)
     @Query("SELECT COUNT(ai) FROM ArchiveItem ai WHERE ai.archive.userId = :userId AND ai.savedAt >= :startOfWeek")
     long countByUserIdAndSavedAtAfter(@Param("userId") Long userId, @Param("startOfWeek") LocalDateTime startOfWeek);
+
+    // 회원 탈퇴 시 유저의 모든 아이템 삭제
+    @Modifying
+    @Query("DELETE FROM ArchiveItem ai WHERE ai.archive.userId = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 
     // 특정 폴더에 특정 뉴스 이미 저장됐는지 확인 (중복 저장 방지)
     boolean existsByArchiveIdAndContentId(Long archiveId, Long contentId);
