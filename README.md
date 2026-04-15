@@ -24,15 +24,15 @@
 
 
 
-### 📄 API Documentation - **[API Spec](http://15.165.49.70:8080/api/v1/swagger-ui/index.html#/)**
+### API Documentation - **[API Spec](http://15.165.49.70:8080/api/v1/swagger-ui/index.html#/)**
 
 ## 기술 스택 (Tech Stack)
 
 | Category | 기술 스택 (Technologies) |
 | :--- | :--- |
-| **🖥️ Back-end** | <img src="https://img.shields.io/badge/Java%2021-007396?style=for-the-badge&logo=java&logoColor=white"> <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=SpringBoot&logoColor=white"> <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mySQL&logoColor=white"> <img src="https://img.shields.io/badge/AWS%20EC2-FF9900?style=for-the-badge&logo=AmazonEC2&logoColor=white"> <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=white"> |
-| **📱 Front-end** | <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white"> <img src="https://img.shields.io/badge/Compose-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> <img src="https://img.shields.io/badge/Glance-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> <img src="https://img.shields.io/badge/Retrofit2-orange?style=for-the-badge&logo=Square&logoColor=white"> <img src="https://img.shields.io/badge/OkHttp3-black?style=for-the-badge&logo=Square&logoColor=white"> <img src="https://img.shields.io/badge/Coroutines-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white"> |
-| **🔧 Tools** | <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=black"> <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=Figma&logoColor=white"> <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/AGP-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> |
+| **Back-end** | <img src="https://img.shields.io/badge/Java%2021-007396?style=for-the-badge&logo=java&logoColor=white"> <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=SpringBoot&logoColor=white"> <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mySQL&logoColor=white"> <img src="https://img.shields.io/badge/AWS%20EC2-FF9900?style=for-the-badge&logo=AmazonEC2&logoColor=white"> <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=white"> |
+| **Front-end** | <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white"> <img src="https://img.shields.io/badge/Compose-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> <img src="https://img.shields.io/badge/Glance-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> <img src="https://img.shields.io/badge/Retrofit2-orange?style=for-the-badge&logo=Square&logoColor=white"> <img src="https://img.shields.io/badge/OkHttp3-black?style=for-the-badge&logo=Square&logoColor=white"> <img src="https://img.shields.io/badge/Coroutines-7F52FF?style=for-the-badge&logo=Kotlin&logoColor=white"> |
+| **Tools** | <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=black"> <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=Figma&logoColor=white"> <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/AGP-3DDC84?style=for-the-badge&logo=Android&logoColor=white"> |
 
 
 ## 시연 영상 (Demo Video)
