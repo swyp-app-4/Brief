@@ -133,7 +133,7 @@ private fun LogoSection() {
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Brife",
+                text = "Brief",
                 color = Color(0xFF464646),
                 fontFamily = SulphurPoint,
                 fontSize = 40.sp,
