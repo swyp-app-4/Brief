@@ -84,7 +84,7 @@ private fun BrifeWidgetContent() {
             )
             Spacer(modifier = GlanceModifier.width(6.dp))
             Text(
-                text = "Brife",
+                text = "Brief",
                 style = TextStyle(
                     color = blackColor,
                     fontWeight = FontWeight.Bold
