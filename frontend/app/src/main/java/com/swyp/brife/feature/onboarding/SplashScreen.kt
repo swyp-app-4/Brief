@@ -57,7 +57,7 @@ fun SplashScreen(
             Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = "Brife",
+                text = "Brief",
                 color = Color(0xFFFFFFFF),
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontFamily = SulphurPoint,
