@@ -156,7 +156,7 @@ private fun Bitmap.withShareWatermark(context: Context): Bitmap {
     val resultBitmap = baseBitmap.copy(Bitmap.Config.ARGB_8888, true)
     val watermarkBitmap = BitmapFactory.decodeResource(
         context.resources,
-        R.drawable.img_share_watermark
+        R.drawable.img_brief_watermark
     ) ?: return resultBitmap
 
     val marginPx = (14f * context.resources.displayMetrics.density).toInt()
