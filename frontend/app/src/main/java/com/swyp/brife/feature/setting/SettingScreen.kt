@@ -51,7 +51,7 @@ import com.swyp.brife.ui.theme.TextTitle
 
 data class SettingUiState(
     val loginMethod: String = "Google",
-    val appVersion: String = "1.0.0"
+    val appVersion: String = "1.0.1"
 )
 
 @Composable

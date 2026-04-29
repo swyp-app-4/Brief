@@ -62,7 +62,7 @@ fun WidgetInstallGuideScreen(
                     .height(424.dp)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ill_setting_screen),
+                    painter = painterResource(id = R.drawable.ill_setting_screen2),
                     contentDescription = null,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
