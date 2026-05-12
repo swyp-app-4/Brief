@@ -36,9 +36,13 @@
 
 
 ## 시연 영상 (Demo Video)
-데모 영상 추가 예정
+
+
+https://github.com/user-attachments/assets/4696bc97-edbb-4e79-8ed8-7bd92cce2042
+
+
 
 ## 시작하기 (Getting Started)
 
-앱 링크 추가 예정
+[구글 플레이스토어](https://play.google.com/store/apps/details?id=com.swyp.brife&hl=)
 
