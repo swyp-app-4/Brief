@@ -5,6 +5,7 @@ import com.swyp.brife.data.local.OnboardingLocalStorage
 import com.swyp.brife.data.model.RecommendedNewsResponse
 import com.swyp.brife.data.remote.api.HomeApiService
 import com.swyp.brife.feature.home.HomeNewsCardItem
+import android.util.Log
 
 class HomeRepository(
     private val api: HomeApiService,
@@ -16,6 +17,10 @@ class HomeRepository(
 
     // 로그인 여부에 따라 회원/비회원 API를 자동 분기
     suspend fun getHomeNews(): Result<List<HomeNewsCardItem>> {
+        Log.d(
+            "HomeNewsDebug",
+            "getHomeNews isLoggedIn=${authLocalStorage.isLoggedIn()}, hasAccessToken=${authLocalStorage.getAccessToken() != null}"
+        )
         return if (authLocalStorage.isLoggedIn()) {
             getMemberHomeNews()
         } else {
@@ -28,7 +33,15 @@ class HomeRepository(
         val token = bearerToken()
             ?: return Result.failure(Exception("토큰이 없습니다."))
         return try {
+            Log.d("HomeNewsDebug", "getMemberHomeNews request")
+
             val response = api.getRecommendedNews(token)
+
+            Log.d(
+                "HomeNewsDebug",
+                "getMemberHomeNews response code=${response.code()}, bodySize=${response.body()?.size}"
+            )
+
             if (response.isSuccessful && response.body() != null) {
                 val items = response.body()!!
                 items.firstOrNull()?.let {
@@ -45,16 +58,27 @@ class HomeRepository(
 
     // 비회원: GET /news/top5 (OnboardingLocalStorage에서 관심사 읽기)
     private suspend fun getGuestHomeNews(): Result<List<HomeNewsCardItem>> {
-        val groupIds = onboardingLocalStorage.getSelectedCategoryIds()       // 부모(대분류)
-        val categoryIds = onboardingLocalStorage.getSelectedSubCategoryIds() // 소분류
+        val groupIds = onboardingLocalStorage.getSelectedCategoryIds()
+        val categoryIds = onboardingLocalStorage.getSelectedSubCategoryIds()
 
+        Log.d(
+            "HomeNewsDebug",
+            "getGuestHomeNews groupIds=$groupIds, categoryIds=$categoryIds"
+        )
 
         if (categoryIds.isEmpty() && groupIds.isEmpty()) {
+            Log.d("HomeNewsDebug", "getGuestHomeNews skipped: empty interests")
             return Result.success(emptyList())
         }
 
         return try {
             val response = api.getTop5News(categoryIds, groupIds)
+
+            Log.d(
+                "HomeNewsDebug",
+                "getGuestHomeNews response code=${response.code()}, bodySize=${response.body()?.size}"
+            )
+
             if (response.isSuccessful && response.body() != null) {
                 val items = response.body()!!
                 items.firstOrNull()?.let {
