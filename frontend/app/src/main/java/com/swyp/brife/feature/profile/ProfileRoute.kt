@@ -14,6 +14,7 @@ import com.swyp.brife.data.local.AuthLocalStorage
 import com.swyp.brife.data.local.OnboardingLocalStorage
 import com.swyp.brife.data.remote.NetworkModule
 import com.swyp.brife.data.repository.UserRepository
+import android.util.Log
 
 @Composable
 fun ProfileRoute(
@@ -39,6 +40,7 @@ fun ProfileRoute(
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            Log.d("ProfileDebug", "ProfileRoute RESUMED -> loadProfile")
             viewModel.loadProfile()
         }
     }

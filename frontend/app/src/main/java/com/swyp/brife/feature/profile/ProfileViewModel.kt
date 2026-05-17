@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
 
 class ProfileViewModel(
     private val userRepository: UserRepository,
@@ -21,13 +22,17 @@ class ProfileViewModel(
 
     fun loadProfile() {
         viewModelScope.launch {
+            Log.d("ProfileDebug", "loadProfile start")
+
             val localInterests = onboardingLocalStorage.getSelectedCategoryIds()
                 .mapNotNull { categoryItemFromId(it) }
 
             // isLoggedIn은 API 성공 여부가 아니라 토큰 존재 여부로 판단
             val loggedIn = userRepository.isLoggedIn()
+            Log.d("ProfileDebug", "loadProfile isLoggedIn=$loggedIn")
 
             if (!loggedIn) {
+                Log.d("ProfileDebug", "loadProfile guest branch")
                 _uiState.value = ProfileUiState(
                     isLoggedIn = false,
                     profileImageRes = R.drawable.img_profile_avatar,
@@ -39,6 +44,10 @@ class ProfileViewModel(
             // 로그인 상태 → 프로필 API 호출 (실패해도 isLoggedIn은 true 유지)
             userRepository.getMyProfile()
                 .onSuccess { profile ->
+                    Log.d(
+                        "ProfileDebug",
+                        "loadProfile success hasName=${profile.nickname.isNotBlank()}, hasProfileImage=${profile.profileImageUrl != null}"
+                    )
                     _uiState.value = ProfileUiState(
                         isLoggedIn = true,
                         userName = profile.nickname,
@@ -49,6 +58,10 @@ class ProfileViewModel(
                     )
                 }
                 .onFailure {
+                    Log.d(
+                        "ProfileDebug",
+                        "loadProfile failure message=${it.message}, keepLoggedIn=true"
+                    )
                     // API 실패해도 토큰이 있으면 로그인 상태 유지
                     _uiState.value = ProfileUiState(
                         isLoggedIn = true,

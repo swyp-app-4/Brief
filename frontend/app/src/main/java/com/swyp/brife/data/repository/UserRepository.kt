@@ -5,6 +5,7 @@ import com.swyp.brife.data.model.InterestRequest
 import com.swyp.brife.data.model.UpdateProfileRequest
 import com.swyp.brife.data.model.UserProfileResponse
 import com.swyp.brife.data.remote.api.UserApiService
+import android.util.Log
 
 class UserRepository(
     private val api: UserApiService,
@@ -19,17 +20,31 @@ class UserRepository(
     fun isLoggedIn(): Boolean = authLocalStorage.isLoggedIn()
 
     // GET /users/me
+    // GET /users/me
     suspend fun getMyProfile(): Result<UserProfileResponse> {
+        Log.d(
+            "ProfileDebug",
+            "getMyProfile start hasAccessToken=${authLocalStorage.getAccessToken() != null}"
+        )
+
         val token = bearerToken()
             ?: return Result.failure(Exception("로그인이 필요합니다."))
+
         return try {
             val response = api.getMyProfile(token)
+
+            Log.d(
+                "ProfileDebug",
+                "getMyProfile response code=${response.code()}, bodyNull=${response.body() == null}"
+            )
+
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("프로필 조회 실패: ${response.code()}"))
             }
         } catch (e: Exception) {
+            Log.d("ProfileDebug", "getMyProfile exception=${e.message}", e)
             Result.failure(e)
         }
     }
