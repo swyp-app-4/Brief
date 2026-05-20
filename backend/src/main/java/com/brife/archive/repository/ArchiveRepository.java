@@ -22,4 +22,7 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
 
     // 폴더명 중복 확인 (즐겨찾기 이름으로 생성 못하게)
     boolean existsByUserIdAndFolderName(Long userId, String folderName);
+
+    // 폴더명 검색
+    List<Archive> findByUserIdAndFolderNameContainingIgnoreCase(Long userId, String keyword);
 }
