@@ -2,6 +2,7 @@ package com.brife.news.controller;
 
 import com.brife.news.dto.ErrorResponse;
 import com.brife.news.exception.InvalidSearchKeywordException;
+import com.brife.user.exception.AuthException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +62,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Void> handleNoResource() {
         return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ErrorResponse> handleAuthException(AuthException e) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("UNAUTHORIZED", e.getMessage()));
     }
 
     // 그 외 서버 오류

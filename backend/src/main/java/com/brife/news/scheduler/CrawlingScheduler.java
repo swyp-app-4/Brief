@@ -23,8 +23,8 @@ public class CrawlingScheduler {
         this.newsCrawlingJob = newsCrawlingJob;
     }
 
-    // 4시간마다 실행 (0, 4, 8, 12, 16, 20시)
-    @Scheduled(cron = "0 0 0/4 * * *", zone = "Asia/Seoul")
+    // 6시간마다 실행 (0, 6, 12, 18시)
+    @Scheduled(cron = "0 0 0/6 * * *", zone = "Asia/Seoul")
     public void runCrawling() {
         try {
             JobParameters params = new JobParametersBuilder()

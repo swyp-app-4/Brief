@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -33,7 +35,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class NewsService {
 
-    private static final int BATCH_WINDOW_HOURS = 3;
     private static final int BODY_PREVIEW_LENGTH = 150;
 
     private final SummarizedNewsRepository summarizedNewsRepository;
@@ -63,15 +64,25 @@ public class NewsService {
 
         if (mergedIds.isEmpty()) return List.of();
 
-        // 후보 풀 20개 확보
+        // 마지막 배치 시각 기준으로 그 배치 결과 우선 조회
+        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
         List<SummarizedNews> candidates = summarizedNewsRepository.findMaxCreatedAt()
                 .map(lastBatch -> summarizedNewsRepository
                         .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
-                                mergedIds, lastBatch.minusHours(BATCH_WINDOW_HOURS)))
+                                mergedIds, lastBatch.minusMinutes(90)))  // 배치 실행 시간 고려 +30분 여유
                 .orElse(List.of());
 
         if (candidates.size() < 5) {
-            candidates = summarizedNewsRepository.findTop20ByCategoryIdInOrderBySourceCountDesc(mergedIds);
+            // 해당 배치에 뉴스가 부족하면 당일(자정 이후) 전체로 확장
+            candidates = summarizedNewsRepository
+                    .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(mergedIds, todayStart);
+        }
+
+        if (candidates.size() < 5) {
+            // 당일도 부족하면 48시간으로 확장 (서비스 초기 or 관심사 좁은 경우)
+            candidates = summarizedNewsRepository
+                    .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
+                            mergedIds, LocalDateTime.now().minusHours(48));
         }
 
         // 대분류별 1개 보장 (sourceCount 높은 순으로 정렬된 candidates에서 그룹당 첫 번째)

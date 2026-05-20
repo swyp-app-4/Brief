@@ -44,6 +44,9 @@ gradle-app.setting
 # Cache of project
 .gradletasknamecache
 
+# Build output
+bin/
+
 # Eclipse Gradle plugin generated files
 # Eclipse Core
 .project
@@ -61,3 +64,7 @@ gradle-app.setting
 
 # GCP Service Account
 service-account*.json
+*-*.json
+
+# Private keys
+*.pem
