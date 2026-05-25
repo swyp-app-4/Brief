@@ -6,9 +6,12 @@ import com.swyp.brife.data.model.RecommendedNewsResponse
 import com.swyp.brife.data.remote.api.HomeApiService
 import com.swyp.brife.feature.home.HomeNewsCardItem
 import android.util.Log
+import com.swyp.brife.data.model.ReissueRequest
+import com.swyp.brife.data.remote.api.AuthApiService
 
 class HomeRepository(
     private val api: HomeApiService,
+    private val authApi: AuthApiService,
     private val authLocalStorage: AuthLocalStorage,
     private val onboardingLocalStorage: OnboardingLocalStorage
 ) {
@@ -32,22 +35,26 @@ class HomeRepository(
     private suspend fun getMemberHomeNews(): Result<List<HomeNewsCardItem>> {
         val token = bearerToken()
             ?: return Result.failure(Exception("토큰이 없습니다."))
-        return try {
-            Log.d("HomeNewsDebug", "getMemberHomeNews request")
 
+        return try {
             val response = api.getRecommendedNews(token)
 
-            Log.d(
-                "HomeNewsDebug",
-                "getMemberHomeNews response code=${response.code()}, bodySize=${response.body()?.size}"
-            )
-
             if (response.isSuccessful && response.body() != null) {
-                val items = response.body()!!
-                items.firstOrNull()?.let {
+                val mapped = response.body()!!.map { it.toHomeNewsCardItem() }
+                return Result.success(mapped)
+            }
+
+            if (response.code() == 401) {
+                val newAccessToken = reissueAccessToken()
+                    ?: return Result.failure(Exception("토큰 재발급 실패"))
+
+                val retryResponse = api.getRecommendedNews("Bearer $newAccessToken")
+                if (retryResponse.isSuccessful && retryResponse.body() != null) {
+                    val mapped = retryResponse.body()!!.map { it.toHomeNewsCardItem() }
+                    Result.success(mapped)
+                } else {
+                    Result.failure(Exception("추천 뉴스 재조회 실패: ${retryResponse.code()}"))
                 }
-                val mapped = items.map { it.toHomeNewsCardItem() }
-                Result.success(mapped)
             } else {
                 Result.failure(Exception("추천 뉴스 조회 실패: ${response.code()}"))
             }
@@ -55,6 +62,30 @@ class HomeRepository(
             Result.failure(e)
         }
     }
+
+    private suspend fun reissueAccessToken(): String? {
+        val refreshToken = authLocalStorage.getRefreshToken()
+            ?: run {
+                authLocalStorage.clearAuthOnly()
+                return null
+            }
+
+        return try {
+            val response = authApi.reissueToken(ReissueRequest(refreshToken))
+            if (response.isSuccessful && response.body() != null) {
+                val newAccessToken = response.body()!!.accessToken
+                authLocalStorage.saveAccessToken(newAccessToken)
+                newAccessToken
+            } else {
+                authLocalStorage.clearAuthOnly()
+                null
+            }
+        } catch (e: Exception) {
+            authLocalStorage.clearAuthOnly()
+            null
+        }
+    }
+
 
     // 비회원: GET /news/top5 (OnboardingLocalStorage에서 관심사 읽기)
     private suspend fun getGuestHomeNews(): Result<List<HomeNewsCardItem>> {

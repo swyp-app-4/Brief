@@ -6,9 +6,12 @@ import com.swyp.brife.data.model.UpdateProfileRequest
 import com.swyp.brife.data.model.UserProfileResponse
 import com.swyp.brife.data.remote.api.UserApiService
 import android.util.Log
+import com.swyp.brife.data.remote.api.AuthApiService
+import com.swyp.brife.data.model.ReissueRequest
 
 class UserRepository(
     private val api: UserApiService,
+    private val authApi: AuthApiService,
     private val authLocalStorage: AuthLocalStorage
 ) {
     private fun bearerToken(): String? =
@@ -21,30 +24,59 @@ class UserRepository(
 
     // GET /users/me
     // GET /users/me
-    suspend fun getMyProfile(): Result<UserProfileResponse> {
-        Log.d(
-            "ProfileDebug",
-            "getMyProfile start hasAccessToken=${authLocalStorage.getAccessToken() != null}"
-        )
 
+
+    private suspend fun reissueAccessToken(): String? {
+        val refreshToken = authLocalStorage.getRefreshToken()
+            ?: run {
+                authLocalStorage.clearAuthOnly()
+                return null
+            }
+
+        return try {
+            val response = authApi.reissueToken(ReissueRequest(refreshToken))
+            if (response.isSuccessful && response.body() != null) {
+                val newAccessToken = response.body()!!.accessToken
+                authLocalStorage.saveAccessToken(newAccessToken)
+                newAccessToken
+            } else {
+                authLocalStorage.clearAuthOnly()
+                null
+            }
+        } catch (e: Exception) {
+            authLocalStorage.clearAuthOnly()
+            null
+        }
+    }
+
+
+
+
+    suspend fun getMyProfile(): Result<UserProfileResponse> {
         val token = bearerToken()
             ?: return Result.failure(Exception("로그인이 필요합니다."))
 
         return try {
             val response = api.getMyProfile(token)
 
-            Log.d(
-                "ProfileDebug",
-                "getMyProfile response code=${response.code()}, bodyNull=${response.body() == null}"
-            )
-
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                return Result.success(response.body()!!)
+            }
+
+            if (response.code() == 401) {
+                val newAccessToken = reissueAccessToken()
+                    ?: return Result.failure(Exception("토큰 재발급 실패"))
+
+                val retryResponse = api.getMyProfile("Bearer $newAccessToken")
+                if (retryResponse.isSuccessful && retryResponse.body() != null) {
+                    Result.success(retryResponse.body()!!)
+                } else {
+                    Result.failure(Exception("프로필 재조회 실패: ${retryResponse.code()}"))
+                }
             } else {
                 Result.failure(Exception("프로필 조회 실패: ${response.code()}"))
             }
         } catch (e: Exception) {
-            Log.d("ProfileDebug", "getMyProfile exception=${e.message}", e)
             Result.failure(e)
         }
     }
