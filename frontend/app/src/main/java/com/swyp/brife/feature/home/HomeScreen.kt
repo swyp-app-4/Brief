@@ -217,7 +217,7 @@ fun HomeScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "추천 뉴스를 불러오지 못했습니다\n[DEBUG] isLoading=$isLoading, newsList=0",
+                        text = "추천 뉴스를 불러오지 못했습니다",
                         color = Color.White.copy(alpha = 0.8f),
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center
