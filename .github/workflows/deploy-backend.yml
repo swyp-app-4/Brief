@@ -7,6 +7,7 @@ on:
       - test
     paths:
       - "backend/src/**"
+      - "backend/Dockerfile.runtime"
       - ".github/workflows/deploy-backend.yml"
   workflow_dispatch:
 
@@ -17,6 +18,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Build jar
+        working-directory: backend
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootJar -x test --no-daemon
 
       - name: Configure SSH
         env:
@@ -37,12 +51,14 @@ jobs:
           ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "
             mkdir -p '$EC2_APP_DIR'
             cd '$EC2_APP_DIR'
-            rm -rf src
-            printf '%s\n' '.git' '.github' '.gradle' 'build' 'bin' 'frontend' 'backend' '.env' '.env.*' '*.pem' '*-*.json' 'service-account*.json' '.DS_Store' '*.log' '*.swp' '*.swo' > .dockerignore
+            rm -rf src build
+            mkdir -p build/libs
+            printf '%s\n' '.git' '.github' '.gradle' 'bin' 'frontend' 'backend' '.env' '.env.*' '*.pem' '*-*.json' 'service-account*.json' '.DS_Store' '*.log' '*.swp' '*.swo' > .dockerignore
+            printf '%s\n' 'services:' '  app:' '    build:' '      context: .' '      dockerfile: Dockerfile.runtime' > docker-compose.ci.yml
           "
           tar \
             -C backend \
-            -czf - src \
+            -czf - src Dockerfile.runtime build/libs \
             | ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "cd '$EC2_APP_DIR' && tar -xzf -"
 
       - name: Deploy with Docker Compose
@@ -54,7 +70,7 @@ jobs:
           ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "
             set -e
             cd '$EC2_APP_DIR'
-            docker-compose -p brife up -d --build
+            docker-compose -p brife -f docker-compose.yml -f docker-compose.ci.yml up -d --build app
             docker-compose -p brife ps
           "
 
