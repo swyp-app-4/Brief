@@ -14,6 +14,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
 
     steps:
       - name: Checkout
@@ -47,7 +48,7 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
           chmod 600 ~/.ssh/ec2_key
-          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+          timeout 20s ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
       - name: Upload backend
         env:
@@ -55,7 +56,7 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_APP_DIR: ${{ secrets.EC2_APP_DIR }}
         run: |
-          ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "
+          timeout 60s ssh -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "
             mkdir -p '$EC2_APP_DIR'
             cd '$EC2_APP_DIR'
             rm -rf src build
@@ -66,7 +67,7 @@ jobs:
           tar \
             -C backend \
             -czf - src Dockerfile.runtime build/libs \
-            | ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "cd '$EC2_APP_DIR' && tar -xzf -"
+            | timeout 120s ssh -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "cd '$EC2_APP_DIR' && tar -xzf -"
 
       - name: Deploy with Docker Compose
         env:
@@ -74,7 +75,7 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_APP_DIR: ${{ secrets.EC2_APP_DIR }}
         run: |
-          ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "
+          timeout 240s ssh -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "
             set -e
             cd '$EC2_APP_DIR'
             docker-compose -p brife -f docker-compose.yml -f docker-compose.ci.yml up -d --build app
@@ -83,6 +84,6 @@ jobs:
 
       - name: Health check
         run: |
-          curl --fail --retry 10 --retry-delay 6 --retry-connrefused \
+          curl --fail --retry 20 --retry-delay 6 --retry-max-time 150 --max-time 10 --retry-connrefused \
             "https://api.briefnews.asia/api/v1/swagger-ui/index.html" \
             > /dev/null
