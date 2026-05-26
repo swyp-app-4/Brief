@@ -20,7 +20,7 @@ public class AuthController {
 
     private final OAuthService oAuthService;
 
-    @Operation(summary = "카카오 로그인", description = "카카오 accessToken으로 로그인하고 서비스 JWT를 발급합니다.")
+    @Operation(summary = "카카오 로그인", description = "카카오 accessToken으로 로그인하고 서비스 JWT를 발급합니다..")
     @PostMapping("/login/kakao")
     public ResponseEntity<AuthResponse> loginWithKakao(@RequestBody Map<String, String> body) {
         return ResponseEntity.ok(oAuthService.loginWithKakao(body.get("accessToken")));
