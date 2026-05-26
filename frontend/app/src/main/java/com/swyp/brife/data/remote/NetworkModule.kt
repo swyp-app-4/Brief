@@ -19,7 +19,8 @@ object NetworkModule {
     // TODO: 백엔드 테스트 시 실제 서버 주소로 변경
     // 예) 공용 서버: "https://..."
     // 예) 로컬 서버(환경에 따라): "http://192.168.x.x:8080/api/v1/"
-    private const val BASE_URL = "http://15.165.49.70:8080/api/v1/"
+//    private const val BASE_URL = "http://15.165.49.70:8080/api/v1/"
+    private const val BASE_URL = "https://api.briefnews.asia/api/v1/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
