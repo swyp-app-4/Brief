@@ -84,7 +84,13 @@ fun MainScreen(
     val context = LocalContext.current
     val onboardingStorage = remember { OnboardingLocalStorage(context) }
     val authStorage = remember { AuthLocalStorage(context) }
-    val userRepository = remember { UserRepository(NetworkModule.userApiService, authStorage) }
+    val userRepository = remember {
+        UserRepository(
+            api = NetworkModule.userApiService,
+            authApi = NetworkModule.authApiService,
+            authLocalStorage = authStorage
+        )
+    }
     val scope = rememberCoroutineScope()
 
     val navController = rememberNavController()

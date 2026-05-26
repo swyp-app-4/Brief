@@ -28,6 +28,7 @@ fun ProfileRoute(
         factory = ProfileViewModelFactory(
             userRepository = UserRepository(
                 api = NetworkModule.userApiService,
+                authApi = NetworkModule.authApiService,
                 authLocalStorage = AuthLocalStorage(context)
             ),
             onboardingLocalStorage = OnboardingLocalStorage(context)

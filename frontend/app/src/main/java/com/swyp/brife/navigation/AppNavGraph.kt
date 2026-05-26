@@ -61,7 +61,13 @@ fun AppNavGraph(
     val authRepository = remember { AuthRepository(NetworkModule.authApiService) }
     val onboardingLocalStorage = remember { OnboardingLocalStorage(context) }
     val searchHistoryLocalStorage = remember { SearchHistoryLocalStorage(context) }
-    val userRepository = remember { UserRepository(NetworkModule.userApiService, authLocalStorage) }
+    val userRepository = remember {
+        UserRepository(
+            api = NetworkModule.userApiService,
+            authApi = NetworkModule.authApiService,
+            authLocalStorage = authLocalStorage
+        )
+    }
     val scope = rememberCoroutineScope()
 
     // 회원탈퇴 상태 — SettingScreen에 전달

@@ -35,6 +35,7 @@ fun HomeRoute(
             remember {
                 HomeRepository(
                     api = NetworkModule.homeApiService,
+                    authApi = NetworkModule.authApiService,
                     authLocalStorage = AuthLocalStorage(context),
                     onboardingLocalStorage = OnboardingLocalStorage(context)
                 )
