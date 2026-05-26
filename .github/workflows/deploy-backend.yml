@@ -19,12 +19,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
+      - name: Use preinstalled JDK 21
+        run: |
+          if [ -d /usr/lib/jvm/temurin-21-jdk-amd64 ]; then
+            echo "JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64" >> "$GITHUB_ENV"
+            echo "/usr/lib/jvm/temurin-21-jdk-amd64/bin" >> "$GITHUB_PATH"
+          elif [ -d /usr/lib/jvm/java-21-openjdk-amd64 ]; then
+            echo "JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" >> "$GITHUB_ENV"
+            echo "/usr/lib/jvm/java-21-openjdk-amd64/bin" >> "$GITHUB_PATH"
+          else
+            echo "JDK 21 is not installed on this runner."
+            exit 1
+          fi
+          java -version
 
       - name: Build jar
         working-directory: backend
