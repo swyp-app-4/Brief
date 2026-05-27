@@ -45,10 +45,15 @@ class HomeRepository(
             }
 
             if (response.code() == 401) {
+                Log.d("AuthReissue", "home initial response 401, reissue will start")
                 val newAccessToken = reissueAccessToken()
                     ?: return Result.failure(Exception("토큰 재발급 실패"))
 
                 val retryResponse = api.getRecommendedNews("Bearer $newAccessToken")
+                Log.d(
+                    "AuthReissue",
+                    "home retry response code=${retryResponse.code()}, success=${retryResponse.isSuccessful}"
+                )
                 if (retryResponse.isSuccessful && retryResponse.body() != null) {
                     val mapped = retryResponse.body()!!.map { it.toHomeNewsCardItem() }
                     Result.success(mapped)
@@ -71,7 +76,11 @@ class HomeRepository(
             }
 
         return try {
+            Log.d("AuthReissue", "home reissue start hasRefreshToken=${refreshToken.isNotBlank()}")
+
             val response = authApi.reissueToken(ReissueRequest(refreshToken))
+
+            Log.d("AuthReissue", "home reissue response code=${response.code()}, success=${response.isSuccessful}")
             if (response.isSuccessful && response.body() != null) {
                 val newAccessToken = response.body()!!.accessToken
                 authLocalStorage.saveAccessToken(newAccessToken)

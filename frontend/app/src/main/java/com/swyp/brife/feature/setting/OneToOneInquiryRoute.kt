@@ -20,6 +20,7 @@ fun OneToOneInquiryRoute(
             remember {
                 UserRepository(
                     api = NetworkModule.userApiService,
+                    authApi = NetworkModule.authApiService,
                     authLocalStorage = AuthLocalStorage(context)
                 )
             }

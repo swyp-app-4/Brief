@@ -34,7 +34,9 @@ class UserRepository(
             }
 
         return try {
+            Log.d("AuthReissue", "user reissue start hasRefreshToken=${refreshToken.isNotBlank()}")
             val response = authApi.reissueToken(ReissueRequest(refreshToken))
+            Log.d("AuthReissue", "user reissue response code=${response.code()}, success=${response.isSuccessful}")
             if (response.isSuccessful && response.body() != null) {
                 val newAccessToken = response.body()!!.accessToken
                 authLocalStorage.saveAccessToken(newAccessToken)
@@ -64,10 +66,15 @@ class UserRepository(
             }
 
             if (response.code() == 401) {
+                Log.d("AuthReissue", "user initial response 401, reissue will start")
                 val newAccessToken = reissueAccessToken()
                     ?: return Result.failure(Exception("토큰 재발급 실패"))
 
                 val retryResponse = api.getMyProfile("Bearer $newAccessToken")
+                Log.d(
+                    "AuthReissue",
+                    "user retry response code=${retryResponse.code()}, success=${retryResponse.isSuccessful}"
+                )
                 if (retryResponse.isSuccessful && retryResponse.body() != null) {
                     Result.success(retryResponse.body()!!)
                 } else {
