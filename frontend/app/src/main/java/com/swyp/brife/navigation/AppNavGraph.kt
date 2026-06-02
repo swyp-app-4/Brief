@@ -361,7 +361,7 @@ fun AppNavGraph(
 
         composable(NavRoutes.SETTING) {
             SettingScreen(
-                uiState = SettingUiState(loginMethod = loginMethod, appVersion = "1.0.0"),
+                uiState = SettingUiState(loginMethod = loginMethod, appVersion = "1.0.2"),
                 isLoggedIn = isLoggedIn,
                 isWithdrawing = isWithdrawing,
                 isWithdrawn = isWithdrawn,
