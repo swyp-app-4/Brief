@@ -17,16 +17,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +54,7 @@ import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ── 메인 화면 ─────────────────────────────────────────────────────────────────
 
@@ -66,6 +70,8 @@ fun ExploreScreen(
     onDeleteRecentQuery: (String) -> Unit,
     onClearAllRecentQueries: () -> Unit,
     onRecentQueryClick: (String) -> Unit,
+    onLoadMoreLatestNews: () -> Unit,
+    onLoadMoreSearchResults: () -> Unit,
     onNewsClick: ((ArchiveNewsItem) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -90,6 +96,9 @@ fun ExploreScreen(
             is ExploreUiState.Default -> ExploreDefaultBody(
                 recentNewsList = uiState.recentNewsList,
                 lastUpdatedTime = uiState.lastUpdatedTime,
+                isLoadingMore = uiState.isLoadingMore,
+                hasNextPage = uiState.hasNextPage,
+                onLoadMore = onLoadMoreLatestNews,
                 onNewsClick = onNewsClick
             )
             is ExploreUiState.Searching -> ExploreSearchingBody(
@@ -101,6 +110,9 @@ fun ExploreScreen(
             is ExploreUiState.Results -> ExploreResultsBody(
                 query = uiState.query,
                 items = uiState.items,
+                isLoadingMore = uiState.isLoadingMore,
+                hasNextPage = uiState.hasNextPage,
+                onLoadMore = onLoadMoreSearchResults,
                 onNewsClick = onNewsClick
             )
             is ExploreUiState.Empty -> ExploreStateBody(
@@ -245,9 +257,30 @@ private fun ExploreTopBar(
 private fun ExploreDefaultBody(
     recentNewsList: List<ArchiveNewsItem>,
     lastUpdatedTime: String,
+    isLoadingMore: Boolean,
+    hasNextPage: Boolean,
+    onLoadMore: () -> Unit,
     onNewsClick: ((ArchiveNewsItem) -> Unit)? = null
 ) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState, recentNewsList.size, isLoadingMore, hasNextPage) {
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totalCount = layoutInfo.totalItemsCount
+            totalCount > 0 && lastVisibleIndex >= totalCount - 5
+        }
+            .distinctUntilChanged()
+            .collect { shouldLoadMore ->
+                if (shouldLoadMore && hasNextPage && !isLoadingMore) {
+                    onLoadMore()
+                }
+            }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -264,6 +297,11 @@ private fun ExploreDefaultBody(
                 item = item,
                 onClick = onNewsClick?.let { { it(item) } }
             )
+        }
+        if (isLoadingMore) {
+            item {
+                BottomLoadingIndicator()
+            }
         }
     }
 }
@@ -368,9 +406,30 @@ private fun ExploreSearchingBody(
 private fun ExploreResultsBody(
     query: String,
     items: List<ArchiveNewsItem>,
+    isLoadingMore: Boolean,
+    hasNextPage: Boolean,
+    onLoadMore: () -> Unit,
     onNewsClick: ((ArchiveNewsItem) -> Unit)? = null
 ) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState, items.size, isLoadingMore, hasNextPage) {
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totalCount = layoutInfo.totalItemsCount
+            totalCount > 0 && lastVisibleIndex >= totalCount - 5
+        }
+            .distinctUntilChanged()
+            .collect { shouldLoadMore ->
+                if (shouldLoadMore && hasNextPage && !isLoadingMore) {
+                    onLoadMore()
+                }
+            }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -394,6 +453,27 @@ private fun ExploreResultsBody(
                 onClick = onNewsClick?.let { { it(item) } }
             )
         }
+        if (isLoadingMore) {
+            item {
+                BottomLoadingIndicator()
+            }
+        }
+    }
+}
+
+@Composable
+private fun BottomLoadingIndicator() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(24.dp),
+            color = CtaActive,
+            strokeWidth = 2.dp
+        )
     }
 }
 

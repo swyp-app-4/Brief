@@ -30,31 +30,92 @@ class ExploreViewModel(
 
     // API 성공 시 캐시 — 검색 후 뒤로가기 시 재사용
     private var cachedLatestNews: List<ArchiveNewsItem> = exploreMockNewsList
+    private var cachedLatestUpdatedTime: String = ""
+
+    private val pageSize = 20
+
+    private var latestPage = -1
+    private var isLatestLoading = false
+    private var hasNextLatestPage = true
+    private val requestedLatestPages = mutableSetOf<Int>()
+
+    private var searchPage = -1
+    private var currentSearchKeyword = ""
+    private var isSearchLoading = false
+    private var hasNextSearchPage = true
+    private val requestedSearchPages = mutableSetOf<Int>()
 
     init {
         loadLatestNews()
     }
 
-    private fun loadLatestNews() {
+    private fun loadLatestNews(reset: Boolean = true) {
+        if (isLatestLoading) return
+        if (!reset && !hasNextLatestPage) return
+
+        val targetPage = if (reset) 0 else latestPage + 1
+        if (requestedLatestPages.contains(targetPage)) return
+
+        isLatestLoading = true
+        requestedLatestPages.add(targetPage)
+
+        if (!reset) {
+            (_uiState.value as? ExploreUiState.Default)?.let {
+                _uiState.value = it.copy(isLoadingMore = true)
+            }
+        }
+
         viewModelScope.launch {
-            exploreRepository.getLatestNews()
-                .onSuccess { items ->
-                    val archiveItems = items.map { item ->
+            exploreRepository.getLatestNews(page = targetPage, size = pageSize)
+                .onSuccess { pageResponse ->
+                    val archiveItems = pageResponse.content.map { item ->
                         async {
                             item.toArchiveNewsItem(
                                 detail = exploreRepository.getNewsDetail(item.id).getOrNull()
                             )
                         }
                     }.awaitAll()
-                    cachedLatestNews = archiveItems
-                    val rawDate = items.firstOrNull()?.publishedDate ?: ""
-                    val lastUpdatedDate = if (rawDate.length >= 10) rawDate.take(10) else rawDate
-                    _uiState.value = ExploreUiState.Default(recentNewsList = archiveItems, lastUpdatedTime = lastUpdatedDate)
+
+                    val mergedItems = if (reset) archiveItems else cachedLatestNews + archiveItems
+                    cachedLatestNews = mergedItems
+
+                    if (reset) {
+                        val rawDate = pageResponse.content.firstOrNull()?.publishedDate ?: ""
+                        cachedLatestUpdatedTime = if (rawDate.length >= 10) rawDate.take(10) else rawDate
+                    }
+
+                    latestPage = targetPage
+                    hasNextLatestPage = !pageResponse.last
+
+                    _uiState.value = ExploreUiState.Default(
+                        recentNewsList = mergedItems,
+                        lastUpdatedTime = cachedLatestUpdatedTime,
+                        isLoadingMore = false,
+                        hasNextPage = hasNextLatestPage
+                    )
                 }
-                .onFailure { e ->
-                    _uiState.value = ExploreUiState.Default(recentNewsList = exploreMockNewsList, lastUpdatedTime = "")
+                .onFailure {
+                    requestedLatestPages.remove(targetPage)
+                    if (reset) {
+                        _uiState.value = ExploreUiState.Default(
+                            recentNewsList = exploreMockNewsList,
+                            lastUpdatedTime = "",
+                            isLoadingMore = false,
+                            hasNextPage = false
+                        )
+                    } else {
+                        (_uiState.value as? ExploreUiState.Default)?.let {
+                            _uiState.value = it.copy(isLoadingMore = false)
+                        }
+                    }
                 }
+
+            isLatestLoading = false
         }
+    }
+
+    fun loadMoreLatestNews() {
+        loadLatestNews(reset = false)
     }
 
     /** 기본 화면에서 검색창 탭 → 검색 입력 상태로 전환 */
@@ -87,32 +148,93 @@ class ExploreViewModel(
 
         searchHistoryStorage.addQuery(trimmed)
 
+        currentSearchKeyword = trimmed
+        searchPage = -1
+        hasNextSearchPage = true
+        requestedSearchPages.clear()
+        loadSearchPage(reset = true)
+    }
+
+    private fun loadSearchPage(reset: Boolean) {
+        if (isSearchLoading) return
+        if (!reset && !hasNextSearchPage) return
+
+        val targetPage = if (reset) 0 else searchPage + 1
+        if (requestedSearchPages.contains(targetPage)) return
+
+        isSearchLoading = true
+        requestedSearchPages.add(targetPage)
+
+        if (!reset) {
+            (_uiState.value as? ExploreUiState.Results)?.let {
+                _uiState.value = it.copy(isLoadingMore = true)
+            }
+        }
+
         viewModelScope.launch {
-            exploreRepository.searchNews(trimmed)
-                .onSuccess { items ->
-                    val archiveItems = items.map { item ->
+            exploreRepository.searchNews(
+                keyword = currentSearchKeyword,
+                page = targetPage,
+                size = pageSize
+            )
+                .onSuccess { pageResponse ->
+                    val archiveItems = pageResponse.content.map { item ->
                         async {
                             item.toArchiveNewsItem(
                                 detail = exploreRepository.getNewsDetail(item.id).getOrNull()
                             )
                         }
                     }.awaitAll()
-                    _uiState.value = if (archiveItems.isEmpty()) {
-                        ExploreUiState.Empty(trimmed)
+
+                    val previousItems = if (reset) {
+                        emptyList()
                     } else {
-                        ExploreUiState.Results(trimmed, archiveItems)
+                        (_uiState.value as? ExploreUiState.Results)?.items.orEmpty()
+                    }
+                    val mergedItems = previousItems + archiveItems
+
+                    searchPage = targetPage
+                    hasNextSearchPage = !pageResponse.last
+
+                    _uiState.value = if (mergedItems.isEmpty()) {
+                        ExploreUiState.Empty(currentSearchKeyword)
+                    } else {
+                        ExploreUiState.Results(
+                            query = currentSearchKeyword,
+                            items = mergedItems,
+                            isLoadingMore = false,
+                            hasNextPage = hasNextSearchPage
+                        )
                     }
                 }
-                .onFailure { e ->
-                    _uiState.value = ExploreUiState.NetworkError(trimmed)
+                .onFailure {
+                    requestedSearchPages.remove(targetPage)
+                    if (reset) {
+                        _uiState.value = ExploreUiState.NetworkError(currentSearchKeyword)
+                    } else {
+                        (_uiState.value as? ExploreUiState.Results)?.let {
+                            _uiState.value = it.copy(isLoadingMore = false)
+                        }
+                    }
                 }
+
+            isSearchLoading = false
         }
+    }
+
+    fun loadMoreSearchResults() {
+        loadSearchPage(reset = false)
     }
 
     /** 검색 상태에서 뒤로가기 → 기본 화면으로 복귀 */
     fun onBackFromSearch() {
         _searchQuery.value = ""
-        _uiState.value = ExploreUiState.Default(recentNewsList = cachedLatestNews)
+        _uiState.value = ExploreUiState.Default(
+            recentNewsList = cachedLatestNews,
+            lastUpdatedTime = cachedLatestUpdatedTime,
+            isLoadingMore = false,
+            hasNextPage = hasNextLatestPage
+        )
     }
 
     /** 검색창 텍스트 초기화 */

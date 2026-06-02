@@ -43,6 +43,8 @@ fun ExploreRoute(
         onDeleteRecentQuery = viewModel::onDeleteRecentQuery,
         onClearAllRecentQueries = viewModel::onClearAllRecentQueries,
         onRecentQueryClick = viewModel::onRecentQueryClick,
+        onLoadMoreLatestNews = viewModel::loadMoreLatestNews,
+        onLoadMoreSearchResults = viewModel::loadMoreSearchResults,
         onNewsClick = onNewsClick,
         modifier = modifier
     )
