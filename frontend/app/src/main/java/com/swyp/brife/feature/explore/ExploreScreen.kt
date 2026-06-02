@@ -1,7 +1,6 @@
 package com.swyp.brife.feature.explore
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,14 +10,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,9 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
@@ -61,7 +55,6 @@ import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlin.math.max
 
 // ── 메인 화면 ─────────────────────────────────────────────────────────────────
 
@@ -286,39 +279,30 @@ private fun ExploreDefaultBody(
             }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        item {
+            RecentNewsHeader(
+                lastUpdatedTime = lastUpdatedTime,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp)
+            )
+        }
+        items(recentNewsList) { item ->
+            ArchiveNewsCard(
+                item = item,
+                onClick = onNewsClick?.let { { it(item) } }
+            )
+        }
+        if (isLoadingMore) {
             item {
-                RecentNewsHeader(
-                    lastUpdatedTime = lastUpdatedTime,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
-                )
-            }
-            items(recentNewsList) { item ->
-                ArchiveNewsCard(
-                    item = item,
-                    onClick = onNewsClick?.let { { it(item) } }
-                )
-            }
-            if (isLoadingMore) {
-                item {
-                    BottomLoadingIndicator()
-                }
+                BottomLoadingIndicator()
             }
         }
-
-        ExploreVerticalScrollbar(
-            listState = listState,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 4.dp, top = 8.dp, bottom = 12.dp)
-        )
     }
 }
 
@@ -444,7 +428,6 @@ private fun ExploreResultsBody(
             }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
@@ -475,66 +458,6 @@ private fun ExploreResultsBody(
                 BottomLoadingIndicator()
             }
         }
-    }
-
-        ExploreVerticalScrollbar(
-            listState = listState,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 4.dp, top = 8.dp, bottom = 12.dp)
-        )
-    }
-}
-
-@Composable
-private fun ExploreVerticalScrollbar(
-    listState: LazyListState,
-    modifier: Modifier = Modifier
-) {
-    val layoutInfo = listState.layoutInfo
-    val visibleItems = layoutInfo.visibleItemsInfo
-    val totalItems = layoutInfo.totalItemsCount
-
-    if (visibleItems.isEmpty()) return
-
-    val visibleItemsCount = visibleItems.size
-    val isScrollable = totalItems > visibleItemsCount
-    val shouldShow = isScrollable && (listState.isScrollInProgress || totalItems > visibleItemsCount + 2)
-    if (!shouldShow) return
-
-    val firstVisibleItem = visibleItems.first()
-    val firstItemSize = max(firstVisibleItem.size, 1)
-    val firstItemOffsetRatio =
-        listState.firstVisibleItemScrollOffset.toFloat() / firstItemSize.toFloat()
-    val exactFirstIndex = listState.firstVisibleItemIndex + firstItemOffsetRatio
-    val maxScrollableIndex = max(totalItems - visibleItemsCount, 1)
-    val scrollProgress = (exactFirstIndex / maxScrollableIndex.toFloat()).coerceIn(0f, 1f)
-    val thumbHeightRatio = (visibleItemsCount.toFloat() / totalItems.toFloat()).coerceIn(0.08f, 0.65f)
-
-    Canvas(
-        modifier = modifier
-            .width(4.dp)
-            .fillMaxHeight()
-    ) {
-        val thumbWidth = 3.dp.toPx()
-        val thumbHeight = size.height * thumbHeightRatio
-        val thumbTop = (size.height - thumbHeight) * scrollProgress
-
-        drawRoundRect(
-            color = Color.Black.copy(alpha = 0.22f),
-            topLeft = Offset(
-                x = size.width - thumbWidth,
-                y = thumbTop
-            ),
-            size = Size(
-                width = thumbWidth,
-                height = thumbHeight
-            ),
-            cornerRadius = CornerRadius(
-                x = thumbWidth / 2f,
-                y = thumbWidth / 2f
-            )
-        )
     }
 }
 
