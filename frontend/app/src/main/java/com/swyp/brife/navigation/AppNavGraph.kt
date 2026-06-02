@@ -18,6 +18,7 @@ import androidx.navigation.navArgument
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.swyp.brife.BuildConfig
 import com.swyp.brife.data.local.AuthLocalStorage
 import com.swyp.brife.data.local.OnboardingLocalStorage
 import com.swyp.brife.data.local.SearchHistoryLocalStorage
@@ -37,7 +38,6 @@ import com.swyp.brife.feature.onboarding.SplashScreen
 import com.swyp.brife.feature.archive.ArchiveDetailRoute
 import com.swyp.brife.feature.auth.LoginTermsRoute
 import com.swyp.brife.feature.setting.SettingScreen
-import com.swyp.brife.feature.setting.SettingUiState
 import com.swyp.brife.feature.setting.WidgetInstallGuideScreen
 import com.swyp.brife.feature.widget.WidgetActionReceiver
 import com.swyp.brife.feature.widget.WidgetRefreshHelper
@@ -361,7 +361,8 @@ fun AppNavGraph(
 
         composable(NavRoutes.SETTING) {
             SettingScreen(
-                uiState = SettingUiState(loginMethod = loginMethod, appVersion = "1.0.2"),
+                loginMethod = loginMethod,
+                appVersion = BuildConfig.VERSION_NAME,
                 isLoggedIn = isLoggedIn,
                 isWithdrawing = isWithdrawing,
                 isWithdrawn = isWithdrawn,

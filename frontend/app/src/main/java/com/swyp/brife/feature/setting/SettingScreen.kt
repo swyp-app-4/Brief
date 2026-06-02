@@ -49,14 +49,11 @@ import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.TextTitle
 
-data class SettingUiState(
-    val loginMethod: String = "Google",
-    val appVersion: String = "1.0.2"
-)
 
 @Composable
 fun SettingScreen(
-    uiState: SettingUiState,
+    loginMethod: String,
+    appVersion: String,
     onBackClick: () -> Unit,
     isLoggedIn: Boolean = true,
     isWithdrawing: Boolean = false,
@@ -109,7 +106,7 @@ fun SettingScreen(
             SettingSection(title = "정보") {
                 SettingNavItem(label = "서비스 이용약관", onClick = onTermsClick)
                 SettingNavItem(label = "개인정보 처리방침", onClick = onPrivacyClick)
-                SettingInfoItem(label = "현재 버전", trailingText = uiState.appVersion)
+                SettingInfoItem(label = "현재 버전", trailingText = appVersion)
             }
 
             SettingSection(title = "지원") {
@@ -118,7 +115,7 @@ fun SettingScreen(
 
             SettingSection(title = "계정") {
                 if (isLoggedIn) {
-                    SettingInfoItem(label = "로그인 방식", trailingText = uiState.loginMethod)
+                    SettingInfoItem(label = "로그인 방식", trailingText = loginMethod)
                     SettingTextItem(
                         label = "로그아웃",
                         onClick = { showLogoutSheet = true },
