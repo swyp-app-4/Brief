@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,7 +42,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,12 +49,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -64,8 +60,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.swyp.brife.R
 import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.data.model.NewsDetailSection
@@ -116,21 +110,6 @@ fun NewsLongScreen(
     val view = LocalView.current
     val scrollState = rememberScrollState()
 
-    val density = LocalDensity.current
-    val topBarColorThreshold = remember(density) { with(density) { 180.dp.toPx() } }
-    val isOverImageSection by remember {
-        derivedStateOf { scrollState.value > topBarColorThreshold }
-    }
-    val statusBarHeight = remember(view, density) {
-        with(density) {
-            (
-                ViewCompat.getRootWindowInsets(view)
-                    ?.getInsets(WindowInsetsCompat.Type.statusBars())
-                    ?.top ?: 0
-            ).toDp()
-        }
-    }
-
     val window = (view.context as? Activity)?.window
 
     DisposableEffect(view) {
@@ -152,9 +131,8 @@ fun NewsLongScreen(
     SideEffect {
         val window = (view.context as? Activity)?.window
         if (window != null) {
-            window.statusBarColor = Color.Transparent.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
-                isOverImageSection
+            window.statusBarColor = Color.White.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }
     }
 
@@ -216,18 +194,7 @@ fun NewsLongScreen(
             Spacer(modifier = Modifier.height(12.dp + 50.dp + 16.dp + navBarBottomPadding))
         }
 
-        if (isOverImageSection) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(statusBarHeight)
-                    .background(Color.White)
-                    .align(Alignment.TopCenter)
-            )
-        }
-
         NewsLongTopBar(
-            showIconBackground = isOverImageSection,
             isBookmarked = folderItems.any { it.isSelected },
             onBackClick = onBackClick,
             onBookmarkClick = {
@@ -576,31 +543,18 @@ private fun LongFormSectionBlock(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NewsLongTopBar(
-    showIconBackground: Boolean,
     isBookmarked: Boolean,
     onBackClick: () -> Unit,
     onBookmarkClick: () -> Unit,
     onShareClick: () -> Unit
 ) {
     TopAppBar(
-        modifier = Modifier.statusBarsPadding(),
+        modifier = Modifier
+            .background(Color.White)
+            .statusBarsPadding(),
         title = {},
         navigationIcon = {
-            val navigationModifier = if (showIconBackground) {
-                Modifier
-                    .padding(start = 12.dp)
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = CircleShape,
-                        ambientColor = Color.Black.copy(alpha = 0.1f),
-                        spotColor = Color.Black.copy(alpha = 0.1f)
-                    )
-                    .background(Color.White, CircleShape)
-            } else {
-                Modifier.padding(start = 12.dp)
-            }
-
-            Box(modifier = navigationModifier) {
+            Box(modifier = Modifier.padding(start = 12.dp)) {
                 IconButton(onClick = onBackClick) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
@@ -611,22 +565,7 @@ private fun NewsLongTopBar(
             }
         },
         actions = {
-            val actionsModifier = if (showIconBackground) {
-                Modifier
-                    .padding(end = 12.dp)
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = RoundedCornerShape(999.dp),
-                        ambientColor = Color.Black.copy(alpha = 0.1f),
-                        spotColor = Color.Black.copy(alpha = 0.1f)
-                    )
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(Color.White)
-            } else {
-                Modifier.padding(end = 12.dp)
-            }
-
-            Row(modifier = actionsModifier) {
+            Row(modifier = Modifier.padding(end = 12.dp)) {
                 IconButton(onClick = onBookmarkClick) {
                     Icon(
                         painter = painterResource(
@@ -651,8 +590,8 @@ private fun NewsLongTopBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent,
-            scrolledContainerColor = Color.Transparent
+            containerColor = Color.White,
+            scrolledContainerColor = Color.White
         ),
         windowInsets = WindowInsets(0, 0, 0, 0)
     )
