@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
@@ -42,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +75,9 @@ import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
+
+private val NewsLongTopBarContentHeight = 64.dp
+private val NewsLongScrollProgressHeight = 3.dp
 
 @Composable
 fun NewsLongScreen(
@@ -109,6 +114,19 @@ fun NewsLongScreen(
     val context = LocalContext.current
     val view = LocalView.current
     val scrollState = rememberScrollState()
+    val statusBarTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val topFixedAreaHeight =
+        statusBarTopPadding + NewsLongTopBarContentHeight + NewsLongScrollProgressHeight
+    val scrollProgress by remember {
+        derivedStateOf {
+            val maxScroll = scrollState.maxValue
+            if (maxScroll == 0) {
+                0f
+            } else {
+                (scrollState.value / maxScroll.toFloat()).coerceIn(0f, 1f)
+            }
+        }
+    }
 
     val window = (view.context as? Activity)?.window
 
@@ -179,6 +197,7 @@ fun NewsLongScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(top = topFixedAreaHeight)
                 .verticalScroll(scrollState)
         ) {
             NewsLongContent(
@@ -194,38 +213,45 @@ fun NewsLongScreen(
             Spacer(modifier = Modifier.height(12.dp + 50.dp + 16.dp + navBarBottomPadding))
         }
 
-        NewsLongTopBar(
-            isBookmarked = folderItems.any { it.isSelected },
-            onBackClick = onBackClick,
-            onBookmarkClick = {
-                if (isLoggedIn) {
-                    tempFolders = folderItems
-                    showBookmarkSheet = true
-                } else {
-                    onLoginRequired()
-                }
-            },
-            onShareClick = {
-                onShareClick()
-                captureComposableContent(
-                    context = context,
-                    onCaptured = { bitmap ->
-                        shareImageBitmap(context, bitmap, item.title)
-                    },
-                    content = {
-                        BrifeTheme {
-                            Surface(color = Color.White) {
-                                NewsLongShareContent(
-                                    item = item,
-                                    imageRes = imageRes,
-                                    sections = sections
-                                )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+        ) {
+            NewsLongTopBar(
+                isBookmarked = folderItems.any { it.isSelected },
+                onBackClick = onBackClick,
+                onBookmarkClick = {
+                    if (isLoggedIn) {
+                        tempFolders = folderItems
+                        showBookmarkSheet = true
+                    } else {
+                        onLoginRequired()
+                    }
+                },
+                onShareClick = {
+                    onShareClick()
+                    captureComposableContent(
+                        context = context,
+                        onCaptured = { bitmap ->
+                            shareImageBitmap(context, bitmap, item.title)
+                        },
+                        content = {
+                            BrifeTheme {
+                                Surface(color = Color.White) {
+                                    NewsLongShareContent(
+                                        item = item,
+                                        imageRes = imageRes,
+                                        sections = sections
+                                    )
+                                }
                             }
                         }
-                    }
-                )
-            }
-        )
+                    )
+                }
+            )
+            NewsLongScrollProgressBar(progress = scrollProgress)
+        }
 
         // 하단 고정 CTA 영역
         Box(
@@ -551,7 +577,8 @@ private fun NewsLongTopBar(
     TopAppBar(
         modifier = Modifier
             .background(Color.White)
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            .height(NewsLongTopBarContentHeight),
         title = {},
         navigationIcon = {
             Box(modifier = Modifier.padding(start = 12.dp)) {
@@ -595,6 +622,23 @@ private fun NewsLongTopBar(
         ),
         windowInsets = WindowInsets(0, 0, 0, 0)
     )
+}
+
+@Composable
+private fun NewsLongScrollProgressBar(progress: Float) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(NewsLongScrollProgressHeight)
+            .background(Color(0xFFE7E8EC))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(progress)
+                .height(NewsLongScrollProgressHeight)
+                .background(PrimaryNormal)
+        )
+    }
 }
 
 @Composable
