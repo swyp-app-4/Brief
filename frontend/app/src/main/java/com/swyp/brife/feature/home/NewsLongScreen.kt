@@ -42,6 +42,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -130,18 +131,30 @@ fun NewsLongScreen(
         }
     }
 
-    DisposableEffect(view, isOverImageSection) {
+    val window = (view.context as? Activity)?.window
+
+    DisposableEffect(view) {
+        val effectWindow = window
+        if (effectWindow == null) {
+            onDispose { }
+        } else {
+            val controller = WindowCompat.getInsetsController(effectWindow, view)
+            val previousStatusBarColor = effectWindow.statusBarColor
+            val previousLightStatusBars = controller.isAppearanceLightStatusBars
+
+            onDispose {
+                effectWindow.statusBarColor = previousStatusBarColor
+                controller.isAppearanceLightStatusBars = previousLightStatusBars
+            }
+        }
+    }
+
+    SideEffect {
         val window = (view.context as? Activity)?.window
         if (window != null) {
             window.statusBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
                 isOverImageSection
-        }
-
-        onDispose {
-            val disposeWindow = (view.context as? Activity)?.window ?: return@onDispose
-            disposeWindow.statusBarColor = Color.Transparent.toArgb()
-            WindowCompat.getInsetsController(disposeWindow, view).isAppearanceLightStatusBars = false
         }
     }
 
