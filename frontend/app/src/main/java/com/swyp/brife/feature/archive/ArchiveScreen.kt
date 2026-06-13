@@ -3,6 +3,7 @@ package com.swyp.brife.feature.archive
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,6 +51,7 @@ import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
+import com.swyp.brife.ui.theme.TextCaption
 
 @Composable
 fun ArchiveScreen(
@@ -98,6 +102,11 @@ fun ArchiveScreen(
                     }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            if (!isSelectionMode) {
+                ArchiveSearchBar(modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(20.dp))
             }
 
             AppText(
@@ -319,6 +328,41 @@ fun ArchiveScreen(
                     .filter { it != renamingFolderName }
             )
         }
+    }
+}
+
+@Composable
+private fun ArchiveSearchBar(
+    query: String = "",
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .background(
+                color = ComponentDefault,
+                shape = RoundedCornerShape(999.dp)
+            )
+            .border(
+                width = 1.6.dp,
+                color = TextCaption,
+                shape = RoundedCornerShape(999.dp)
+            )
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_explore_search),
+            contentDescription = null,
+            tint = TextCaption,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        AppText(
+            text = "저장한 기사 제목을 입력해주세요",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextCaption,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
