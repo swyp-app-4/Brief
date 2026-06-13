@@ -3,6 +3,8 @@ package com.swyp.brife.data.repository
 import com.swyp.brife.data.local.AuthLocalStorage
 import com.swyp.brife.data.model.AddArchiveItemRequest
 import com.swyp.brife.data.model.ArchiveItemResponse
+import com.swyp.brife.data.model.ArchiveSearchResponse
+import com.swyp.brife.data.model.ArchiveStatsResponse
 import com.swyp.brife.data.model.CreateArchiveRequest
 import com.swyp.brife.data.model.NewsDetailResponse
 import com.swyp.brife.data.model.NewsSourceItemResponse
@@ -35,6 +37,22 @@ class ArchiveRepository(
             } else {
                 Result.failure(Exception("폴더 목록 조회 실패: ${response.code()}"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getArchiveStats(): Result<ArchiveStatsResponse> {
+        return try {
+            Result.success(api.getArchiveStats())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun searchArchive(keyword: String): Result<ArchiveSearchResponse> {
+        return try {
+            Result.success(api.searchArchive(keyword))
         } catch (e: Exception) {
             Result.failure(e)
         }

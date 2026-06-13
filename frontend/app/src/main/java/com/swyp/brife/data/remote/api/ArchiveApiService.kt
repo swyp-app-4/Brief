@@ -3,6 +3,8 @@ package com.swyp.brife.data.remote.api
 import com.swyp.brife.data.model.AddArchiveItemRequest
 import com.swyp.brife.data.model.ArchiveFolderResponse
 import com.swyp.brife.data.model.ArchiveItemResponse
+import com.swyp.brife.data.model.ArchiveSearchResponse
+import com.swyp.brife.data.model.ArchiveStatsResponse
 import com.swyp.brife.data.model.CreateArchiveRequest
 import retrofit2.Response
 import retrofit2.http.Body
@@ -20,6 +22,14 @@ interface ArchiveApiService {
     suspend fun getArchives(
         @Header("Authorization") authorization: String
     ): Response<List<ArchiveFolderResponse>>
+
+    @GET("archives/stats")
+    suspend fun getArchiveStats(): ArchiveStatsResponse
+
+    @GET("archives/search")
+    suspend fun searchArchive(
+        @Query("keyword") keyword: String
+    ): ArchiveSearchResponse
 
     @POST("archives")
     suspend fun createArchive(

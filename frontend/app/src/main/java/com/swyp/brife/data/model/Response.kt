@@ -87,6 +87,17 @@ data class ArchiveItemResponse(
 )
 
 // Archive 요청 바디
+data class ArchiveStatsResponse(
+    @SerializedName("totalCount") val totalCount: Int = 0,
+    @SerializedName("weeklyCount") val weeklyCount: Int = 0,
+    @SerializedName("folderCount") val folderCount: Int = 0
+)
+
+data class ArchiveSearchResponse(
+    @SerializedName("folders") val folders: List<ArchiveFolderResponse> = emptyList(),
+    @SerializedName("items") val items: List<ArchiveItemResponse> = emptyList()
+)
+
 data class CreateArchiveRequest(
     @SerializedName("folderName") val folderName: String
 )
