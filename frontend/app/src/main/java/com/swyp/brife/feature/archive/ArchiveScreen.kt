@@ -52,6 +52,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.swyp.brife.R
+import com.swyp.brife.data.model.ArchiveFolderResponse
+import com.swyp.brife.data.model.ArchiveItemResponse
 import com.swyp.brife.feature.archive.component.CreateFolderBottomSheet
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BorderDefault
@@ -71,6 +73,12 @@ fun ArchiveScreen(
     folders: List<ArchiveFolderUiModel>,
     favoriteArchiveId: Long = 0L,
     favoriteItemCount: Int = 0,
+    searchQuery: String = "",
+    recentSearchQueries: List<String> = emptyList(),
+    isSearchLoading: Boolean = false,
+    searchFolders: List<ArchiveFolderResponse> = emptyList(),
+    searchItems: List<ArchiveItemResponse> = emptyList(),
+    searchErrorMessage: String? = null,
     onFolderAdd: (String) -> Unit,
     onNavigateToDetail: (archiveId: Long, folderName: String) -> Unit,
     isDeleteMode: Boolean = false,
@@ -84,6 +92,12 @@ fun ArchiveScreen(
     isSearchActive: Boolean = false,
     onSearchActivate: () -> Unit = {},
     onSearchDeactivate: () -> Unit = {},
+    onSearchQueryChanged: (String) -> Unit = {},
+    onSearchClear: () -> Unit = {},
+    onSearchSubmit: () -> Unit = {},
+    onRecentSearchClick: (String) -> Unit = {},
+    onRecentSearchRemove: (String) -> Unit = {},
+    onRecentSearchClearAll: () -> Unit = {},
     showTopBar: Boolean = true
 ) {
     val folderCount = folders.size + 1
@@ -98,7 +112,6 @@ fun ArchiveScreen(
     var showRenameSheet by remember { mutableStateOf(false) }
     var renamingFolderName by remember { mutableStateOf("") }
     var renamingFolderId by remember { mutableStateOf(0L) }
-    var searchQuery by remember { mutableStateOf("") }
     val showSearchMode = isSearchActive && !isSelectionMode
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -112,18 +125,19 @@ fun ArchiveScreen(
             if (showSearchMode) {
                 ArchiveSearchTopBar(
                     searchQuery = searchQuery,
-                    onQueryChange = { searchQuery = it },
+                    onQueryChange = onSearchQueryChanged,
                     onBackClick = {
-                        searchQuery = ""
+                        onSearchClear()
                         onSearchDeactivate()
                     },
-                    onClearQuery = { searchQuery = "" }
+                    onClearQuery = onSearchClear,
+                    onSearchSubmit = onSearchSubmit
                 )
                 ArchiveRecentSearches(
-                    recentQueries = emptyList(),
-                    onRecentQueryClick = { searchQuery = it },
-                    onDeleteRecentQuery = {},
-                    onClearAllRecentQueries = {}
+                    recentQueries = recentSearchQueries,
+                    onRecentQueryClick = onRecentSearchClick,
+                    onDeleteRecentQuery = onRecentSearchRemove,
+                    onClearAllRecentQueries = onRecentSearchClearAll
                 )
                 return@Column
             }
@@ -376,6 +390,7 @@ private fun ArchiveSearchTopBar(
     onQueryChange: (String) -> Unit,
     onBackClick: () -> Unit,
     onClearQuery: () -> Unit,
+    onSearchSubmit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -433,7 +448,7 @@ private fun ArchiveSearchTopBar(
                     .focusRequester(focusRequester),
                 textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextSubtitle),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = {}),
+                keyboardActions = KeyboardActions(onSearch = { onSearchSubmit() }),
                 singleLine = true,
                 cursorBrush = SolidColor(CtaActive),
                 decorationBox = { innerTextField ->

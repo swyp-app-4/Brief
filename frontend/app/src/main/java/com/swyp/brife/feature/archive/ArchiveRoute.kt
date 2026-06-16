@@ -80,6 +80,12 @@ fun ArchiveRoute(
         folders = uiState.folders,
         favoriteArchiveId = uiState.favoriteArchiveId,
         favoriteItemCount = uiState.favoriteItemCount,
+        searchQuery = uiState.searchQuery,
+        recentSearchQueries = uiState.recentSearchQueries,
+        isSearchLoading = uiState.isSearchLoading,
+        searchFolders = uiState.searchFolders,
+        searchItems = uiState.searchItems,
+        searchErrorMessage = uiState.searchErrorMessage,
         onFolderAdd = { name -> viewModel.createFolder(name) },
         onNavigateToDetail = onNavigateToDetail,
         isDeleteMode = isDeleteMode,
@@ -104,6 +110,12 @@ fun ArchiveRoute(
         onCancelRename = onRenameModeExit,
         isSearchActive = isSearchActive,
         onSearchActivate = onSearchActivate,
-        onSearchDeactivate = onSearchDeactivate
+        onSearchDeactivate = onSearchDeactivate,
+        onSearchQueryChanged = viewModel::onSearchQueryChanged,
+        onSearchClear = viewModel::clearSearchQuery,
+        onSearchSubmit = viewModel::submitSearch,
+        onRecentSearchClick = viewModel::onRecentSearchClick,
+        onRecentSearchRemove = viewModel::removeRecentSearch,
+        onRecentSearchClearAll = viewModel::clearRecentSearches
     )
 }
