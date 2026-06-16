@@ -432,12 +432,16 @@ fun MainScreen(
                     reloadVersion = archiveReloadVersion,
                     isDeleteMode = isArchiveDeleteMode,
                     isRenameMode = isArchiveRenameMode,
+                    isSearchActive = isArchiveSearchActive,
                     onDeleteModeExit = { isArchiveDeleteMode = false },
                     onRenameModeExit = { isArchiveRenameMode = false },
                     onSearchActivate = {
                         if (!isArchiveDeleteMode && !isArchiveRenameMode) {
                             isArchiveSearchActive = true
                         }
+                    },
+                    onSearchDeactivate = {
+                        isArchiveSearchActive = false
                     },
                     onNavigateToDetail = { archiveId, folderName ->
                         navController.navigate(

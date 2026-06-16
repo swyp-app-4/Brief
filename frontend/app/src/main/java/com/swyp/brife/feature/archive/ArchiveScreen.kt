@@ -20,25 +20,35 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.swyp.brife.R
@@ -46,12 +56,14 @@ import com.swyp.brife.feature.archive.component.CreateFolderBottomSheet
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.ComponentDefault
+import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
+import com.swyp.brife.ui.theme.TextSubtitle
 
 @Composable
 fun ArchiveScreen(
@@ -69,7 +81,9 @@ fun ArchiveScreen(
     isRenameMode: Boolean = false,
     onFolderRename: (archiveId: Long, newName: String) -> Unit = { _, _ -> },
     onCancelRename: () -> Unit = {},
+    isSearchActive: Boolean = false,
     onSearchActivate: () -> Unit = {},
+    onSearchDeactivate: () -> Unit = {},
     showTopBar: Boolean = true
 ) {
     val folderCount = folders.size + 1
@@ -84,15 +98,36 @@ fun ArchiveScreen(
     var showRenameSheet by remember { mutableStateOf(false) }
     var renamingFolderName by remember { mutableStateOf("") }
     var renamingFolderId by remember { mutableStateOf(0L) }
+    var searchQuery by remember { mutableStateOf("") }
+    val showSearchMode = isSearchActive && !isSelectionMode
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = if (showSearchMode) 0.dp else 24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            if (showSearchMode) {
+                ArchiveSearchTopBar(
+                    searchQuery = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    onBackClick = {
+                        searchQuery = ""
+                        onSearchDeactivate()
+                    },
+                    onClearQuery = { searchQuery = "" }
+                )
+                ArchiveRecentSearches(
+                    recentQueries = emptyList(),
+                    onRecentQueryClick = { searchQuery = it },
+                    onDeleteRecentQuery = {},
+                    onClearAllRecentQueries = {}
+                )
+                return@Column
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             if (isSelectionMode) {
@@ -331,6 +366,163 @@ fun ArchiveScreen(
                 existingFolders = (folders.map { it.folderName } + "즐겨찾기")
                     .filter { it != renamingFolderName }
             )
+        }
+    }
+}
+
+@Composable
+private fun ArchiveSearchTopBar(
+    searchQuery: String,
+    onQueryChange: (String) -> Unit,
+    onBackClick: () -> Unit,
+    onClearQuery: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier.size(36.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_back),
+                contentDescription = "뒤로가기",
+                tint = Color.Unspecified
+            )
+        }
+        Spacer(modifier = Modifier.width(4.dp))
+
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .background(
+                    color = ComponentDefault,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_explore_search),
+                contentDescription = null,
+                tint = TextCaption,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+
+            BasicTextField(
+                value = searchQuery,
+                onValueChange = onQueryChange,
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(focusRequester),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextSubtitle),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = {}),
+                singleLine = true,
+                cursorBrush = SolidColor(CtaActive),
+                decorationBox = { innerTextField ->
+                    Box {
+                        if (searchQuery.isEmpty()) {
+                            AppText(
+                                text = "저장한 기사 제목을 입력해주세요",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextCaption
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
+            )
+
+            if (searchQuery.isNotEmpty()) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_explore_recent_clear),
+                    contentDescription = "검색어 초기화",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable { onClearQuery() }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArchiveRecentSearches(
+    recentQueries: List<String>,
+    onRecentQueryClick: (String) -> Unit,
+    onDeleteRecentQuery: (String) -> Unit,
+    onClearAllRecentQueries: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AppText(
+                text = "최근 검색어",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = TextSubtitle
+            )
+            AppText(
+                text = "전체 삭제",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = TextCaption,
+                modifier = Modifier.clickable { onClearAllRecentQueries() }
+            )
+        }
+
+        recentQueries.forEach { query ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onRecentQueryClick(query) }
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_explore_recent),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                AppText(
+                    text = query,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextCaption,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_explore_clear),
+                    contentDescription = "삭제",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clickable { onDeleteRecentQuery(query) }
+                )
+            }
         }
     }
 }
