@@ -407,7 +407,12 @@ private fun ArchiveSearchTopBar(
                 .weight(1f)
                 .background(
                     color = ComponentDefault,
-                    shape = RoundedCornerShape(10.dp)
+                    shape = RoundedCornerShape(999.dp)
+                )
+                .border(
+                    width = 1.6.dp,
+                    color = TextCaption,
+                    shape = RoundedCornerShape(999.dp)
                 )
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
