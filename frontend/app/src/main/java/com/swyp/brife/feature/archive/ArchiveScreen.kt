@@ -69,6 +69,7 @@ fun ArchiveScreen(
     isRenameMode: Boolean = false,
     onFolderRename: (archiveId: Long, newName: String) -> Unit = { _, _ -> },
     onCancelRename: () -> Unit = {},
+    onSearchActivate: () -> Unit = {},
     showTopBar: Boolean = true
 ) {
     val folderCount = folders.size + 1
@@ -105,7 +106,10 @@ fun ArchiveScreen(
             }
 
             if (!isSelectionMode) {
-                ArchiveSearchBar(modifier = Modifier.fillMaxWidth())
+                ArchiveSearchBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onSearchActivate
+                )
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
@@ -334,10 +338,12 @@ fun ArchiveScreen(
 @Composable
 private fun ArchiveSearchBar(
     query: String = "",
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
+            .clickable { onClick() }
             .background(
                 color = ComponentDefault,
                 shape = RoundedCornerShape(999.dp)

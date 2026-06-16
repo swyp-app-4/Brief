@@ -24,6 +24,7 @@ fun ArchiveRoute(
     isRenameMode: Boolean,
     onDeleteModeExit: () -> Unit,
     onRenameModeExit: () -> Unit,
+    onSearchActivate: () -> Unit = {},
     onNavigateToDetail: (archiveId: Long, folderName: String) -> Unit
 ) {
     if (!isLoggedIn) {
@@ -41,7 +42,8 @@ fun ArchiveRoute(
             onConfirmDelete = {},
             isRenameMode = false,
             onFolderRename = { _, _ -> },
-            onCancelRename = onRenameModeExit
+            onCancelRename = onRenameModeExit,
+            onSearchActivate = onSearchActivate
         )
         return
     }
@@ -95,6 +97,7 @@ fun ArchiveRoute(
         },
         isRenameMode = isRenameMode,
         onFolderRename = { archiveId, newName -> viewModel.renameFolder(archiveId, newName) },
-        onCancelRename = onRenameModeExit
+        onCancelRename = onRenameModeExit,
+        onSearchActivate = onSearchActivate
     )
 }

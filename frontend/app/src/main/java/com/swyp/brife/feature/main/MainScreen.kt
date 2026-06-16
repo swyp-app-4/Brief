@@ -124,6 +124,7 @@ fun MainScreen(
     var showArchiveMoreSheet by remember { mutableStateOf(false) }
     var isArchiveDeleteMode by remember { mutableStateOf(false) }
     var isArchiveRenameMode by remember { mutableStateOf(false) }
+    var isArchiveSearchActive by remember { mutableStateOf(false) }
     val archiveMoreSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
 
@@ -252,6 +253,7 @@ fun MainScreen(
         showArchiveMoreSheet = false
         isArchiveDeleteMode = false
         isArchiveRenameMode = false
+        isArchiveSearchActive = false
         pendingRouteForLogin = null
         pendingIndexForLogin = null
         returnRouteAfterGuestArchiveSheet = null
@@ -294,11 +296,11 @@ fun MainScreen(
                         // NewsLongScreen이 자체 TopBar를 가지고 있으므로 렌더링하지 않음
                         // (MainScreen이 빈 AppTopBar를 렌더링하면 터치 이벤트를 가로챔)
                     }
-                    currentRoute == NavRoutes.ARCHIVE -> {
+                    currentRoute == NavRoutes.ARCHIVE && !isArchiveSearchActive -> {
                         AppTopBar(
                             title = "보관함",
                             showLogo = false,
-                            showBack = true,
+                            showBack = false,
                             showMore = true,
                             showSettings = false,
                             centerTitle = true,
@@ -432,6 +434,11 @@ fun MainScreen(
                     isRenameMode = isArchiveRenameMode,
                     onDeleteModeExit = { isArchiveDeleteMode = false },
                     onRenameModeExit = { isArchiveRenameMode = false },
+                    onSearchActivate = {
+                        if (!isArchiveDeleteMode && !isArchiveRenameMode) {
+                            isArchiveSearchActive = true
+                        }
+                    },
                     onNavigateToDetail = { archiveId, folderName ->
                         navController.navigate(
                             "${NavRoutes.ARCHIVE_DETAIL}/$archiveId/${Uri.encode(folderName)}"
@@ -698,10 +705,12 @@ fun MainScreen(
                 onDismissRequest = { showArchiveMoreSheet = false },
                 onRenameClick = {
                     showArchiveMoreSheet = false
+                    isArchiveSearchActive = false
                     isArchiveRenameMode = true
                 },
                 onDeleteClick = {
                     showArchiveMoreSheet = false
+                    isArchiveSearchActive = false
                     isArchiveDeleteMode = true
                 }
             )
