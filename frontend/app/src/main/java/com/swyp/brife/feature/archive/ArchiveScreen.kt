@@ -28,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,8 +50,10 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.swyp.brife.R
 import com.swyp.brife.data.model.ArchiveFolderResponse
 import com.swyp.brife.data.model.ArchiveItemResponse
@@ -67,6 +70,14 @@ import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 
+private const val SPECIAL_CHAR_ONLY_ERROR = "SPECIAL_CHAR_ONLY"
+
+private enum class ArchiveSearchSortFilter(val label: String) {
+    ALL("전체"),
+    LATEST("최신순"),
+    OLDEST("오래된순")
+}
+
 @Composable
 fun ArchiveScreen(
     modifier: Modifier = Modifier,
@@ -78,6 +89,8 @@ fun ArchiveScreen(
     isSearchLoading: Boolean = false,
     searchFolders: List<ArchiveFolderResponse> = emptyList(),
     searchItems: List<ArchiveItemResponse> = emptyList(),
+    searchNewsItems: List<ArchiveNewsItem> = emptyList(),
+    hasSearchCompleted: Boolean = false,
     searchErrorMessage: String? = null,
     onFolderAdd: (String) -> Unit,
     onNavigateToDetail: (archiveId: Long, folderName: String) -> Unit,
@@ -113,6 +126,7 @@ fun ArchiveScreen(
     var renamingFolderName by remember { mutableStateOf("") }
     var renamingFolderId by remember { mutableStateOf(0L) }
     val showSearchMode = isSearchActive && !isSelectionMode
+    var searchSortFilter by remember { mutableStateOf(ArchiveSearchSortFilter.ALL) }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -127,18 +141,57 @@ fun ArchiveScreen(
                     searchQuery = searchQuery,
                     onQueryChange = onSearchQueryChanged,
                     onBackClick = {
+                        searchSortFilter = ArchiveSearchSortFilter.ALL
                         onSearchClear()
                         onSearchDeactivate()
                     },
-                    onClearQuery = onSearchClear,
+                    onClearQuery = {
+                        searchSortFilter = ArchiveSearchSortFilter.ALL
+                        onSearchClear()
+                    },
                     onSearchSubmit = onSearchSubmit
                 )
-                ArchiveRecentSearches(
-                    recentQueries = recentSearchQueries,
-                    onRecentQueryClick = onRecentSearchClick,
-                    onDeleteRecentQuery = onRecentSearchRemove,
-                    onClearAllRecentQueries = onRecentSearchClearAll
-                )
+                val trimmedSearchQuery = searchQuery.trim()
+                when {
+                    trimmedSearchQuery.isBlank() -> {
+                        ArchiveRecentSearches(
+                            recentQueries = recentSearchQueries,
+                            onRecentQueryClick = onRecentSearchClick,
+                            onDeleteRecentQuery = onRecentSearchRemove,
+                            onClearAllRecentQueries = onRecentSearchClearAll
+                        )
+                    }
+                    isSearchLoading -> ArchiveSearchLoading()
+                    searchErrorMessage == SPECIAL_CHAR_ONLY_ERROR -> {
+                        ArchiveSearchStateBody(
+                            text = "특수문자를 제외한\n검색어로 검색해주세요.",
+                            backgroundImageRes = R.drawable.img_explore_error,
+                            characterImageRes = R.drawable.img_explore_error_character
+                        )
+                    }
+                    searchErrorMessage != null -> {
+                        ArchiveSearchStateBody(
+                            text = "연결이 원활하지 않아요.\n잠시 후 다시 시도해주세요.",
+                            backgroundImageRes = R.drawable.img_explore_network_error,
+                            characterImageRes = R.drawable.img_explore_network_error_character
+                        )
+                    }
+                    hasSearchCompleted && searchNewsItems.isNotEmpty() -> {
+                        ArchiveSearchResultsBody(
+                            query = trimmedSearchQuery,
+                            items = searchNewsItems,
+                            selectedFilter = searchSortFilter,
+                            onFilterSelected = { searchSortFilter = it }
+                        )
+                    }
+                    hasSearchCompleted -> {
+                        ArchiveSearchStateBody(
+                            text = "보관한 기사 중에 없어요.\n다른 제목으로 찾거나, 탐색에서 저장해보세요.",
+                            backgroundImageRes = R.drawable.img_explore_empty,
+                            characterImageRes = R.drawable.img_explore_empty_character
+                        )
+                    }
+                }
                 return@Column
             }
 
@@ -477,6 +530,149 @@ private fun ArchiveSearchTopBar(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ArchiveSearchResultsBody(
+    query: String,
+    items: List<ArchiveNewsItem>,
+    selectedFilter: ArchiveSearchSortFilter,
+    onFilterSelected: (ArchiveSearchSortFilter) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val sortedItems = remember(items, selectedFilter) {
+        when (selectedFilter) {
+            ArchiveSearchSortFilter.ALL -> items
+            ArchiveSearchSortFilter.LATEST -> items.sortedByDescending { it.time }
+            ArchiveSearchSortFilter.OLDEST -> items.sortedBy { it.time }
+        }
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ArchiveSearchSortFilter.values().forEach { filter ->
+                ArchiveSearchFilterChip(
+                    text = filter.label,
+                    selected = filter == selectedFilter,
+                    onClick = { onFilterSelected(filter) }
+                )
+            }
+        }
+
+        AppText(
+            text = buildAnnotatedString {
+                withStyle(SpanStyle(color = CtaActive)) { append(query) }
+                append(" 관련 뉴스")
+            },
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            color = TextSubtitle,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 16.dp, bottom = 4.dp)
+        )
+
+        sortedItems.forEach { item ->
+            ArchiveNewsCard(
+                item = item,
+                onClick = {
+                    // TODO: Wire Archive search result card clicks to NewsLong navigation when a route callback is available.
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ArchiveSearchFilterChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AppText(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = if (selected) PrimaryNormal else TextBody,
+        modifier = modifier
+            .background(
+                color = ComponentDefault,
+                shape = RoundedCornerShape(30.dp)
+            )
+            .border(
+                width = if (selected) 1.dp else 0.dp,
+                color = if (selected) PrimaryNormal else ComponentDefault,
+                shape = RoundedCornerShape(30.dp)
+            )
+            .clickable { onClick() }
+            .padding(horizontal = 14.dp, vertical = 8.dp)
+    )
+}
+
+@Composable
+private fun ArchiveSearchLoading(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(240.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(24.dp),
+            color = CtaActive,
+            strokeWidth = 2.dp
+        )
+    }
+}
+
+@Composable
+private fun ArchiveSearchStateBody(
+    text: String,
+    backgroundImageRes: Int,
+    characterImageRes: Int,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(420.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = backgroundImageRes),
+                contentDescription = null,
+                modifier = Modifier.size(90.dp)
+            )
+            Image(
+                painter = painterResource(id = characterImageRes),
+                contentDescription = null,
+                modifier = Modifier.size(150.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        AppText(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
+            color = TextSubtitle,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

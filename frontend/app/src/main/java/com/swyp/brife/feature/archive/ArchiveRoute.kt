@@ -85,6 +85,8 @@ fun ArchiveRoute(
         isSearchLoading = uiState.isSearchLoading,
         searchFolders = uiState.searchFolders,
         searchItems = uiState.searchItems,
+        searchNewsItems = uiState.searchNewsItems,
+        hasSearchCompleted = uiState.hasSearchCompleted,
         searchErrorMessage = uiState.searchErrorMessage,
         onFolderAdd = { name -> viewModel.createFolder(name) },
         onNavigateToDetail = onNavigateToDetail,

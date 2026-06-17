@@ -2,7 +2,10 @@ package com.swyp.brife.feature.archive
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.swyp.brife.data.model.ArchiveItemResponse
+import com.swyp.brife.data.model.NewsDetailResponse
 import com.swyp.brife.data.repository.ArchiveRepository
+import com.swyp.brife.feature.home.LongFormImageProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -149,6 +152,8 @@ class ArchiveViewModel(
                 isSearchLoading = false,
                 searchFolders = emptyList(),
                 searchItems = emptyList(),
+                searchNewsItems = emptyList(),
+                hasSearchCompleted = true,
                 searchErrorMessage = "SPECIAL_CHAR_ONLY"
             )
             return
@@ -156,15 +161,23 @@ class ArchiveViewModel(
 
         _uiState.value = _uiState.value.copy(
             isSearchLoading = true,
+            hasSearchCompleted = false,
             searchErrorMessage = null
         )
 
         repository.searchArchive(query)
             .onSuccess { response ->
+                val mappedItems = response.items.map { item ->
+                    item.toArchiveNewsItem(
+                        detail = repository.getNewsDetail(item.contentId).getOrNull()
+                    )
+                }
                 _uiState.value = _uiState.value.copy(
                     isSearchLoading = false,
                     searchFolders = response.folders,
                     searchItems = response.items,
+                    searchNewsItems = mappedItems,
+                    hasSearchCompleted = true,
                     searchErrorMessage = null,
                     recentSearchQueries = addRecentQuery(query)
                 )
@@ -174,6 +187,8 @@ class ArchiveViewModel(
                     isSearchLoading = false,
                     searchFolders = emptyList(),
                     searchItems = emptyList(),
+                    searchNewsItems = emptyList(),
+                    hasSearchCompleted = true,
                     searchErrorMessage = it.message
                 )
             }
@@ -184,6 +199,8 @@ class ArchiveViewModel(
             isSearchLoading = false,
             searchFolders = emptyList(),
             searchItems = emptyList(),
+            searchNewsItems = emptyList(),
+            hasSearchCompleted = false,
             searchErrorMessage = null
         )
     }
@@ -197,5 +214,23 @@ class ArchiveViewModel(
         val specialChars = "!@#\$%^&*()+=[]{}|;':\",./<>?\\`~"
         val compact = query.filterNot { it.isWhitespace() }
         return compact.isNotEmpty() && compact.all { it in specialChars }
+    }
+
+    private fun ArchiveItemResponse.toArchiveNewsItem(detail: NewsDetailResponse?): ArchiveNewsItem {
+        return ArchiveNewsItem(
+            archiveItemId = id,
+            title = detail?.title?.ifBlank { "뉴스 #$contentId" } ?: "뉴스 #$contentId",
+            summary = "",
+            time = savedAt.ifBlank { detail?.publishedDate?.ifBlank { "-" } ?: "-" },
+            company = detail?.sourceCount?.let { "${it}개 언론사" } ?: "",
+            category = detail?.groupName.orEmpty(),
+            subCategory = detail?.categoryName.orEmpty(),
+            imageUrl = LongFormImageProvider.getStableImageRes(
+                detail?.groupName.orEmpty(),
+                detail?.categoryName.orEmpty(),
+                contentId
+            ),
+            newsId = contentId
+        )
     }
 }

@@ -13,6 +13,8 @@ data class ArchiveUiState(
     val isSearchLoading: Boolean = false,
     val searchFolders: List<ArchiveFolderResponse> = emptyList(),
     val searchItems: List<ArchiveItemResponse> = emptyList(),
+    val searchNewsItems: List<ArchiveNewsItem> = emptyList(),
+    val hasSearchCompleted: Boolean = false,
     val searchErrorMessage: String? = null,
     val recentSearchQueries: List<String> = emptyList()
 )
