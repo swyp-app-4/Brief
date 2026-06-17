@@ -105,6 +105,11 @@ public class OAuthService {
         AppUser user = appUserRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() -> new AuthException("존재하지 않는 유저입니다."));
 
+        if (user.isDeleted()) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new AuthException("탈퇴 처리된 유저입니다.");
+        }
+
         return jwtProvider.generateAccessToken(user.getId(), user.getRole());
     }
 
@@ -127,17 +132,26 @@ public class OAuthService {
 
     private AuthResponse generateAuthResponse(String email, String nickname,
                                                String provider, String providerId) {
-        boolean isNewUser = !appUserRepository.existsByProviderAndProviderId(provider, providerId);
-
         AppUser user = appUserRepository.findByProviderAndProviderId(provider, providerId)
-                .map(entity -> entity.update(nickname))
-                .orElse(AppUser.builder()
-                        .email(email)
-                        .nickname(nickname)
-                        .provider(provider)
-                        .providerId(providerId)
-                        .role("ROLE_USER")
-                        .build());
+                .orElse(null);
+        boolean isNewUser = user == null;
+
+        if (user != null && user.isDeleted()) {
+            throw new AuthException("탈퇴 처리된 유저입니다.");
+        }
+
+        if (user != null) {
+            user.update(nickname);
+        } else {
+            user = AppUser.builder()
+                    .email(email)
+                    .nickname(nickname)
+                    .provider(provider)
+                    .providerId(providerId)
+                    .role("ROLE_USER")
+                    .build();
+        }
+
         appUserRepository.save(user);
 
         String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole());

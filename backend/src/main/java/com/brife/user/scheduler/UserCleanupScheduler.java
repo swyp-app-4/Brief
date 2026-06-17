@@ -1,5 +1,7 @@
 package com.brife.user.scheduler;
 
+import com.brife.archive.repository.ArchiveItemRepository;
+import com.brife.archive.repository.ArchiveRepository;
 import com.brife.user.domain.AppUser;
 import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
@@ -19,14 +21,18 @@ public class UserCleanupScheduler {
     private final AppUserRepository appUserRepository;
     private final UserInterestRepository userInterestRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final ArchiveItemRepository archiveItemRepository;
+    private final ArchiveRepository archiveRepository;
 
-    // 소프트 삭제 전환 시 @Scheduled(cron = "0 0 0 * * *") 활성화
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void hardDeleteExpiredUsers() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
         List<AppUser> expiredUsers = appUserRepository.findByDeletedAtIsNotNullAndDeletedAtBefore(cutoff);
 
         for (AppUser user : expiredUsers) {
+            archiveItemRepository.deleteByUserId(user.getId());
+            archiveRepository.deleteByUserId(user.getId());
             userInterestRepository.deleteByUserId(user.getId());
             refreshTokenRepository.deleteByUserId(user.getId());
             appUserRepository.delete(user);

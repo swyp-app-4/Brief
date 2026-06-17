@@ -1,5 +1,7 @@
 package com.brife.user.security;
 
+import com.brife.user.domain.AppUser;
+import com.brife.user.repository.AppUserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,11 +17,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final AppUserRepository appUserRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -36,6 +40,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             Claims claims = jwtProvider.parseToken(token);
             Long userId = Long.parseLong(claims.getSubject());
             String role = claims.get("role", String.class);
+
+            Optional<AppUser> user = appUserRepository.findById(userId);
+            if (user.isEmpty() || user.get().isDeleted()) {
+                writeUnauthorized(response, "탈퇴 처리되었거나 존재하지 않는 유저입니다.");
+                return;
+            }
 
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     userId, null, List.of(new SimpleGrantedAuthority(role)));
