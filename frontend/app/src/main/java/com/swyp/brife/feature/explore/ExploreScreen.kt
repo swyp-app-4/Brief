@@ -489,8 +489,7 @@ private fun ExploreStateBody(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 100.dp),
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

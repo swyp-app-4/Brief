@@ -656,8 +656,7 @@ private fun ArchiveSearchStateBody(
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .height(420.dp),
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
