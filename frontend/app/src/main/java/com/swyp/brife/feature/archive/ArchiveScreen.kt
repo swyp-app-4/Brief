@@ -631,10 +631,10 @@ private fun ArchiveSearchFilterChip(
     AppText(
         text = text,
         style = MaterialTheme.typography.bodySmall,
-        color = if (selected) PrimaryNormal else TextBody,
+        color = TextBody,
         modifier = modifier
             .background(
-                color = ComponentDefault,
+                color = if (selected) InterestSelectedLight else ComponentDefault,
                 shape = RoundedCornerShape(30.dp)
             )
             .border(
