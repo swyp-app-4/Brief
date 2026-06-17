@@ -131,14 +131,12 @@ fun ArchiveScreen(
     var searchSortFilter by remember { mutableStateOf(ArchiveSearchSortFilter.ALL) }
 
     Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-                .padding(horizontal = if (showSearchMode) 0.dp else 24.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            if (showSearchMode) {
+        if (showSearchMode) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+            ) {
                 ArchiveSearchTopBar(
                     searchQuery = searchQuery,
                     onQueryChange = onSearchQueryChanged,
@@ -163,7 +161,7 @@ fun ArchiveScreen(
                             onClearAllRecentQueries = onRecentSearchClearAll
                         )
                     }
-                    isSearchLoading -> ArchiveSearchLoading()
+                    isSearchLoading -> ArchiveSearchLoading(modifier = Modifier.weight(1f))
                     searchErrorMessage == SPECIAL_CHAR_ONLY_ERROR -> {
                         ArchiveSearchStateBody(
                             text = "특수문자를 제외한\n검색어로 검색해주세요.",
@@ -171,7 +169,8 @@ fun ArchiveScreen(
                             characterImageRes = R.drawable.img_explore_error_character,
                             backgroundModifier = Modifier
                                 .size(75.dp)
-                                .offset(x = (70).dp, y = (-50).dp)
+                                .offset(x = (70).dp, y = (-50).dp),
+                            modifier = Modifier.weight(1f)
                         )
                     }
                     searchErrorMessage != null -> {
@@ -181,7 +180,8 @@ fun ArchiveScreen(
                             characterImageRes = R.drawable.img_explore_network_error_character,
                             backgroundModifier = Modifier
                                 .size(100.dp)
-                                .offset(x = (60).dp, y = (-40).dp)
+                                .offset(x = (60).dp, y = (-40).dp),
+                            modifier = Modifier.weight(1f)
                         )
                     }
                     hasSearchCompleted && searchNewsItems.isNotEmpty() -> {
@@ -190,7 +190,10 @@ fun ArchiveScreen(
                             items = searchNewsItems,
                             selectedFilter = searchSortFilter,
                             onFilterSelected = { searchSortFilter = it },
-                            onNewsClick = onSearchNewsClick
+                            onNewsClick = onSearchNewsClick,
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
                         )
                     }
                     hasSearchCompleted -> {
@@ -200,12 +203,20 @@ fun ArchiveScreen(
                             characterImageRes = R.drawable.img_explore_empty_character,
                             backgroundModifier = Modifier
                                 .size(60.dp)
-                                .offset(x = (-60).dp, y = (-10).dp)
+                                .offset(x = (-60).dp, y = (-10).dp),
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
-                return@Column
             }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -365,6 +376,7 @@ fun ArchiveScreen(
 
             if (isDeleteMode) {
                 Spacer(modifier = Modifier.height(80.dp))
+            }
             }
         }
 
