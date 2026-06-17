@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,7 +33,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,7 +43,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swyp.brife.R
 import com.swyp.brife.ui.component.AppText
-import com.swyp.brife.ui.theme.BorderStrong
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextTitle
@@ -184,12 +186,17 @@ private fun ProfileImageGridItem(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) PrimaryNormal else BorderStrong,
-                shape = RoundedCornerShape(20.dp)
+            .then(
+                if (isSelected) {
+                    Modifier.border(
+                        width = 2.dp,
+                        color = PrimaryNormal,
+                        shape = CircleShape
+                    )
+                } else {
+                    Modifier
+                }
             )
-            .background(Color.White, RoundedCornerShape(20.dp))
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -198,7 +205,9 @@ private fun ProfileImageGridItem(
             contentDescription = "프로필 선택 이미지",
             modifier = Modifier
                 .fillMaxSize()
-                .padding(10.dp)
+                .padding(2.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.Fit
         )
     }
 }
