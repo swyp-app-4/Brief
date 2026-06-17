@@ -520,7 +520,7 @@ private fun ExploreStateBody(
         AppText(
             text = text,
             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-            color = TextSubtitle,
+            color = TextCaption,
             textAlign = TextAlign.Center
         )
     }

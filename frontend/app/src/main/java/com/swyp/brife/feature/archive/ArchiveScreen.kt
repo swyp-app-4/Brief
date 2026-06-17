@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -167,14 +168,20 @@ fun ArchiveScreen(
                         ArchiveSearchStateBody(
                             text = "특수문자를 제외한\n검색어로 검색해주세요.",
                             backgroundImageRes = R.drawable.img_explore_error,
-                            characterImageRes = R.drawable.img_explore_error_character
+                            characterImageRes = R.drawable.img_explore_error_character,
+                            backgroundModifier = Modifier
+                                .size(75.dp)
+                                .offset(x = (70).dp, y = (-50).dp)
                         )
                     }
                     searchErrorMessage != null -> {
                         ArchiveSearchStateBody(
                             text = "연결이 원활하지 않아요.\n잠시 후 다시 시도해주세요.",
                             backgroundImageRes = R.drawable.img_explore_network_error,
-                            characterImageRes = R.drawable.img_explore_network_error_character
+                            characterImageRes = R.drawable.img_explore_network_error_character,
+                            backgroundModifier = Modifier
+                                .size(100.dp)
+                                .offset(x = (60).dp, y = (-40).dp)
                         )
                     }
                     hasSearchCompleted && searchNewsItems.isNotEmpty() -> {
@@ -190,7 +197,10 @@ fun ArchiveScreen(
                         ArchiveSearchStateBody(
                             text = "보관한 기사 중에 없어요.\n다른 제목으로 찾거나, 탐색에서 저장해보세요.",
                             backgroundImageRes = R.drawable.img_explore_empty,
-                            characterImageRes = R.drawable.img_explore_empty_character
+                            characterImageRes = R.drawable.img_explore_empty_character,
+                            backgroundModifier = Modifier
+                                .size(60.dp)
+                                .offset(x = (-60).dp, y = (-10).dp)
                         )
                     }
                 }
@@ -641,6 +651,7 @@ private fun ArchiveSearchStateBody(
     text: String,
     backgroundImageRes: Int,
     characterImageRes: Int,
+    backgroundModifier: Modifier = Modifier.size(100.dp),
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -657,7 +668,7 @@ private fun ArchiveSearchStateBody(
             Image(
                 painter = painterResource(id = backgroundImageRes),
                 contentDescription = null,
-                modifier = Modifier.size(90.dp)
+                modifier = backgroundModifier
             )
             Image(
                 painter = painterResource(id = characterImageRes),
@@ -671,7 +682,7 @@ private fun ArchiveSearchStateBody(
         AppText(
             text = text,
             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-            color = TextSubtitle,
+            color = TextCaption,
             textAlign = TextAlign.Center
         )
     }
