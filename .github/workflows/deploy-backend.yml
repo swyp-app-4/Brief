@@ -1,0 +1,89 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+      - test
+    paths:
+      - "backend/src/**"
+      - "backend/Dockerfile.runtime"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use preinstalled JDK 21
+        run: |
+          if [ -d /usr/lib/jvm/temurin-21-jdk-amd64 ]; then
+            echo "JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64" >> "$GITHUB_ENV"
+            echo "/usr/lib/jvm/temurin-21-jdk-amd64/bin" >> "$GITHUB_PATH"
+          elif [ -d /usr/lib/jvm/java-21-openjdk-amd64 ]; then
+            echo "JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64" >> "$GITHUB_ENV"
+            echo "/usr/lib/jvm/java-21-openjdk-amd64/bin" >> "$GITHUB_PATH"
+          else
+            echo "JDK 21 is not installed on this runner."
+            exit 1
+          fi
+          java -version
+
+      - name: Build jar
+        working-directory: backend
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootJar -x test --no-daemon
+
+      - name: Configure SSH
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+          timeout 20s ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload backend
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_APP_DIR: ${{ secrets.EC2_APP_DIR }}
+        run: |
+          timeout 60s ssh -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "
+            mkdir -p '$EC2_APP_DIR'
+            cd '$EC2_APP_DIR'
+            rm -rf src build
+            mkdir -p build/libs
+            printf '%s\n' '.git' '.github' '.gradle' 'bin' 'frontend' 'backend' '.env' '.env.*' '*.pem' '*-*.json' 'service-account*.json' '.DS_Store' '*.log' '*.swp' '*.swo' > .dockerignore
+            printf '%s\n' 'services:' '  app:' '    build:' '      context: .' '      dockerfile: Dockerfile.runtime' > docker-compose.ci.yml
+          "
+          tar \
+            -C backend \
+            -czf - src Dockerfile.runtime build/libs \
+            | timeout 120s ssh -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "cd '$EC2_APP_DIR' && tar -xzf -"
+
+      - name: Deploy with Docker Compose
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_APP_DIR: ${{ secrets.EC2_APP_DIR }}
+        run: |
+          timeout 240s ssh -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "
+            set -e
+            cd '$EC2_APP_DIR'
+            docker-compose -p brife -f docker-compose.yml -f docker-compose.ci.yml up -d --build app
+            docker-compose -p brife ps
+          "
+
+      - name: Health check
+        run: |
+          curl --fail --retry 20 --retry-delay 6 --retry-max-time 150 --max-time 10 --retry-connrefused \
+            "https://api.briefnews.asia/api/v1/swagger-ui/index.html" \
+            > /dev/null
