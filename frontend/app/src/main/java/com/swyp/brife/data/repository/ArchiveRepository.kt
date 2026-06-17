@@ -51,8 +51,9 @@ class ArchiveRepository(
     }
 
     suspend fun searchArchive(keyword: String): Result<ArchiveSearchResponse> {
+        val token = bearerToken() ?: return Result.failure(Exception("로그인이 필요합니다"))
         return try {
-            Result.success(api.searchArchive(keyword))
+            Result.success(api.searchArchive(token, keyword))
         } catch (e: Exception) {
             Result.failure(e)
         }

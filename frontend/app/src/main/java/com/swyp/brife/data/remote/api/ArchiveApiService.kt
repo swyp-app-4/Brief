@@ -28,6 +28,7 @@ interface ArchiveApiService {
 
     @GET("archives/search")
     suspend fun searchArchive(
+        @Header("Authorization") authorization: String,
         @Query("keyword") keyword: String
     ): ArchiveSearchResponse
 
