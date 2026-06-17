@@ -443,6 +443,22 @@ fun MainScreen(
                     onSearchDeactivate = {
                         isArchiveSearchActive = false
                     },
+                    onSearchNewsClick = { archiveItem ->
+                        selectedNewsItem = HomeNewsCardItem(
+                            newsId = archiveItem.newsId,
+                            category = archiveItem.category,
+                            subCategory = archiveItem.subCategory,
+                            imageRes = null,
+                            title = archiveItem.title,
+                            notice = "",
+                            summaryPoints = emptyList(),
+                            insight = "",
+                            updatedAt = archiveItem.time,
+                            articleCount = 0
+                        )
+                        preselectedArchiveId = null
+                        navController.navigate("${NavRoutes.NEWS_LONG}/${archiveItem.newsId}")
+                    },
                     onNavigateToDetail = { archiveId, folderName ->
                         navController.navigate(
                             "${NavRoutes.ARCHIVE_DETAIL}/$archiveId/${Uri.encode(folderName)}"

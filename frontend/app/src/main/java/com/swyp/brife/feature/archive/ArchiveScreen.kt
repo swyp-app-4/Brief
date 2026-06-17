@@ -105,6 +105,7 @@ fun ArchiveScreen(
     isSearchActive: Boolean = false,
     onSearchActivate: () -> Unit = {},
     onSearchDeactivate: () -> Unit = {},
+    onSearchNewsClick: (ArchiveNewsItem) -> Unit = {},
     onSearchQueryChanged: (String) -> Unit = {},
     onSearchClear: () -> Unit = {},
     onSearchSubmit: () -> Unit = {},
@@ -181,7 +182,8 @@ fun ArchiveScreen(
                             query = trimmedSearchQuery,
                             items = searchNewsItems,
                             selectedFilter = searchSortFilter,
-                            onFilterSelected = { searchSortFilter = it }
+                            onFilterSelected = { searchSortFilter = it },
+                            onNewsClick = onSearchNewsClick
                         )
                     }
                     hasSearchCompleted -> {
@@ -539,6 +541,7 @@ private fun ArchiveSearchResultsBody(
     items: List<ArchiveNewsItem>,
     selectedFilter: ArchiveSearchSortFilter,
     onFilterSelected: (ArchiveSearchSortFilter) -> Unit,
+    onNewsClick: (ArchiveNewsItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sortedItems = remember(items, selectedFilter) {
@@ -585,9 +588,7 @@ private fun ArchiveSearchResultsBody(
         sortedItems.forEach { item ->
             ArchiveNewsCard(
                 item = item,
-                onClick = {
-                    // TODO: Wire Archive search result card clicks to NewsLong navigation when a route callback is available.
-                }
+                onClick = { onNewsClick(item) }
             )
         }
     }

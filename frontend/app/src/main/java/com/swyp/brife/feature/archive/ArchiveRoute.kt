@@ -27,6 +27,7 @@ fun ArchiveRoute(
     onRenameModeExit: () -> Unit,
     onSearchActivate: () -> Unit = {},
     onSearchDeactivate: () -> Unit = {},
+    onSearchNewsClick: (ArchiveNewsItem) -> Unit = {},
     onNavigateToDetail: (archiveId: Long, folderName: String) -> Unit
 ) {
     if (!isLoggedIn) {
@@ -47,7 +48,8 @@ fun ArchiveRoute(
             onCancelRename = onRenameModeExit,
             isSearchActive = isSearchActive,
             onSearchActivate = onSearchActivate,
-            onSearchDeactivate = onSearchDeactivate
+            onSearchDeactivate = onSearchDeactivate,
+            onSearchNewsClick = onSearchNewsClick
         )
         return
     }
@@ -113,6 +115,7 @@ fun ArchiveRoute(
         isSearchActive = isSearchActive,
         onSearchActivate = onSearchActivate,
         onSearchDeactivate = onSearchDeactivate,
+        onSearchNewsClick = onSearchNewsClick,
         onSearchQueryChanged = viewModel::onSearchQueryChanged,
         onSearchClear = viewModel::clearSearchQuery,
         onSearchSubmit = viewModel::submitSearch,
