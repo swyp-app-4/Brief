@@ -15,6 +15,14 @@ data class UpdateProfileRequest(
     val  profileImageUrl: String? = null
 )
 
+data class NotificationSettingsRequest(
+    val dailyNewsEnabled: Boolean,
+    val time8am: Boolean,
+    val time12pm: Boolean,
+    val time6pm: Boolean,
+    val time10pm: Boolean
+)
+
 
 data class SocialAccessTokenRequest(
     val accessToken: String

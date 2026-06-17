@@ -37,7 +37,7 @@ import com.swyp.brife.feature.onboarding.OnboardingSubInterestRoute
 import com.swyp.brife.feature.onboarding.SplashScreen
 import com.swyp.brife.feature.archive.ArchiveDetailRoute
 import com.swyp.brife.feature.auth.LoginTermsRoute
-import com.swyp.brife.feature.setting.AlarmSettingScreen
+import com.swyp.brife.feature.setting.AlarmSettingRoute
 import com.swyp.brife.feature.setting.SettingScreen
 import com.swyp.brife.feature.setting.WidgetInstallGuideScreen
 import com.swyp.brife.feature.widget.WidgetActionReceiver
@@ -483,7 +483,7 @@ fun AppNavGraph(
         }
 
         composable(NavRoutes.ALARM_SETTING) {
-            AlarmSettingScreen(
+            AlarmSettingRoute(
                 onBackClick = { navController.popBackStack() }
             )
         }

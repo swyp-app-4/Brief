@@ -23,6 +23,14 @@ data class UserProfileResponse(
     val profileImageUrl: String?
 )
 
+data class NotificationSettingsResponse(
+    val dailyNewsEnabled: Boolean = false,
+    val time8am: Boolean = false,
+    val time12pm: Boolean = false,
+    val time6pm: Boolean = false,
+    val time10pm: Boolean = false
+)
+
 // GET /categories 응답: { "id": 0, "name": "string" }
 data class CategoryResponse(
     val id: Long,

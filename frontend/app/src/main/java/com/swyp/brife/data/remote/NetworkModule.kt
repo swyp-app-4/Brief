@@ -5,6 +5,7 @@ import com.swyp.brife.data.remote.api.AuthApiService
 import com.swyp.brife.data.remote.api.ExploreApiService
 import com.swyp.brife.data.remote.api.HomeApiService
 import com.swyp.brife.data.remote.api.NewsApiService
+import com.swyp.brife.data.remote.api.NotificationSettingsApiService
 import com.swyp.brife.data.remote.api.OnboardingApiService
 import com.swyp.brife.data.remote.api.UserApiService
 import okhttp3.OkHttpClient
@@ -65,5 +66,9 @@ object NetworkModule {
 
     val archiveApiService: ArchiveApiService by lazy {
         retrofit.create(ArchiveApiService::class.java)
+    }
+
+    val notificationSettingsApiService: NotificationSettingsApiService by lazy {
+        retrofit.create(NotificationSettingsApiService::class.java)
     }
 }

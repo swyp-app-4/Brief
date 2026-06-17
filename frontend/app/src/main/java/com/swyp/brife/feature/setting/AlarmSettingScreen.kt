@@ -13,10 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,8 +31,22 @@ import com.swyp.brife.ui.theme.TextTitle
 @Composable
 fun AlarmSettingScreen(
     onBackClick: () -> Unit,
+    dailyNewsEnabled: Boolean,
+    time8am: Boolean,
+    time12pm: Boolean,
+    time6pm: Boolean,
+    time10pm: Boolean,
+    isLoading: Boolean,
+    isSaving: Boolean,
+    onDailyNewsChanged: (Boolean) -> Unit,
+    onTime8amChanged: (Boolean) -> Unit,
+    onTime12pmChanged: (Boolean) -> Unit,
+    onTime6pmChanged: (Boolean) -> Unit,
+    onTime10pmChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isToggleEnabled = !isLoading && !isSaving
+
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -46,12 +56,6 @@ fun AlarmSettingScreen(
             )
         }
     ) { paddingValues ->
-        var dailyNewsEnabled by rememberSaveable { mutableStateOf(false) }
-        var morningEnabled by rememberSaveable { mutableStateOf(false) }
-        var lunchEnabled by rememberSaveable { mutableStateOf(false) }
-        var eveningEnabled by rememberSaveable { mutableStateOf(false) }
-        var nightEnabled by rememberSaveable { mutableStateOf(false) }
-
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -63,32 +67,37 @@ fun AlarmSettingScreen(
         ) {
             DailyNewsAlarmItem(
                 checked = dailyNewsEnabled,
-                onCheckedChange = { dailyNewsEnabled = it }
+                enabled = isToggleEnabled,
+                onCheckedChange = onDailyNewsChanged
             )
 
             AlarmTimeToggleItem(
                 label = "오전 뉴스",
                 time = "8:00 AM",
-                checked = morningEnabled,
-                onCheckedChange = { morningEnabled = it }
+                checked = time8am,
+                enabled = isToggleEnabled,
+                onCheckedChange = onTime8amChanged
             )
             AlarmTimeToggleItem(
                 label = "점심 뉴스",
                 time = "12:00 PM",
-                checked = lunchEnabled,
-                onCheckedChange = { lunchEnabled = it }
+                checked = time12pm,
+                enabled = isToggleEnabled,
+                onCheckedChange = onTime12pmChanged
             )
             AlarmTimeToggleItem(
                 label = "저녁 뉴스",
                 time = "6:00 PM",
-                checked = eveningEnabled,
-                onCheckedChange = { eveningEnabled = it }
+                checked = time6pm,
+                enabled = isToggleEnabled,
+                onCheckedChange = onTime6pmChanged
             )
             AlarmTimeToggleItem(
                 label = "자기전 뉴스",
                 time = "10:00 PM",
-                checked = nightEnabled,
-                onCheckedChange = { nightEnabled = it }
+                checked = time10pm,
+                enabled = isToggleEnabled,
+                onCheckedChange = onTime10pmChanged
             )
         }
     }
@@ -97,6 +106,7 @@ fun AlarmSettingScreen(
 @Composable
 private fun DailyNewsAlarmItem(
     checked: Boolean,
+    enabled: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -122,6 +132,7 @@ private fun DailyNewsAlarmItem(
 
         Switch(
             checked = checked,
+            enabled = enabled,
             onCheckedChange = onCheckedChange
         )
     }
@@ -132,6 +143,7 @@ private fun AlarmTimeToggleItem(
     label: String,
     time: String,
     checked: Boolean,
+    enabled: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -160,6 +172,7 @@ private fun AlarmTimeToggleItem(
 
         AlarmOnOffTextButton(
             checked = checked,
+            enabled = enabled,
             onClick = { onCheckedChange(!checked) }
         )
     }
@@ -168,6 +181,7 @@ private fun AlarmTimeToggleItem(
 @Composable
 private fun AlarmOnOffTextButton(
     checked: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -177,7 +191,7 @@ private fun AlarmOnOffTextButton(
         color = if (checked) PrimaryStrong else TextBody,
         textAlign = TextAlign.Center,
         modifier = modifier
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp)
     )
 }
@@ -186,6 +200,20 @@ private fun AlarmOnOffTextButton(
 @Composable
 private fun AlarmSettingScreenPreview() {
     BrifeTheme {
-        AlarmSettingScreen(onBackClick = {})
+        AlarmSettingScreen(
+            onBackClick = {},
+            dailyNewsEnabled = true,
+            time8am = true,
+            time12pm = true,
+            time6pm = false,
+            time10pm = false,
+            isLoading = false,
+            isSaving = false,
+            onDailyNewsChanged = {},
+            onTime8amChanged = {},
+            onTime12pmChanged = {},
+            onTime6pmChanged = {},
+            onTime10pmChanged = {}
+        )
     }
 }
