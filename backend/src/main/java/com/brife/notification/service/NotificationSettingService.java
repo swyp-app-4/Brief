@@ -7,6 +7,9 @@ import com.brife.notification.repository.UserNotificationSettingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.brife.notification.dto.request.FcmTokenRequest;
+import com.brife.notification.entity.UserFcmToken;
+import com.brife.notification.repository.UserFcmTokenRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationSettingService {
 
     private final UserNotificationSettingRepository userNotificationSettingRepository;
+    private final UserFcmTokenRepository userFcmTokenRepository;
 
     @Transactional(readOnly = true)
     public NotificationSettingResponse getSettings(Long userId) {
@@ -33,5 +37,12 @@ public class NotificationSettingService {
                 request.isTime10pm()
         );
         return new NotificationSettingResponse(userNotificationSettingRepository.save(setting));
+    }
+
+    public void registerFcmToken(Long userId, FcmTokenRequest request) {
+        UserFcmToken fcmToken = userFcmTokenRepository.findByUserId(userId)
+                .orElseGet(() -> new UserFcmToken(userId, request.getFcmToken()));
+        fcmToken.updateToken(request.getFcmToken());
+        userFcmTokenRepository.save(fcmToken);
     }
 }

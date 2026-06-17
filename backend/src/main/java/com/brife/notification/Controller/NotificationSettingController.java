@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.brife.notification.dto.request.FcmTokenRequest;
 
 @RestController
 @RequestMapping("/notifications")
@@ -32,5 +33,15 @@ public class NotificationSettingController {
             @RequestBody NotificationSettingRequest request) {
         Long userId = Long.parseLong(authentication.getName());
         return ResponseEntity.ok(notificationSettingService.updateSettings(userId, request));
+    }
+
+    @Operation(summary = "FCM 토큰 등록")
+    @PostMapping("/fcm-token")
+    public ResponseEntity<Void> registerFcmToken(
+            Authentication authentication,
+            @RequestBody FcmTokenRequest request) {
+        Long userId = Long.parseLong(authentication.getName());
+        notificationSettingService.registerFcmToken(userId, request);
+        return ResponseEntity.ok().build();
     }
 }
