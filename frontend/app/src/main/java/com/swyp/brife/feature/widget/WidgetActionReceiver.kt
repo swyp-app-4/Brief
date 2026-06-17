@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import com.swyp.brife.MainActivity
 import com.swyp.brife.data.local.AuthLocalStorage
 
@@ -19,15 +20,24 @@ import com.swyp.brife.data.local.AuthLocalStorage
 class WidgetActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val action = intent.getStringExtra(EXTRA_ACTION) ?: return
+        val action = intent.getStringExtra(EXTRA_ACTION) ?: run {
+            Log.d(TAG, "ignored widget click: missing action")
+            return
+        }
         val newsId = intent.getLongExtra(EXTRA_NEWS_ID, -1L)
         // newsId=0은 mock 데이터(API 미로드 상태) → 유효하지 않은 ID이므로 차단
-        if (newsId <= 0L) return
+        if (newsId <= 0L) {
+            Log.d(TAG, "ignored widget click: invalid newsId=$newsId action=$action")
+            return
+        }
+
+        Log.d(TAG, "received widget click: action=$action, newsId=$newsId")
 
         when (action) {
 
             // ── 카드 본문 클릭 → 앱 뉴스 상세 화면 이동 ─────────────────────────
             ACTION_OPEN_NEWS -> {
+                Log.d(TAG, "open news from widget: newsId=$newsId")
                 val launchIntent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                             Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -41,6 +51,7 @@ class WidgetActionReceiver : BroadcastReceiver() {
             ACTION_BOOKMARK -> {
                 if (!AuthLocalStorage(context).isLoggedIn()) return
 
+                Log.d(TAG, "open bookmark from widget: newsId=$newsId")
                 val launchIntent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                             Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -62,6 +73,7 @@ class WidgetActionReceiver : BroadcastReceiver() {
 
         private const val PREFS_NAME = "widget_prefs"
         private const val KEY_BOOKMARKED = "bookmarked_ids"
+        private const val TAG = "WidgetActionReceiver"
 
         /** 로컬에 저장된 북마크된 newsId 목록 반환 (위젯 이미지 전환용) */
         fun getBookmarkedIds(context: Context): Set<Long> {

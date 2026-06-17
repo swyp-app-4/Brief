@@ -150,6 +150,11 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
             putExtra(WidgetActionReceiver.EXTRA_NEWS_ID, news.newsId)
         }
         rv.setOnClickFillInIntent(R.id.widget_card_root, cardFillIn)
+        rv.setOnClickFillInIntent(R.id.widget_tv_title, cardFillIn)
+        rv.setOnClickFillInIntent(R.id.widget_card_body, cardFillIn)
+        rv.setOnClickFillInIntent(R.id.widget_tv_summary_1, cardFillIn)
+        rv.setOnClickFillInIntent(R.id.widget_tv_summary_2, cardFillIn)
+        rv.setOnClickFillInIntent(R.id.widget_tv_summary_3, cardFillIn)
 
         return rv
     }
