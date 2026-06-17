@@ -61,6 +61,7 @@ fun SettingScreen(
     withdrawErrorMessage: String? = null,
     onWithdrawErrorDismiss: () -> Unit = {},
     onLoginClick: () -> Unit = {},
+    onAlarmSettingClick: () -> Unit = {},
     onWidgetSettingClick: () -> Unit = {},
     onTermsClick: () -> Unit = {},
     onPrivacyClick: () -> Unit = {},
@@ -99,8 +100,10 @@ fun SettingScreen(
                 .padding(top = 32.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            SettingSection(title = "위젯 설정") {
+            SettingSection(title = "앱 설정") {
+                SettingNavItem(label = "알림 설정", onClick = onAlarmSettingClick)
                 SettingNavItem(label = "위젯 설정", onClick = onWidgetSettingClick)
+//                SettingNavItem(label = "테마", 라디오버튼)
             }
 
             SettingSection(title = "정보") {
