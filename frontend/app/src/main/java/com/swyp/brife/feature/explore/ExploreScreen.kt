@@ -58,6 +58,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 // ── 메인 화면 ─────────────────────────────────────────────────────────────────
 
+private const val SEARCH_QUERY_MAX_LENGTH = 20
+
 @Composable
 fun ExploreScreen(
     uiState: ExploreUiState,
@@ -205,7 +207,11 @@ private fun ExploreTopBar(
             if (isSearchActive) {
                 BasicTextField(
                     value = searchQuery,
-                    onValueChange = onQueryChange,
+                    onValueChange = { newQuery ->
+                        if (newQuery.length <= SEARCH_QUERY_MAX_LENGTH) {
+                            onQueryChange(newQuery)
+                        }
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .focusRequester(focusRequester),

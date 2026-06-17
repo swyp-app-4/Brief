@@ -72,6 +72,7 @@ import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 
 private const val SPECIAL_CHAR_ONLY_ERROR = "SPECIAL_CHAR_ONLY"
+private const val SEARCH_QUERY_MAX_LENGTH = 20
 
 private enum class ArchiveSearchSortFilter(val label: String) {
     ALL("전체"),
@@ -519,7 +520,11 @@ private fun ArchiveSearchTopBar(
 
             BasicTextField(
                 value = searchQuery,
-                onValueChange = onQueryChange,
+                onValueChange = { newQuery ->
+                    if (newQuery.length <= SEARCH_QUERY_MAX_LENGTH) {
+                        onQueryChange(newQuery)
+                    }
+                },
                 modifier = Modifier
                     .weight(1f)
                     .focusRequester(focusRequester),
