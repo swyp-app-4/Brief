@@ -60,7 +60,7 @@ fun OnboardingSubInterestScreen(
         Spacer(modifier = Modifier.height(60.dp))
 
         AppText(
-            text = "어떤 주제가\n궁금하시나요?",
+            text = "어떤 주제가\n더 궁금하시나요?",
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
@@ -69,7 +69,7 @@ fun OnboardingSubInterestScreen(
         Spacer(modifier = Modifier.height(18.dp))
 
         AppText(
-            text = "원하는 관심사를\n자유롭게 선택해주세요",
+            text = "세부 관심사를 자유롭게\n선택해주세요",
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()

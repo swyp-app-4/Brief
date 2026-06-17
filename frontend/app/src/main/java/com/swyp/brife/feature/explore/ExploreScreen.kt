@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -26,9 +27,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,11 +54,13 @@ import com.swyp.brife.R
 import com.swyp.brife.feature.archive.ArchiveNewsCard
 import com.swyp.brife.feature.archive.ArchiveNewsItem
 import com.swyp.brife.ui.component.AppText
+import com.swyp.brife.ui.theme.BgDefault
 import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 // ── 메인 화면 ─────────────────────────────────────────────────────────────────
 
@@ -269,6 +275,10 @@ private fun ExploreDefaultBody(
     onNewsClick: ((ArchiveNewsItem) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val showTopButton = remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 3 }
+    }
 
     LaunchedEffect(listState, recentNewsList.size, isLoadingMore, hasNextPage) {
         snapshotFlow {
@@ -285,29 +295,44 @@ private fun ExploreDefaultBody(
             }
     }
 
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        item {
-            RecentNewsHeader(
-                lastUpdatedTime = lastUpdatedTime,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 4.dp)
-            )
-        }
-        items(recentNewsList) { item ->
-            ArchiveNewsCard(
-                item = item,
-                onClick = onNewsClick?.let { { it(item) } }
-            )
-        }
-        if (isLoadingMore) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
             item {
-                BottomLoadingIndicator()
+                RecentNewsHeader(
+                    lastUpdatedTime = lastUpdatedTime,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp)
+                )
             }
+            items(recentNewsList) { item ->
+                ArchiveNewsCard(
+                    item = item,
+                    onClick = onNewsClick?.let { { it(item) } }
+                )
+            }
+            if (isLoadingMore) {
+                item {
+                    BottomLoadingIndicator()
+                }
+            }
+        }
+
+        if (showTopButton.value) {
+            ExploreScrollTopButton(
+                onClick = {
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 20.dp, bottom = 20.dp)
+            )
         }
     }
 }
@@ -418,6 +443,10 @@ private fun ExploreResultsBody(
     onNewsClick: ((ArchiveNewsItem) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val showTopButton = remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 3 }
+    }
 
     LaunchedEffect(listState, items.size, isLoadingMore, hasNextPage) {
         snapshotFlow {
@@ -434,11 +463,12 @@ private fun ExploreResultsBody(
             }
     }
 
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize().padding(top = 8.dp, bottom = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
         item {
 
             AppText(
@@ -464,6 +494,48 @@ private fun ExploreResultsBody(
                 BottomLoadingIndicator()
             }
         }
+        }
+
+        if (showTopButton.value) {
+            ExploreScrollTopButton(
+                onClick = {
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 20.dp, bottom = 20.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExploreScrollTopButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (isSystemInDarkTheme()) {
+        Color(0xFF212328).copy(alpha = 0.9f)
+    } else {
+        BgDefault.copy(alpha = 0.9f)
+    }
+
+    Box(
+        modifier = modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(backgroundColor)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_direction_right),
+            contentDescription = "최상단으로 이동",
+            tint = Color.Unspecified,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }
 
