@@ -45,6 +45,7 @@ import com.swyp.brife.feature.widget.WidgetRefreshHelper
 import com.swyp.brife.feature.webview.WebViewScreen
 import com.swyp.brife.feature.auth.LoginViewModel
 import com.swyp.brife.feature.auth.LoginViewModelFactory
+import com.swyp.brife.feature.notification.FcmTokenRegistrar
 import com.swyp.brife.feature.setting.OneToOneInquiryRoute
 import android.widget.Toast
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -125,6 +126,8 @@ fun AppNavGraph(
             pendingInternalRoute = null
             pendingHomeIndex = 0
             pendingExternalRoute = null
+        } else {
+            FcmTokenRegistrar.registerCurrentTokenIfLoggedIn(context)
         }
     }
 

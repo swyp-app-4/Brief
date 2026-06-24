@@ -23,6 +23,10 @@ data class NotificationSettingsRequest(
     val time10pm: Boolean
 )
 
+data class FcmTokenRequest(
+    val fcmToken: String
+)
+
 
 data class SocialAccessTokenRequest(
     val accessToken: String
