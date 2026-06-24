@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "765013672259",
+    "project_id": "brief-377da",
+    "storage_bucket": "brief-377da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765013672259:android:6b5991d3883e6e463aeff6",
+        "android_client_info": {
+          "package_name": "com.swyp.brife"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDthm3yV0d246hnpASFYzttya7JA8d3_Zg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

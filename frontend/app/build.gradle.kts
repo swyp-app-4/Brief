@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -71,6 +72,9 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0-rc02")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.2.0")
     implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.analytics)
 
     // Glance (홈 화면 위젯)
     implementation("androidx.glance:glance-appwidget:1.1.1")
