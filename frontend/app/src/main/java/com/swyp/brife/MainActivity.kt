@@ -1,11 +1,16 @@
 package com.swyp.brife
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -21,6 +26,12 @@ import com.swyp.brife.navigation.AppNavGraph
 import com.swyp.brife.ui.theme.BrifeTheme
 
 class MainActivity : ComponentActivity() {
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        // 알림 권한 거부는 앱 사용 흐름을 막지 않습니다.
+    }
 
     // newsId + version 쌍으로 관리 → 동일 newsId를 다시 탭해도 version이 증가해 LaunchedEffect 재실행
     private var deepLinkNewsId by mutableStateOf<Long?>(null)
@@ -50,6 +61,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        requestNotificationPermissionIfNeeded()
 
         deepLinkNewsId = extractNewsIdFromIntent(intent)
         deepLinkOpenBookmark = extractBookmarkFromIntent(intent)
@@ -80,5 +92,18 @@ class MainActivity : ComponentActivity() {
         deepLinkOpenBookmark = extractBookmarkFromIntent(intent)
         // 동일 newsId라도 매번 버전 증가 → LaunchedEffect 재실행 보장
         deepLinkVersion++
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+        val isGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!isGranted) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 }
