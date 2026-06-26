@@ -29,9 +29,10 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       DB_HOST: postgres
       GOOGLE_APPLICATION_CREDENTIALS: /app/google-credentials.json
+      FIREBASE_CREDENTIALS_PATH: /app/firebase-key.json
     volumes:
       - ${GOOGLE_CREDENTIALS_PATH}:/app/google-credentials.json:ro
-      - ${FIREBASE_CREDENTIALS_PATH}:/app/firebase-credentials.json:ro
+      - ${FIREBASE_CREDENTIALS_PATH}:/app/firebase-key.json:ro
     depends_on:
       postgres:
         condition: service_healthy
