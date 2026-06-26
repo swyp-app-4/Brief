@@ -17,4 +17,4 @@ spring:
 
 firebase:
   credentials:
-    path: ${FIREBASE_CREDENTIALS_PATH}
+    path: /app/firebase-credentials.json
