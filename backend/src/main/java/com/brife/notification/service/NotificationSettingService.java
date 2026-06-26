@@ -10,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.brife.notification.dto.request.FcmTokenRequest;
 import com.brife.notification.entity.UserFcmToken;
 import com.brife.notification.repository.UserFcmTokenRepository;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 
 @Service
 @RequiredArgsConstructor
@@ -44,5 +47,24 @@ public class NotificationSettingService {
                 .orElseGet(() -> new UserFcmToken(userId, request.getFcmToken()));
         fcmToken.updateToken(request.getFcmToken());
         userFcmTokenRepository.save(fcmToken);
+    }
+
+    public void sendPushNotification(Long userId, String title, String body) {
+        UserFcmToken fcmToken = userFcmTokenRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("FCM 토큰이 없습니다."));
+
+        Message message = Message.builder()
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .setToken(fcmToken.getFcmToken())
+                .build();
+
+        try {
+            FirebaseMessaging.getInstance().send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("푸시 알림 전송 실패: " + e.getMessage());
+        }
     }
 }

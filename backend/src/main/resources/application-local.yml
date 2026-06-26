@@ -26,4 +26,6 @@ spring:
       host: localhost
       port: 6379
 
-
+firebase:
+  credentials:
+    path: C:\SWAP_4\backend\firebase-credentials.json

@@ -48,7 +48,7 @@ dependencies {
 	// ==========================================
 	// Google Cloud Auth (Vertex AI 인증)
 	// ==========================================
-	implementation 'com.google.auth:google-auth-library-oauth2-http:1.23.0'
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
 
 	// ==========================================
 	// HTTP / Crawling
@@ -84,6 +84,9 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.batch:spring-batch-test'
 	testRuntimeOnly    'org.junit.platform:junit-platform-launcher'
+
+    // Firebase Admin SDK
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
 }
 
 springBoot {

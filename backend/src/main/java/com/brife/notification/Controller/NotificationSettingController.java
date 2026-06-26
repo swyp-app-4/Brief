@@ -44,4 +44,15 @@ public class NotificationSettingController {
         notificationSettingService.registerFcmToken(userId, request);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "푸시 알림 전송 테스트")
+    @PostMapping("/push")
+    public ResponseEntity<Void> sendPush(
+            Authentication authentication,
+            @RequestParam String title,
+            @RequestParam String body) {
+        Long userId = Long.parseLong(authentication.getName());
+        notificationSettingService.sendPushNotification(userId, title, body);
+        return ResponseEntity.ok().build();
+    }
 }
