@@ -62,7 +62,24 @@ jobs:
             rm -rf src build
             mkdir -p build/libs
             printf '%s\n' '.git' '.github' '.gradle' 'bin' 'frontend' 'backend' '.env' '.env.*' '*.pem' '*-*.json' 'service-account*.json' '.DS_Store' '*.log' '*.swp' '*.swo' > .dockerignore
-            printf '%s\n' 'services:' '  app:' '    build:' '      context: .' '      dockerfile: Dockerfile.runtime' > docker-compose.ci.yml
+            printf '%s\n' \
+              'services:' \
+              '  app:' \
+              '    build:' \
+              '      context: .' \
+              '      dockerfile: Dockerfile.runtime' \
+              '    depends_on: []' \
+              '    environment:' \
+              '      FIREBASE_CREDENTIALS_PATH: /app/firebase-key.json' \
+              '    volumes:' \
+              '      - ${FIREBASE_CREDENTIALS_PATH}:/app/firebase-key.json:ro' \
+              '    networks:' \
+              '      - backend_default' \
+              '' \
+              'networks:' \
+              '  backend_default:' \
+              '    external: true' \
+              > docker-compose.ci.yml
           "
           tar \
             -C backend \
