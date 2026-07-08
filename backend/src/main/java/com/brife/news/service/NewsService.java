@@ -1,5 +1,6 @@
 package com.brife.news.service;
 
+import com.brife.news.batch.BatchMetadataHolder;
 import com.brife.news.domain.SummarizedNews;
 import com.brife.news.dto.NewsDetailDto;
 import com.brife.news.dto.NewsSourceDto;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,8 +44,8 @@ public class NewsService {
     private final UserInterestRepository userInterestRepository;
     private final RawNewsRepository rawNewsRepository;
     private final ObjectMapper objectMapper;
+    private final BatchMetadataHolder batchMetadataHolder;
 
-    // categoryIds, groupIds 혼합 지원. 대분류별 최소 1개 보장 후 sourceCount 순으로 5개 채움
     public List<WidgetNewsDto> getTop5News(List<Long> categoryIds, List<Long> groupIds) {
         List<Long> mergedIds = new ArrayList<>(categoryIds);
 
@@ -64,28 +66,24 @@ public class NewsService {
 
         if (mergedIds.isEmpty()) return List.of();
 
-        // 마지막 배치 시각 기준으로 그 배치 결과 우선 조회
         LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-        List<SummarizedNews> candidates = summarizedNewsRepository.findMaxCreatedAt()
-                .map(lastBatch -> summarizedNewsRepository
-                        .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
-                                mergedIds, lastBatch.minusMinutes(90)))  // 배치 실행 시간 고려 +30분 여유
+
+        List<SummarizedNews> candidates = batchMetadataHolder.getLastBatchStartedAt()
+                .map(since -> summarizedNewsRepository
+                        .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(mergedIds, since))
                 .orElse(List.of());
 
         if (candidates.size() < 5) {
-            // 해당 배치에 뉴스가 부족하면 당일(자정 이후) 전체로 확장
             candidates = summarizedNewsRepository
                     .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(mergedIds, todayStart);
         }
 
         if (candidates.size() < 5) {
-            // 당일도 부족하면 48시간으로 확장 (서비스 초기 or 관심사 좁은 경우)
             candidates = summarizedNewsRepository
                     .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
                             mergedIds, LocalDateTime.now().minusHours(48));
         }
 
-        // 대분류별 1개 보장 (sourceCount 높은 순으로 정렬된 candidates에서 그룹당 첫 번째)
         Map<Long, SummarizedNews> groupPicks = new LinkedHashMap<>();
         for (SummarizedNews news : candidates) {
             Long gId = news.getCategory().getCategoryGroup().getId();
@@ -97,13 +95,11 @@ public class NewsService {
                 .map(SummarizedNews::getId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        // 남은 슬롯을 sourceCount 순으로 채움
         candidates.stream()
                 .filter(n -> !usedIds.contains(n.getId()))
                 .limit(5 - result.size())
                 .forEach(result::add);
 
-        // 최대 5개 제한
         if (result.size() > 5) {
             result = result.subList(0, 5);
         }
@@ -113,6 +109,7 @@ public class NewsService {
                 .toList();
     }
 
+    @Cacheable(value = "top5News", key = "#userId", unless = "#result.isEmpty()")
     public List<WidgetNewsDto> getRecommendedNews(Long userId) {
         List<UserInterest> interests = userInterestRepository.findByUserId(userId);
         if (interests.isEmpty()) return List.of();

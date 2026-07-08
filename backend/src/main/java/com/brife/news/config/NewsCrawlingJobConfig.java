@@ -1,5 +1,6 @@
 package com.brife.news.config;
 
+import com.brife.news.batch.BatchCompletionListener;
 import com.brife.news.batch.NewsCrawlingProcessor;
 import com.brife.news.batch.NewsCrawlingReader;
 import com.brife.news.batch.NewsCrawlingWriter;
@@ -29,9 +30,10 @@ public class NewsCrawlingJobConfig {
     private final PlatformTransactionManager transactionManager;
 
     @Bean
-    public Job newsCrawlingJob(Step newsCrawlingStep) {
+    public Job newsCrawlingJob(Step newsCrawlingStep, BatchCompletionListener listener) {
         return new JobBuilder("newsCrawlingJob", jobRepository)
                 .start(newsCrawlingStep)
+                .listener(listener)
                 .build();
     }
 

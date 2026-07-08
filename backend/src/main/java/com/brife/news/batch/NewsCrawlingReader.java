@@ -45,6 +45,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
     private final CategoryRepository categoryRepository;
     private final Executor crawlingExecutor;
     private final Retry naverRetry;
+    private final NewsBatchMetrics batchMetrics;
 
     private final Queue<KeywordGroupDto> queue = new ConcurrentLinkedQueue<>();
     private boolean initialized = false;
@@ -55,7 +56,8 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
                               ArticleClusteringService clusteringService,
                               CategoryRepository categoryRepository,
                               @Qualifier("crawlingExecutor") Executor crawlingExecutor,
-                              RetryRegistry retryRegistry) {
+                              RetryRegistry retryRegistry,
+                              NewsBatchMetrics batchMetrics) {
         this.properties = properties;
         this.restTemplate = restTemplate;
         this.articleExtractor = articleExtractor;
@@ -63,6 +65,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         this.categoryRepository = categoryRepository;
         this.crawlingExecutor = crawlingExecutor;
         this.naverRetry = retryRegistry.retry("naver");
+        this.batchMetrics = batchMetrics;
     }
 
     @Override
@@ -80,6 +83,8 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
             log.warn("[Reader] category 테이블이 비어있음. DB에 카테고리를 먼저 등록.");
             return;
         }
+        // TODO: 테스트 후 아래 줄 제거
+        categories = categories.subList(0, Math.min(5, categories.size()));
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -89,6 +94,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
             CompletableFuture<Void> future = CompletableFuture
                     .supplyAsync(() -> clusteringService.clusterAll(fetchMerged(keyword), keyword, minClusterSize), crawlingExecutor)
                     .thenAccept(clusters -> {
+                        batchMetrics.addClusterCount(clusters.size());
                         for (List<RawArticleDto> articles : clusters) {
                             queue.add(KeywordGroupDto.builder()
                                     .categoryId(category.getId())
@@ -153,10 +159,10 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         headers.set("X-Naver-Client-Id", properties.getClientId());
         headers.set("X-Naver-Client-Secret", properties.getClientSecret());
 
-        // 최신순 100개 수집
+        // TODO: 테스트 후 100으로 복구
         String url = UriComponentsBuilder.fromUriString(properties.getNewsUrl())
                 .queryParam("query", keyword)
-                .queryParam("display", 100)
+                .queryParam("display", 50)
                 .queryParam("sort", "date")
                 .build()
                 .toUriString();
@@ -164,9 +170,11 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         ResponseEntity<NaverNewsResponse> response = restTemplate.exchange(
                 url, HttpMethod.GET, new HttpEntity<>(headers), NaverNewsResponse.class);
 
+        batchMetrics.incrementNaverApiCallCount();
         if (response.getBody() == null || response.getBody().getItems() == null) {
             return Collections.emptyList();
         }
+        batchMetrics.addFetchedArticleCount(response.getBody().getItems().size());
 
         // 카테고리는 이미 병렬로 돌고 있어서 내부 파싱은 순차 처리 (풀 재사용 시 데드락 방지)
         LocalDateTime since = LocalDateTime.now().minusHours(24);
@@ -184,6 +192,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
 
         String body = cleanDesc;
         String pressName = "";
+        boolean extractSuccess = false;
         try {
             Document doc = Jsoup.connect(sourceUrl)
                     .timeout(5000)
@@ -191,11 +200,20 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
                     .referrer("https://www.google.com")
                     .get();
             String extracted = articleExtractor.extractFromDoc(doc);
-            if (!extracted.isBlank()) body = extracted;
+            if (!extracted.isBlank()) {
+                body = extracted;
+                extractSuccess = true;
+            }
             pressName = articleExtractor.extractPressName(doc);
         } catch (Exception e) {
             log.debug("[Reader] 원문 접속 실패 - url={}", sourceUrl);
         }
+        if (extractSuccess) {
+            batchMetrics.incrementOriginalExtractSuccessCount();
+        } else {
+            batchMetrics.incrementOriginalExtractFallbackCount();
+        }
+        batchMetrics.addTotalOriginalTextLength(body.length());
 
         return RawArticleDto.builder()
                 .title(cleanTitle)
