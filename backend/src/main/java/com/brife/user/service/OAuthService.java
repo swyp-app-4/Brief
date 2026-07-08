@@ -4,6 +4,7 @@ import com.brife.user.domain.AppUser;
 import com.brife.user.domain.RefreshToken;
 import com.brife.user.dto.AuthResponse;
 import com.brife.user.dto.TermsRequest;
+import com.brife.user.exception.AuthException;
 import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
 import com.brife.user.security.JwtProvider;
@@ -89,16 +90,20 @@ public class OAuthService {
 
     @Transactional
     public String refresh(String refreshTokenValue) {
+        if (refreshTokenValue == null || refreshTokenValue.isBlank()) {
+            throw new AuthException("Refresh Token이 필요합니다.");
+        }
+
         RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenValue)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 Refresh Token입니다."));
+                .orElseThrow(() -> new AuthException("유효하지 않은 Refresh Token입니다."));
 
         if (refreshToken.isExpired()) {
             refreshTokenRepository.delete(refreshToken);
-            throw new IllegalArgumentException("만료된 Refresh Token입니다. 다시 로그인해주세요.");
+            throw new AuthException("만료된 Refresh Token입니다. 다시 로그인해주세요.");
         }
 
         AppUser user = appUserRepository.findById(refreshToken.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new AuthException("존재하지 않는 유저입니다."));
 
         return jwtProvider.generateAccessToken(user.getId(), user.getRole());
     }

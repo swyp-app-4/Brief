@@ -36,5 +36,9 @@ public interface ArchiveItemRepository extends JpaRepository<ArchiveItem, Long> 
     // 오래된순
     List<ArchiveItem> findByArchiveIdOrderBySavedAtAsc(Long archiveId);
 
+    // 유저의 보관함에서 뉴스 제목으로 검색
+    @Query("SELECT ai FROM ArchiveItem ai JOIN SummarizedNews sn ON ai.contentId = sn.id WHERE ai.archive.userId = :userId AND sn.title LIKE %:keyword%")
+    List<ArchiveItem> searchByNewsTitleAndUserId(@Param("userId") Long userId, @Param("keyword") String keyword);
+
 // 이름순 (나중에 summarized_news 조인 필요 - 일단 보류)
 }

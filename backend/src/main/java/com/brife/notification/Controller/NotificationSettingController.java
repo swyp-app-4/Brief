@@ -1,0 +1,58 @@
+package com.brife.notification.Controller;
+
+import com.brife.notification.dto.request.NotificationSettingRequest;
+import com.brife.notification.dto.response.NotificationSettingResponse;
+import com.brife.notification.service.NotificationSettingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import com.brife.notification.dto.request.FcmTokenRequest;
+
+@RestController
+@RequestMapping("/notifications")
+@RequiredArgsConstructor
+@Tag(name = "알림 설정")
+public class NotificationSettingController {
+
+    private final NotificationSettingService notificationSettingService;
+
+    @Operation(summary = "알림 설정 조회")
+    @GetMapping("/settings")
+    public ResponseEntity<NotificationSettingResponse> getSettings(Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getName());
+        return ResponseEntity.ok(notificationSettingService.getSettings(userId));
+    }
+
+    @Operation(summary = "알림 설정 수정")
+    @PatchMapping("/settings")
+    public ResponseEntity<NotificationSettingResponse> updateSettings(
+            Authentication authentication,
+            @RequestBody NotificationSettingRequest request) {
+        Long userId = Long.parseLong(authentication.getName());
+        return ResponseEntity.ok(notificationSettingService.updateSettings(userId, request));
+    }
+
+    @Operation(summary = "FCM 토큰 등록")
+    @PostMapping("/fcm-token")
+    public ResponseEntity<Void> registerFcmToken(
+            Authentication authentication,
+            @RequestBody FcmTokenRequest request) {
+        Long userId = Long.parseLong(authentication.getName());
+        notificationSettingService.registerFcmToken(userId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "푸시 알림 전송 테스트")
+    @PostMapping("/push")
+    public ResponseEntity<Void> sendPush(
+            Authentication authentication,
+            @RequestParam String title,
+            @RequestParam String body) {
+        Long userId = Long.parseLong(authentication.getName());
+        notificationSettingService.sendPushNotification(userId, title, body);
+        return ResponseEntity.ok().build();
+    }
+}

@@ -4,6 +4,7 @@ import com.brife.archive.dto.request.ArchiveCreateRequest;
 import com.brife.archive.dto.request.ArchiveItemCreateRequest;
 import com.brife.archive.dto.response.ArchiveItemResponse;
 import com.brife.archive.dto.response.ArchiveResponse;
+import com.brife.archive.dto.response.ArchiveSearchResponse;
 import com.brife.archive.dto.response.ArchiveStatsResponse;
 import com.brife.archive.service.ArchiveService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.brife.archive.dto.response.ArchiveSearchResponse;
 
 import java.util.List;
 
@@ -108,6 +110,15 @@ public class ArchiveController {
             @Valid @RequestBody ArchiveItemCreateRequest request) {
         Long userId = Long.parseLong(authentication.getName());
         return ResponseEntity.ok(archiveService.saveToFavorite(userId, request));
+    }
+
+    @Operation(summary = "아카이브 검색 (폴더명 + 뉴스 제목)")
+    @GetMapping("/search")
+    public ResponseEntity<ArchiveSearchResponse> search(
+            Authentication authentication,
+            @RequestParam String keyword) {
+        Long userId = Long.parseLong(authentication.getName());
+        return ResponseEntity.ok(archiveService.search(userId, keyword));
     }
 
     @Operation(summary = "아카이브 통계 조회")

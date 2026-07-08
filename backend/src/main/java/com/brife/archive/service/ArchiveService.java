@@ -4,6 +4,7 @@ import com.brife.archive.dto.request.ArchiveCreateRequest;
 import com.brife.archive.dto.request.ArchiveItemCreateRequest;
 import com.brife.archive.dto.response.ArchiveItemResponse;
 import com.brife.archive.dto.response.ArchiveResponse;
+import com.brife.archive.dto.response.ArchiveSearchResponse;
 import com.brife.archive.dto.response.ArchiveStatsResponse;
 import com.brife.archive.entity.Archive;
 import com.brife.archive.entity.ArchiveItem;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.brife.archive.dto.response.ArchiveSearchResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -217,6 +219,25 @@ public class ArchiveService {
         }
 
         archiveItemRepository.deleteAll(archive.getItems());
+    }
+
+    // 아카이브 검색 (폴더명 + 뉴스 제목)
+    public ArchiveSearchResponse search(Long userId, String keyword) {
+        // 폴더명 검색
+        List<ArchiveResponse> folders = archiveRepository
+                .findByUserIdAndFolderNameContainingIgnoreCase(userId, keyword)
+                .stream()
+                .map(ArchiveResponse::new)
+                .collect(Collectors.toList());
+
+        // 뉴스 제목 검색
+        List<ArchiveItemResponse> items = archiveItemRepository
+                .searchByNewsTitleAndUserId(userId, keyword)
+                .stream()
+                .map(ArchiveItemResponse::new)
+                .collect(Collectors.toList());
+
+        return new ArchiveSearchResponse(folders, items);
     }
 
     // 아카이브 통계 조회

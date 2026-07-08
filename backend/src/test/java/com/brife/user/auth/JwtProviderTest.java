@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.brife.user.security.JwtProvider;
+
 import static org.assertj.core.api.Assertions.*;
 
 class JwtProviderTest {
