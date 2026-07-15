@@ -83,9 +83,6 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
             log.warn("[Reader] category 테이블이 비어있음. DB에 카테고리를 먼저 등록.");
             return;
         }
-        // TODO: 테스트 후 아래 줄 제거
-        categories = categories.subList(0, Math.min(5, categories.size()));
-
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (Category category : categories) {
