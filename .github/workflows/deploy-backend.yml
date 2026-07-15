@@ -72,7 +72,7 @@ jobs:
               '    environment:' \
               '      FIREBASE_CREDENTIALS_PATH: /app/firebase-key.json' \
               '    volumes:' \
-              '      - ${FIREBASE_CREDENTIALS_PATH}:/app/firebase-key.json:ro' \
+              '      - \${FIREBASE_CREDENTIALS_PATH}:/app/firebase-key.json:ro' \
               '    networks:' \
               '      - backend_default' \
               '' \
