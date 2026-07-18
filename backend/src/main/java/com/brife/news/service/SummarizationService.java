@@ -26,8 +26,8 @@ public class SummarizationService {
 
     private static final int MAX_CHARS_PER_ARTICLE  = 8_000;
     private static final int MAX_CHARS_PER_CLUSTER  = 30_000;
-    private static final int MIN_TOTAL_SECTION_LENGTH   = 900;
-    private static final int MIN_SECTION_CONTENT_LENGTH = 220;
+    private static final int MIN_TOTAL_SECTION_LENGTH   = 1200;
+    private static final int MIN_SECTION_CONTENT_LENGTH = 280;
 
     private static final String SYSTEM_PROMPT = """
             당신은 15년 차 경력의 대한민국 수석 뉴스 에디터입니다.
@@ -50,8 +50,8 @@ public class SummarizationService {
             1. title: 20~30자 내외. 포털 메인급 헤드라인 스타일. 단순 명사 나열 금지.
                예: "트럼프, 이란 군사작전 축소 시사… 휴전엔 선 그어"
 
-            2. summary (3줄 요약):
-               - 핵심 팩트 3가지를 각각 한 줄로. 줄 구분은 '\\n'.
+            2. summary (4줄 요약):
+               - 핵심 팩트 4가지를 각각 한 줄로. 줄 구분은 '\\n'.
                - 어미는 친절한 경어체(~됩니다, ~했습니다, ~예정입니다). 명사형 종결('~함', '~됨') 및 평어체('~했다') 금지.
                - 국내 파급 효과가 있으면 반드시 1줄 포함.
 
@@ -68,7 +68,7 @@ public class SummarizationService {
                - heading: 15~20자 내외 미니 헤드라인. 단순 명사구 금지.
                - 반드시 동사/형용사형 서술어(~하다, ~다) 또는 의문형(~일까?)으로 끝낼 것.
                  예: "동맹국에 호위 동참 압박하나?" (O) / "트럼프 발언" (X)
-               - content: 6~8문장. 각 문장은 '\\n'으로 구분.
+               - content: 7~9문장. 각 문장은 '\\n'으로 구분.
                  어투는 친절한 에디터 톤(~어요, ~됩니다, ~했습니다)으로 작성. 보고서체('~함', '~임') 금지.
                  뉴스 원문에 없는 내용을 지어내거나 추측하지 말 것.
             """;
