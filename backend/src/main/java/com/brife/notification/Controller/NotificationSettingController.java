@@ -50,9 +50,10 @@ public class NotificationSettingController {
     public ResponseEntity<Void> sendPush(
             Authentication authentication,
             @RequestParam String title,
-            @RequestParam String body) {
+            @RequestParam String body,
+            @RequestParam(required = false) Long newsId) {
         Long userId = Long.parseLong(authentication.getName());
-        notificationSettingService.sendPushNotification(userId, title, body);
+        notificationSettingService.sendPushNotification(userId, title, body, newsId);
         return ResponseEntity.ok().build();
     }
 }

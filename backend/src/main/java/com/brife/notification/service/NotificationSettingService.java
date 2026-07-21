@@ -49,20 +49,23 @@ public class NotificationSettingService {
         userFcmTokenRepository.save(fcmToken);
     }
 
-    public void sendPushNotification(Long userId, String title, String body) {
+    public void sendPushNotification(Long userId, String title, String body, Long newsId) {
         UserFcmToken fcmToken = userFcmTokenRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("FCM 토큰이 없습니다."));
 
-        Message message = Message.builder()
+        Message.Builder messageBuilder = Message.builder()
                 .setNotification(Notification.builder()
                         .setTitle(title)
                         .setBody(body)
                         .build())
-                .setToken(fcmToken.getFcmToken())
-                .build();
+                .setToken(fcmToken.getFcmToken());
+
+        if (newsId != null) {
+            messageBuilder.putData("newsId", String.valueOf(newsId));
+        }
 
         try {
-            FirebaseMessaging.getInstance().send(message);
+            FirebaseMessaging.getInstance().send(messageBuilder.build());
         } catch (Exception e) {
             throw new RuntimeException("푸시 알림 전송 실패: " + e.getMessage());
         }

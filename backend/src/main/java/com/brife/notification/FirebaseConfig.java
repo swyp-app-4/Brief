@@ -13,7 +13,7 @@ import java.io.IOException;
 @Configuration
 public class FirebaseConfig {
 
-    @Value("${FIREBASE_CREDENTIALS_PATH}")
+    @Value("${firebase.credentials.path}")
     private String credentialsPath;
 
     @PostConstruct
