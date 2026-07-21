@@ -62,7 +62,24 @@ jobs:
             rm -rf src build
             mkdir -p build/libs
             printf '%s\n' '.git' '.github' '.gradle' 'bin' 'frontend' 'backend' '.env' '.env.*' '*.pem' '*-*.json' 'service-account*.json' '.DS_Store' '*.log' '*.swp' '*.swo' > .dockerignore
-            printf '%s\n' 'services:' '  app:' '    build:' '      context: .' '      dockerfile: Dockerfile.runtime' > docker-compose.ci.yml
+            printf '%s\n' \
+              'services:' \
+              '  app:' \
+              '    build:' \
+              '      context: .' \
+              '      dockerfile: Dockerfile.runtime' \
+              '    depends_on: []' \
+              '    environment:' \
+              '      FIREBASE_CREDENTIALS_PATH: /app/firebase-key.json' \
+              '    volumes:' \
+              '      - \${FIREBASE_CREDENTIALS_PATH}:/app/firebase-key.json:ro' \
+              '    networks:' \
+              '      - backend_default' \
+              '' \
+              'networks:' \
+              '  backend_default:' \
+              '    external: true' \
+              > docker-compose.ci.yml
           "
           tar \
             -C backend \
@@ -78,7 +95,8 @@ jobs:
           timeout 240s ssh -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "
             set -e
             cd '$EC2_APP_DIR'
-            docker-compose -p brife -f docker-compose.yml -f docker-compose.ci.yml up -d --build app
+            docker rm -f brife-app >/dev/null 2>&1 || true
+            docker-compose -p brife -f docker-compose.yml -f docker-compose.ci.yml up -d --build --no-deps app
             docker-compose -p brife ps
           "
 

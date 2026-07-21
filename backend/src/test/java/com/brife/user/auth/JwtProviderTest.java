@@ -1,5 +1,6 @@
 package com.brife.user.auth;
 
+import com.brife.user.security.JwtProvider;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

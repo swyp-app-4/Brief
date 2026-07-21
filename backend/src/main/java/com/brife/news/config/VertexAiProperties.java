@@ -23,4 +23,5 @@ public class VertexAiProperties {
             region, projectId, region, model
         );
     }
+
 }

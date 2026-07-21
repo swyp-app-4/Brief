@@ -6,7 +6,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.NativeQuery;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -19,9 +18,6 @@ public interface SummarizedNewsRepository extends JpaRepository<SummarizedNews, 
     @EntityGraph(attributePaths = {"category", "category.categoryGroup"})
     Optional<SummarizedNews> findWithCategoryById(Long id);
 
-    @Query("SELECT MAX(s.createdAt) FROM SummarizedNews s")
-    Optional<LocalDateTime> findMaxCreatedAt();
-
     @EntityGraph(attributePaths = {"category", "category.categoryGroup"})
     List<SummarizedNews> findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
             List<Long> categoryIds, LocalDateTime since);
@@ -31,12 +27,16 @@ public interface SummarizedNewsRepository extends JpaRepository<SummarizedNews, 
 
     @NativeQuery(value = """
             SELECT * FROM summarized_news
-            WHERE title ILIKE CONCAT('%%', :keyword, '%%')
-            OR summary ILIKE CONCAT('%%', :keyword, '%%')
+            WHERE is_summarized = true
+              AND (title ILIKE CONCAT('%%', :keyword, '%%')
+              OR summary ILIKE CONCAT('%%', :keyword, '%%'))
             ORDER BY published_date DESC
             """)
     Slice<SummarizedNews> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     @EntityGraph(attributePaths = {"category"})
     Slice<SummarizedNews> findAllBy(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"category"})
+    List<SummarizedNews> findAllByIdIn(List<Long> ids);
 }
