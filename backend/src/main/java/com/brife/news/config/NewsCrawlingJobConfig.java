@@ -17,6 +17,8 @@ import org.springframework.batch.core.listener.SkipListener;
 import org.springframework.dao.DataAccessException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Slf4j
@@ -40,13 +42,15 @@ public class NewsCrawlingJobConfig {
     @Bean
     public Step newsCrawlingStep(NewsCrawlingReader reader,
                                   NewsCrawlingProcessor processor,
-                                  NewsCrawlingWriter writer) {
+                                  NewsCrawlingWriter writer,
+                                  @Qualifier("newsBatchTaskExecutor") AsyncTaskExecutor taskExecutor) {
         return new StepBuilder("newsCrawlingStep", jobRepository)
                 .<KeywordGroupDto, ProcessedNewsDto>chunk(1)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
                 .transactionManager(transactionManager)
+                .taskExecutor(taskExecutor)
                 .faultTolerant()
                 .skipPolicy((t, skipCount) ->
                         !(t instanceof DataAccessException) && t instanceof RuntimeException && skipCount < MAX_SKIP_COUNT)

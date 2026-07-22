@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class SimilarNewsService {
 
     private static final int SIMILAR_NEWS_LIMIT = 5;
+    private static final double MIN_SIMILARITY = 0.72;
 
     private final NewsEmbeddingRepository newsEmbeddingRepository;
     private final SummarizedNewsRepository summarizedNewsRepository;
@@ -31,7 +32,8 @@ public class SimilarNewsService {
             return List.of();
         }
 
-        List<Long> similarIds = newsEmbeddingRepository.findSimilarNewsIds(newsId, SIMILAR_NEWS_LIMIT);
+        List<Long> similarIds = newsEmbeddingRepository.findSimilarNewsIds(
+                newsId, MIN_SIMILARITY, SIMILAR_NEWS_LIMIT);
         if (similarIds.isEmpty()) {
             return List.of();
         }

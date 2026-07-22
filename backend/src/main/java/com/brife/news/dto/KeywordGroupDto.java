@@ -11,5 +11,6 @@ public class KeywordGroupDto {
     private Long categoryId;
     private String categoryName;
     private String keyword;
+    private int minClusterSize;
     private List<RawArticleDto> articles;
 }

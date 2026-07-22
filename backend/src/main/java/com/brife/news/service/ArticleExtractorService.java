@@ -6,7 +6,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -19,6 +22,25 @@ public class ArticleExtractorService {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) " +
             "Chrome/120.0.0.0 Safari/537.36";
+
+    private static final Map<String, String> PRESS_BY_DOMAIN = Map.ofEntries(
+            Map.entry("osen.co.kr", "OSEN"),
+            Map.entry("news.tvchosun.com", "TV조선"),
+            Map.entry("biz.sbs.co.kr", "SBS Biz"),
+            Map.entry("zdnet.co.kr", "ZDNet Korea"),
+            Map.entry("stoo.com", "스포츠투데이"),
+            Map.entry("megaeconomy.co.kr", "메가경제"),
+            Map.entry("metroseoul.co.kr", "메트로신문"),
+            Map.entry("joseilbo.com", "조세일보"),
+            Map.entry("wowtv.co.kr", "한국경제TV"),
+            Map.entry("ichannela.com", "채널A"),
+            Map.entry("ohmynews.com", "오마이뉴스"),
+            Map.entry("ekn.kr", "에너지경제"),
+            Map.entry("pressian.com", "프레시안"),
+            Map.entry("thisisgame.com", "디스이즈게임"),
+            Map.entry("newsen.com", "뉴스엔"),
+            Map.entry("naver.com", "네이버뉴스")
+    );
 
 
     private static final List<String> BODY_SELECTORS = List.of(
@@ -60,9 +82,44 @@ public class ArticleExtractorService {
     }
 
     public String extractPressName(Document doc) {
+        return extractPressName(doc, null);
+    }
+
+    public String extractPressName(Document doc, String sourceUrl) {
         String siteName = doc.select("meta[property=og:site_name]").attr("content");
-        if (!siteName.isBlank()) return siteName.trim();
-        return "";
+        if (isPlausiblePressName(siteName)) return siteName.trim();
+
+        String publisher = doc.select("meta[property=article:publisher]").attr("content");
+        if (isPlausiblePressName(publisher)) return publisher.trim();
+
+        return resolvePressNameFromDomain(sourceUrl);
+    }
+
+    public String resolvePressNameFromDomain(String sourceUrl) {
+        if (sourceUrl == null || sourceUrl.isBlank()) return "";
+        try {
+            String host = URI.create(sourceUrl).getHost();
+            if (host == null || host.isBlank()) return "";
+            host = host.toLowerCase(Locale.ROOT);
+            String normalizedHost = host.startsWith("www.") ? host.substring(4) : host;
+
+            for (Map.Entry<String, String> entry : PRESS_BY_DOMAIN.entrySet()) {
+                if (normalizedHost.equals(entry.getKey()) || normalizedHost.endsWith("." + entry.getKey())) {
+                    return entry.getValue();
+                }
+            }
+            return normalizedHost;
+        } catch (IllegalArgumentException e) {
+            return "";
+        }
+    }
+
+    private boolean isPlausiblePressName(String value) {
+        if (value == null || value.isBlank()) return false;
+        String trimmed = value.trim();
+        return trimmed.length() <= 40
+                && !trimmed.startsWith("http://")
+                && !trimmed.startsWith("https://");
     }
 
     public String extractFromDoc(Document doc) {

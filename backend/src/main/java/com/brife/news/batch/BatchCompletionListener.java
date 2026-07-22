@@ -1,5 +1,6 @@
 package com.brife.news.batch;
 
+import com.brife.news.service.DuplicateNewsDetectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.BatchStatus;
@@ -19,9 +20,11 @@ public class BatchCompletionListener implements JobExecutionListener {
     private final CacheManager cacheManager;
     private final BatchMetadataHolder batchMetadataHolder;
     private final NewsBatchMetrics batchMetrics;
+    private final DuplicateNewsDetectionService duplicateNewsDetectionService;
 
     @Override
     public void beforeJob(JobExecution jobExecution) {
+        duplicateNewsDetectionService.resetBatchCandidates();
         LocalDateTime startedAt = LocalDateTime.now();
         batchMetadataHolder.updateStartedAt(startedAt);
         log.info("[배치] 시작 → 시작 시각 기록. startedAt={}", startedAt);
@@ -39,14 +42,16 @@ public class BatchCompletionListener implements JobExecutionListener {
             log.warn("[배치] 비정상 종료 (status={}) → 캐시 유지", jobExecution.getStatus());
         }
 
-        log.info("[BatchMetrics] status={}, naverCalls={}, fetchedArticles={}, clusters={}, " +
-                 "vertexCalls={}, generatedNews={}, extractSuccessRate={}, " +
+        log.info("[BatchMetrics] status={}, naverCalls={}, fetchedArticles={}, clusters={}, skippedClusters={}, " +
+                 "vertexCalls={}, vertexRetries={}, generatedNews={}, extractSuccessRate={}, " +
                  "avgOriginalTextLength={}, embeddingSuccess={}, embeddingFail={}",
                 jobExecution.getStatus(),
                 batchMetrics.getNaverApiCallCount(),
                 batchMetrics.getFetchedArticleCount(),
                 batchMetrics.getClusterCount(),
+                batchMetrics.getSkippedClusterCount(),
                 batchMetrics.getVertexCallCount(),
+                batchMetrics.getVertexRetryCount(),
                 batchMetrics.getGeneratedNewsCount(),
                 String.format("%.1f%%", batchMetrics.getExtractSuccessRate() * 100),
                 batchMetrics.getAvgOriginalTextLength(),

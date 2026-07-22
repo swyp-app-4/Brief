@@ -15,6 +15,7 @@ import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
 import com.brife.user.repository.UserInterestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +56,7 @@ public class ProfileService {
     }
 
     @Transactional
+    @CacheEvict(value = "top5News", key = "#userId")
     public void saveInterests(Long userId, InterestRequest request) {
         if (userInterestRepository.existsByUserId(userId)) {
             throw new IllegalStateException("이미 관심사가 설정되어 있습니다. 재설정은 PUT을 사용하세요.");
@@ -68,6 +70,7 @@ public class ProfileService {
     }
 
     @Transactional
+    @CacheEvict(value = "top5News", key = "#userId")
     public void resetInterests(Long userId, InterestRequest request) {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
@@ -79,6 +82,7 @@ public class ProfileService {
     }
 
     @Transactional
+    @CacheEvict(value = "top5News", key = "#userId")
     public void deleteUser(Long userId) {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
