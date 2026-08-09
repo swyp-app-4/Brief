@@ -184,14 +184,22 @@ fun HomeScreen(
     val illustrationHeight = 130.dp
     val illustrationCardOverlap = 40.dp
     val emptyStateHeight = 220.dp
-    val minCardHeight = 440.dp
-    val maxCardHeight = 560.dp
+    val minCardHeight = 410.dp
+    val maxCardHeight = 540.dp
     val pagerCardHeightDifference = 15.dp
+    val pagerIndicatorAreaHeight = 42.dp
+    val homeBottomBreathingSpace = 15.dp
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val availableContentHeight = (maxHeight - topPadding).coerceAtLeast(0.dp)
-        val cardHeight = (availableContentHeight * (2f / 3f))
+        val reservedHomeHeight =
+            illustrationHeight - illustrationCardOverlap +
+                pagerCardHeightDifference + pagerIndicatorAreaHeight +
+                homeBottomBreathingSpace
+        val cardHeight = (availableContentHeight - reservedHomeHeight)
             .coerceIn(minCardHeight, maxCardHeight)
+        val cardContentScale = ((cardHeight - minCardHeight).value /
+            (maxCardHeight - minCardHeight).value).coerceIn(0f, 1f)
         val pagerHeight = cardHeight + pagerCardHeightDifference
 
         Image(
@@ -265,7 +273,7 @@ fun HomeScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(cardHeight)
+                                .heightIn(min = minCardHeight, max = cardHeight)
                                 .zIndex(1f - absOffset.coerceIn(0f, 1f))
                                 .graphicsLayer {
                                     val scale = lerp(
@@ -292,6 +300,7 @@ fun HomeScreen(
                                 HomeNewsCardContent(
                                     item = newsList[page],
                                     modifier = Modifier.fillMaxWidth(),
+                                    contentScaleFactor = cardContentScale,
                                     onShareClick = {
                                         val coords = cardCoords ?: return@HomeNewsCardContent
                                         val bounds = coords.boundsInWindow()
@@ -316,7 +325,7 @@ fun HomeScreen(
             if (!isLoading && newsList.isEmpty()) {
                 Spacer(modifier = Modifier.height(42.dp))
             } else {
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // 페이지 인디케이터
                 Row(

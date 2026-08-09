@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,13 +27,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.swyp.brife.R
-import com.swyp.brife.ui.theme.BrifeTheme
-import com.swyp.brife.ui.theme.Positive
 import com.swyp.brife.ui.component.CategoryChip
+import com.swyp.brife.ui.component.PrimaryButton
+import com.swyp.brife.ui.theme.BrifeTheme
 
 
 
@@ -43,14 +45,37 @@ fun HomeNewsCardContent(
     item: HomeNewsCardItem,
     modifier: Modifier = Modifier,
     onShareClick: () -> Unit = {},
-    onDetailClick: () -> Unit = {}
+    onDetailClick: () -> Unit = {},
+    contentScaleFactor: Float = 1f
 ) {
+    val scale = contentScaleFactor.coerceIn(0f, 1f)
+    val titleStyle = MaterialTheme.typography.titleMedium.copy(
+        fontSize = (19.5f + 2.5f * scale).sp,
+        lineHeight = (27.5f + 2.5f * scale).sp
+    )
+    val bodyStyle = MaterialTheme.typography.bodySmall.copy(
+        fontSize = (10.5f + 1.5f * scale).sp,
+        lineHeight = (15.5f + 2.5f * scale).sp
+    )
+    val sectionTitleStyle = MaterialTheme.typography.labelLarge.copy(
+        fontSize = (13.5f + 2.5f * scale).sp,
+        lineHeight = (19f + 5f * scale).sp
+    )
+    val summaryBulletStyle = MaterialTheme.typography.bodyMedium.copy(
+        fontSize = (12.5f + 1.5f * scale).sp,
+        lineHeight = (19f + 3f * scale).sp
+    )
+    val outerVerticalPadding = (6f + 4f * scale).dp
+    val headerTitleSpacing = (6f + 2f * scale).dp
+    val titleNoticeSpacing = (8f + 6f * scale).dp
+    val noticeSummarySpacing = (10f + 6f * scale).dp
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .clickable { onDetailClick() }
-            .padding(horizontal = 20.dp, vertical = 10.dp)
+            .padding(horizontal = 20.dp, vertical = outerVerticalPadding)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -80,17 +105,17 @@ fun HomeNewsCardContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(headerTitleSpacing))
 
         Text(
             text = item.title,
-            style = MaterialTheme.typography.titleMedium,
+            style = titleStyle,
             color = Color.Black,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(titleNoticeSpacing))
 
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -107,19 +132,23 @@ fun HomeNewsCardContent(
             Text(
                 text = item.notice,
                 modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodySmall,
+                style = bodyStyle,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(noticeSummarySpacing))
 
         SummaryInsightBox(
             summaryPoints = item.summaryPoints,
             insight = item.insight,
             onDetailClick = onDetailClick,
+            contentScaleFactor = scale,
+            sectionTitleStyle = sectionTitleStyle,
+            bodyStyle = bodyStyle,
+            summaryBulletStyle = summaryBulletStyle,
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -133,66 +162,65 @@ private fun SummaryInsightBox(
     summaryPoints: List<String>,
     insight: String,
     modifier: Modifier = Modifier,
-    onDetailClick: () -> Unit = {}
+    onDetailClick: () -> Unit = {},
+    contentScaleFactor: Float,
+    sectionTitleStyle: TextStyle,
+    bodyStyle: TextStyle,
+    summaryBulletStyle: TextStyle
 ) {
+    val verticalPadding = (12.5f + 4f * contentScaleFactor).dp
+    val summaryHeaderSpacing = (7.5f + 3f * contentScaleFactor).dp
+    val summaryItemSpacing = (4.5f + 2f * contentScaleFactor).dp
+    val dividerVerticalPadding = (10.25f + 4f * contentScaleFactor).dp
+    val buttonSpacing = (8.5f + 4f * contentScaleFactor).dp
+    val buttonHeight = (40f + 10f * contentScaleFactor).dp
+
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFFF5F9FF))
             .wrapContentHeight()
-            .padding(vertical = 18.dp)
+            .padding(vertical = verticalPadding)
     ) {
         SummarySection(
             title = "간단요약",
             points = summaryPoints,
             iconResId = R.drawable.brife_logo,
+            titleStyle = sectionTitleStyle,
+            pointStyle = bodyStyle,
+            bulletStyle = summaryBulletStyle,
+            headerSpacing = summaryHeaderSpacing,
+            itemSpacing = summaryItemSpacing,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = 16.dp, horizontal = 16.dp),
+            modifier = Modifier.padding(
+                vertical = dividerVerticalPadding,
+                horizontal = 16.dp
+            ),
             color = Color(0xFFE3E3E3),
             thickness = 1.dp
         )
 
-        SectionBlock(
-            title = "살펴보기",
-            content = insight,
-            iconResId = R.drawable.ic_look,
+        Text(
+            text = insight,
+            style = bodyStyle,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(buttonSpacing))
 
-        Row(
+        PrimaryButton(
+            text = "자세히 보기",
+            onClick = onDetailClick,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.End
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onDetailClick() }
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
-            ) {
-                Text(
-                    text = "자세히 보기",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Positive
-                )
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_right),
-                    contentDescription = null,
-                    tint = Positive,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
+                .padding(horizontal = 16.dp)
+                .height(buttonHeight)
+        )
     }
 }
 
@@ -204,6 +232,11 @@ private fun SummarySection(
     title: String,
     points: List<String>,
     iconResId: Int,
+    titleStyle: TextStyle,
+    pointStyle: TextStyle,
+    bulletStyle: TextStyle,
+    headerSpacing: Dp,
+    itemSpacing: Dp,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -217,12 +250,12 @@ private fun SummarySection(
             Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = title,
-                style = MaterialTheme.typography.labelLarge,
+                style = titleStyle,
                 color = Color.Black
             )
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(headerSpacing))
 
         points.forEachIndexed { index, point ->
             Row(
@@ -231,7 +264,7 @@ private fun SummarySection(
             ) {
                 Text(
                     text = "•",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = bulletStyle,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
@@ -240,7 +273,7 @@ private fun SummarySection(
                 Text(
                     text = point,
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = pointStyle,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     // --- 추가된 속성 ---
                     maxLines = 1,
@@ -250,50 +283,12 @@ private fun SummarySection(
             }
 
             if (index != points.lastIndex) {
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(itemSpacing))
             }
         }
     }
 }
 
-
-
-
-@Composable
-private fun SectionBlock(
-    title: String,
-    content: String,
-    iconResId: Int,
-    modifier: Modifier = Modifier
-        .fillMaxHeight()
-) {
-    Column(modifier = modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painter = painterResource(id = iconResId),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge,
-                color = Color.Black
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = content,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
 
 
 
