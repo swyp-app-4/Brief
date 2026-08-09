@@ -181,6 +181,11 @@ fun HomeScreen(
 
 
 
+    val illustrationHeight = 130.dp
+    val illustrationCardOverlap = 40.dp
+    val pagerHeight = 455.dp
+    val emptyStateHeight = 220.dp
+
     Box(modifier = Modifier.fillMaxSize()) {
 
         Image(
@@ -192,105 +197,119 @@ fun HomeScreen(
 
         Column(
             modifier = Modifier
-                .fillMaxSize(),
-//                .padding(top = topPadding),
+                .fillMaxSize()
+                .padding(top = topPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 일러스트 영역 — 남은 공간을 채우며 카드 상단과 20dp 겹침
-            // offset(y=20.dp): 시각적으로 20dp 아래로 내려가 카드 영역과 겹침
-            // HorizontalPager가 나중에 그려지므로 카드가 일러스트 하단을 덮음
-            HomeIllustrationArea(
-                illustrationRes = illustrationRes,
+            val contentHeight =
+                if (!isLoading && newsList.isEmpty()) emptyStateHeight else pagerHeight
+
+            Box(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
-                    .offset(y = 40.dp)
-            )
-
-            // 빈 상태: 로딩 완료 후 뉴스가 없으면 디버깅용 메시지 표시
-            // (카드 자체를 숨기거나 fallback 데이터를 넣지 않음 — 백엔드 문제 확인용)
-            if (!isLoading && newsList.isEmpty()) {
-                Box(
+                    .height(illustrationHeight + contentHeight - illustrationCardOverlap)
+            ) {
+                HomeIllustrationArea(
+                    illustrationRes = illustrationRes,
                     modifier = Modifier
+                        .align(Alignment.TopCenter)
                         .fillMaxWidth()
-                        .height(220.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "추천 뉴스를 불러오지 못했습니다",
-                        color = Color.White.copy(alpha = 0.8f),
-                        style = MaterialTheme.typography.bodySmall,
-                        textAlign = TextAlign.Center
-                    )
-                }
-                Spacer(modifier = Modifier.height(42.dp))
-            } else {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(455.dp)
-                        .nestedScroll(guestForwardBlocker),
-                    contentPadding = PaddingValues(horizontal = 36.dp),
-                    pageSpacing = 12.dp,
-                    beyondViewportPageCount = 1
-                ) { page ->
-                    val pageOffset =
-                        (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-                    val absOffset = pageOffset.absoluteValue
+                        .height(illustrationHeight)
+                        .zIndex(0f)
+                )
 
-                    // 카드 이미지 공유를 위해 카드 영역의 window 내 좌표를 추적
-                    var cardCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
-
-                    Card(
+                // 빈 상태: 로딩 완료 후 뉴스가 없으면 디버깅용 메시지 표시
+                // (카드 자체를 숨기거나 fallback 데이터를 넣지 않음 — 백엔드 문제 확인용)
+                if (!isLoading && newsList.isEmpty()) {
+                    Box(
                         modifier = Modifier
+                            .align(Alignment.BottomCenter)
                             .fillMaxWidth()
-                            .height(440.dp)   // 카드 자체 높이 고정
-                            .zIndex(1f - absOffset.coerceIn(0f, 1f))
-                            .graphicsLayer {
-                                val scale = lerp(
-                                    start = 0.89f,
-                                    stop = 0.99f,
-                                    fraction = 1f - absOffset.coerceIn(0f, 1f)
-                                )
-                                scaleX = scale
-                                scaleY = scale
-                                alpha = lerp(
-                                    start = 0.6f,
-                                    stop = 1f,
-                                    fraction = 1f - absOffset.coerceIn(0f, 1f)
+                            .height(emptyStateHeight)
+                            .zIndex(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "추천 뉴스를 불러오지 못했습니다",
+                            color = Color.White.copy(alpha = 0.8f),
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .height(pagerHeight)
+                            .zIndex(1f)
+                            .nestedScroll(guestForwardBlocker),
+                        contentPadding = PaddingValues(horizontal = 36.dp),
+                        pageSpacing = 12.dp,
+                        beyondViewportPageCount = 1
+                    ) { page ->
+                        val pageOffset =
+                            (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                        val absOffset = pageOffset.absoluteValue
+
+                        // 카드 이미지 공유를 위해 카드 영역의 window 내 좌표를 추적
+                        var cardCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(440.dp)   // 카드 자체 높이 고정
+                                .zIndex(1f - absOffset.coerceIn(0f, 1f))
+                                .graphicsLayer {
+                                    val scale = lerp(
+                                        start = 0.89f,
+                                        stop = 0.99f,
+                                        fraction = 1f - absOffset.coerceIn(0f, 1f)
+                                    )
+                                    scaleX = scale
+                                    scaleY = scale
+                                    alpha = lerp(
+                                        start = 0.6f,
+                                        stop = 1f,
+                                        fraction = 1f - absOffset.coerceIn(0f, 1f)
+                                    )
+                                }
+                                .onGloballyPositioned { cardCoords = it },
+                            shape = RoundedCornerShape(20.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            if (isLoading) {
+                                HomeNewsCardSkeleton()
+                            } else {
+                                HomeNewsCardContent(
+                                    item = newsList[page],
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onShareClick = {
+                                        val coords = cardCoords ?: return@HomeNewsCardContent
+                                        val bounds = coords.boundsInWindow()
+                                        val srcRect = Rect(
+                                            bounds.left.toInt(),
+                                            bounds.top.toInt(),
+                                            bounds.right.toInt(),
+                                            bounds.bottom.toInt()
+                                        )
+                                        captureWindowBitmap(context, view, srcRect) { bitmap ->
+                                            shareImageBitmap(context, bitmap, newsList[page].title)
+                                        }
+                                    },
+                                    onDetailClick = { onDetailClick(newsList[page]) }
                                 )
                             }
-                            .onGloballyPositioned { cardCoords = it },
-                        shape = RoundedCornerShape(20.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
-                    ) {
-                        if (isLoading) {
-                            HomeNewsCardSkeleton()
-                        } else {
-                            HomeNewsCardContent(
-                                item = newsList[page],
-                                modifier = Modifier.fillMaxWidth(),
-                                onShareClick = {
-                                    val coords = cardCoords ?: return@HomeNewsCardContent
-                                    val bounds = coords.boundsInWindow()
-                                    val srcRect = Rect(
-                                        bounds.left.toInt(),
-                                        bounds.top.toInt(),
-                                        bounds.right.toInt(),
-                                        bounds.bottom.toInt()
-                                    )
-                                    captureWindowBitmap(context, view, srcRect) { bitmap ->
-                                        shareImageBitmap(context, bitmap, newsList[page].title)
-                                    }
-                                },
-                                onDetailClick = { onDetailClick(newsList[page]) }
-                            )
                         }
                     }
-                    }
+                }
+            }
 
+            if (!isLoading && newsList.isEmpty()) {
+                Spacer(modifier = Modifier.height(42.dp))
+            } else {
                 Spacer(modifier = Modifier.height(18.dp))
 
                 // 페이지 인디케이터
