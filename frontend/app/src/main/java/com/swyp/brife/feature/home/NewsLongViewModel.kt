@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.data.model.NewsDetailSection
+import com.swyp.brife.data.model.NewsListItem
 import com.swyp.brife.data.model.NewsSourceItemResponse
 import com.swyp.brife.data.repository.ArchiveRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,6 +58,15 @@ class NewsLongViewModel(
     private val _sourcesError = MutableStateFlow(false)
     val sourcesError: StateFlow<Boolean> = _sourcesError.asStateFlow()
 
+    private val _similarNews = MutableStateFlow<List<NewsListItem>>(emptyList())
+    val similarNews: StateFlow<List<NewsListItem>> = _similarNews.asStateFlow()
+
+    private val _isSimilarNewsLoading = MutableStateFlow(false)
+    val isSimilarNewsLoading: StateFlow<Boolean> = _isSimilarNewsLoading.asStateFlow()
+
+    private val _similarNewsError = MutableStateFlow<String?>(null)
+    val similarNewsError: StateFlow<String?> = _similarNewsError.asStateFlow()
+
     private val _showSourcesBottomSheet = MutableStateFlow(false)
     val showSourcesBottomSheet: StateFlow<Boolean> = _showSourcesBottomSheet.asStateFlow()
 
@@ -73,6 +83,27 @@ class NewsLongViewModel(
                     _isSourcesLoading.value = false
                     _sourcesError.value = true
                 }
+        }
+    }
+
+    fun loadSimilarNews(newsId: Long) {
+        viewModelScope.launch {
+            _isSimilarNewsLoading.value = true
+            _similarNewsError.value = null
+            _similarNews.value = emptyList()
+
+            try {
+                archiveRepository.getSimilarNews(newsId)
+                    .onSuccess { list ->
+                        _similarNews.value = list
+                    }
+                    .onFailure { error ->
+                        _similarNews.value = emptyList()
+                        _similarNewsError.value = error.message
+                    }
+            } finally {
+                _isSimilarNewsLoading.value = false
+            }
         }
     }
 
