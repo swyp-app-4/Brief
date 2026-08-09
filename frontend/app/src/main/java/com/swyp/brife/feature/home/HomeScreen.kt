@@ -183,10 +183,16 @@ fun HomeScreen(
 
     val illustrationHeight = 130.dp
     val illustrationCardOverlap = 40.dp
-    val pagerHeight = 455.dp
     val emptyStateHeight = 220.dp
+    val minCardHeight = 440.dp
+    val maxCardHeight = 560.dp
+    val pagerCardHeightDifference = 15.dp
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val availableContentHeight = (maxHeight - topPadding).coerceAtLeast(0.dp)
+        val cardHeight = (availableContentHeight * (2f / 3f))
+            .coerceIn(minCardHeight, maxCardHeight)
+        val pagerHeight = cardHeight + pagerCardHeightDifference
 
         Image(
             painter = painterResource(id = R.drawable.homescreen_bg),
@@ -259,7 +265,7 @@ fun HomeScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(440.dp)   // 카드 자체 높이 고정
+                                .height(cardHeight)
                                 .zIndex(1f - absOffset.coerceIn(0f, 1f))
                                 .graphicsLayer {
                                     val scale = lerp(
