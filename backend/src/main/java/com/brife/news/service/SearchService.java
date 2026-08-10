@@ -44,6 +44,7 @@ public class SearchService {
 
     @Transactional(readOnly = true)
     public Slice<NewsSearchResponse> getAllSummarizedNewsByPublishedDesc(Pageable pageable) {
-        return summarizedNewsRepository.findAllBy(pageable).map(NewsSearchResponse::from);
+        Pageable stablePageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return summarizedNewsRepository.findLatest(stablePageable).map(NewsSearchResponse::from);
     }
 }

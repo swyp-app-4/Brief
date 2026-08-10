@@ -6,6 +6,7 @@ import com.brife.news.config.VertexAiProperties;
 import com.brife.news.dto.RawArticleDto;
 import com.brife.news.dto.SectionDto;
 import com.brife.news.dto.SynthesisResult;
+import com.brife.news.exception.InvalidSynthesisResultException;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
@@ -17,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +39,8 @@ public class SummarizationService {
             1. 100% 자연스러운 한국어만 사용. 한자·영어·일본어 혼용 및 할루시네이션 절대 금지.
             2. 반드시 아래 JSON 구조만 반환. 인사말·부연설명 일절 금지.
             {
+              "categoryRelevant": true,
+              "categoryReason": "...",
               "title": "...",
               "summary": "...",
               "sections": [
@@ -47,15 +51,18 @@ public class SummarizationService {
             }
 
             [작성 가이드]
-            1. title: 20~30자 내외. 포털 메인급 헤드라인 스타일. 단순 명사 나열 금지.
+            1. categoryRelevant: 입력 기사의 중심 사건이 요청 카테고리에 속하면 true, 검색어가 부수적으로만 언급되면 false.
+               categoryReason: 판단 근거를 한 문장으로 작성.
+
+            2. title: 20~30자 내외. 포털 메인급 헤드라인 스타일. 단순 명사 나열 금지.
                예: "트럼프, 이란 군사작전 축소 시사… 휴전엔 선 그어"
 
-            2. summary (4줄 요약):
+            3. summary (4줄 요약):
                - 핵심 팩트 4가지를 각각 한 줄로. 줄 구분은 '\\n'.
                - 어미는 친절한 경어체(~됩니다, ~했습니다, ~예정입니다). 명사형 종결('~함', '~됨') 및 평어체('~했다') 금지.
                - 국내 파급 효과가 있으면 반드시 1줄 포함.
 
-            3. sections (본문 단락 - 반드시 3개):
+            4. sections (본문 단락 - 반드시 3개):
                - 섹션 1 [핵심 상황과 배경] (고정): 이 뉴스의 핵심 팩트·배경·경위를 상세히 서술. 독자가 맥락 없이도 사건 전체를 파악할 수 있도록 육하원칙(누가·언제·어디서·무엇을·어떻게·왜)에 따라 빠짐없이 서술.
                - 섹션 2, 3 (자율 선택): 아래 7가지 앵글 중 이 뉴스 성격에 가장 잘 맞는 2가지를 골라 작성.
                  * [숨은 맥락]: 정치·사회 뉴스 - 왜 이런 일이 일어났나?
@@ -95,19 +102,35 @@ public class SummarizationService {
     }
 
     public SynthesisResult synthesize(String keyword, List<RawArticleDto> articles) throws Exception {
+        return synthesize(keyword, keyword, articles);
+    }
+
+    public SynthesisResult synthesize(String categoryName, String keyword,
+                                      List<RawArticleDto> articles) throws Exception {
         try {
             SynthesisResult result = RateLimiter.decorateCheckedSupplier(rateLimiter,
-                    () -> callVertexAi(keyword, articles, null)).get();
+                    () -> callVertexAi(categoryName, keyword, articles, null)).get();
 
-            if (!isBodyRichEnough(result)) {
-                String reason = buildQualityFailureReason(result);
+            if (result != null && !result.isCategoryRelevant()) return result;
+
+            String reason = findQualityFailureReason(result);
+            if (reason != null) {
                 log.warn("[Summarization] 품질 미달 - 1회 재시도. reason={}, keyword={}", reason, keyword);
                 batchMetrics.incrementVertexRetryCount();
                 try {
                     result = RateLimiter.decorateCheckedSupplier(rateLimiter,
-                            () -> callVertexAi(keyword, articles, reason)).get();
+                            () -> callVertexAi(categoryName, keyword, articles, reason)).get();
                 } catch (RequestNotPermitted e) {
-                    log.warn("[Summarization] 재시도 속도 제한 초과 - 초기 결과 반환. keyword={}", keyword);
+                    throw new InvalidSynthesisResultException(
+                            "요약 품질 재시도 속도 제한 초과 - keyword=" + keyword, e);
+                }
+
+                if (result != null && !result.isCategoryRelevant()) return result;
+
+                String retryFailureReason = findQualityFailureReason(result);
+                if (retryFailureReason != null) {
+                    throw new InvalidSynthesisResultException("요약 품질 기준 재시도 실패 - keyword=" + keyword
+                            + ", reason=" + retryFailureReason);
                 }
             }
 
@@ -115,14 +138,16 @@ public class SummarizationService {
         } catch (RequestNotPermitted e) {
             log.warn("[Summarization] Vertex AI 속도 제한 초과 - keyword={}", keyword);
             throw new RuntimeException("Vertex AI 속도 제한 초과", e);
+        } catch (InvalidSynthesisResultException e) {
+            throw e;
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
 
-    private SynthesisResult callVertexAi(String keyword, List<RawArticleDto> articles,
+    private SynthesisResult callVertexAi(String categoryName, String keyword, List<RawArticleDto> articles,
                                          String qualityFailureReason) throws Exception {
-        String userPrompt = buildUserPrompt(keyword, articles, qualityFailureReason);
+        String userPrompt = buildUserPrompt(categoryName, keyword, articles, qualityFailureReason);
 
         Map<String, Object> body = Map.of(
                 "system_instruction", Map.of(
@@ -153,7 +178,8 @@ public class SummarizationService {
         return objectMapper.readValue(rawText, SynthesisResult.class);
     }
 
-    private String buildUserPrompt(String keyword, List<RawArticleDto> articles, String qualityFailureReason) {
+    private String buildUserPrompt(String categoryName, String keyword, List<RawArticleDto> articles,
+                                   String qualityFailureReason) {
         int articleCount = articles.size();
         int perArticleLimit = articleCount > 0
                 ? Math.min(MAX_CHARS_PER_ARTICLE, MAX_CHARS_PER_CLUSTER / articleCount)
@@ -168,8 +194,8 @@ public class SummarizationService {
         }
 
         sb.append(String.format(
-                "[요청 사항]\n다음은 '%s' 주제에 대한 %d개 언론사의 뉴스 기사입니다. 가이드에 맞춰 완벽한 JSON을 생성해주세요.\n\n[기사 데이터]\n",
-                keyword, articleCount));
+                "[요청 사항]\n요청 카테고리는 '%s', 수집 검색어는 '%s'입니다. 다음 %d개 기사의 중심 사건이 요청 카테고리에 실제로 해당하는지 먼저 판단하고, 가이드에 맞춰 JSON을 생성해주세요.\n\n[기사 데이터]\n",
+                categoryName, keyword, articleCount));
 
         for (int i = 0; i < articleCount; i++) {
             RawArticleDto a = articles.get(i);
@@ -207,23 +233,30 @@ public class SummarizationService {
         return lead + " [...중략...] " + middle + " [...중략...] " + tail;
     }
 
-    private boolean isBodyRichEnough(SynthesisResult result) {
-        if (result == null) return false;
-        List<SectionDto> sections = result.getSections();
-        if (sections == null || sections.size() < 3) return false;
-        if (totalSectionContentLength(result) < MIN_TOTAL_SECTION_LENGTH) return false;
-        for (SectionDto section : sections) {
-            String content = section.getContent();
-            if (content == null || content.length() < MIN_SECTION_CONTENT_LENGTH) return false;
-        }
-        return true;
-    }
-
-    private String buildQualityFailureReason(SynthesisResult result) {
+    String findQualityFailureReason(SynthesisResult result) {
         if (result == null) return "결과가 null입니다.";
+        if (result.getTitle() == null || result.getTitle().isBlank()) return "제목이 비어 있습니다.";
+        if (result.getSummary() == null || result.getSummary().isBlank()) return "요약이 비어 있습니다.";
+
+        List<String> summaryLines = Arrays.asList(result.getSummary().split("\\R", -1));
+        if (summaryLines.size() != 4 || summaryLines.stream().anyMatch(String::isBlank)) {
+            return String.format("요약 줄 수가 정확히 4줄이 아닙니다. lines=%d", summaryLines.size());
+        }
+
         List<SectionDto> sections = result.getSections();
-        if (sections == null || sections.size() < 3)
-            return String.format("섹션 수(%d)가 3개 미만입니다.", sections == null ? 0 : sections.size());
+        if (sections == null || sections.size() != 3)
+            return String.format("섹션 수(%d)가 정확히 3개가 아닙니다.", sections == null ? 0 : sections.size());
+
+        for (int i = 0; i < sections.size(); i++) {
+            SectionDto section = sections.get(i);
+            if (section.getHeading() == null || section.getHeading().isBlank()) {
+                return String.format("섹션 %d의 제목이 비어 있습니다.", i + 1);
+            }
+            if (section.getContent() == null || section.getContent().isBlank()) {
+                return String.format("섹션 %d의 내용이 비어 있습니다.", i + 1);
+            }
+        }
+
         int totalLen = totalSectionContentLength(result);
         if (totalLen < MIN_TOTAL_SECTION_LENGTH)
             return String.format("전체 섹션 길이(%d자)가 최소 기준(%d자)에 미달합니다.", totalLen, MIN_TOTAL_SECTION_LENGTH);
@@ -233,7 +266,7 @@ public class SummarizationService {
             if (len < MIN_SECTION_CONTENT_LENGTH)
                 return String.format("섹션 %d의 내용 길이(%d자)가 최소 기준(%d자)에 미달합니다.", i + 1, len, MIN_SECTION_CONTENT_LENGTH);
         }
-        return "품질 기준 미달";
+        return null;
     }
 
     private int totalSectionContentLength(SynthesisResult result) {
@@ -247,8 +280,10 @@ public class SummarizationService {
     private Map<String, Object> buildResponseSchema() {
         return Map.of(
                 "type", "OBJECT",
-                "required", List.of("title", "summary", "sections"),
+                "required", List.of("categoryRelevant", "categoryReason", "title", "summary", "sections"),
                 "properties", Map.of(
+                        "categoryRelevant", Map.of("type", "BOOLEAN"),
+                        "categoryReason", Map.of("type", "STRING"),
                         "title",   Map.of("type", "STRING"),
                         "summary", Map.of("type", "STRING"),
                         "sections", Map.of(

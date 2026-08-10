@@ -26,6 +26,7 @@ class ArticleClusteringServiceTest {
                 .description("내용")
                 .sourceUrl("https://example.com")
                 .naverUrl("https://n.news.naver.com/article/001")
+                .pressName(title)
                 .build();
     }
 
@@ -263,5 +264,32 @@ class ArticleClusteringServiceTest {
         List<List<RawArticleDto>> result = clusteringService.clusterAll(Collections.emptyList(), "경제", 3);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("같은 언론사 기사는 클러스터당 최대 2건만 사용")
+    void cluster_limits_articles_per_press() {
+        List<RawArticleDto> articles = List.of(
+                articleFromPress("한국은행 기준금리 동결 결정", "언론A"),
+                articleFromPress("한국은행 기준금리 동결 충격", "언론A"),
+                articleFromPress("한국은행 기준금리 동결 유지", "언론A"),
+                articleFromPress("한국은행 기준금리 동결 전망", "언론B"),
+                articleFromPress("한국은행 기준금리 동결 분석", "언론C")
+        );
+
+        List<RawArticleDto> result = clusteringService.cluster(articles, "금리", 3);
+
+        assertThat(result).hasSize(4);
+        assertThat(result.stream().filter(a -> a.getPressName().equals("언론A"))).hasSize(2);
+    }
+
+    private RawArticleDto articleFromPress(String title, String pressName) {
+        return RawArticleDto.builder()
+                .title(title)
+                .description("내용")
+                .sourceUrl("https://" + pressName + ".example.com")
+                .naverUrl("https://n.news.naver.com/" + title.hashCode())
+                .pressName(pressName)
+                .build();
     }
 }

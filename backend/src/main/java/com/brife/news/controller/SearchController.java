@@ -38,7 +38,10 @@ public class SearchController {
     @Operation(summary = "전체 뉴스 조회", description = "최근 뉴스 목록을 최신순으로 조회합니다.")
     @GetMapping("/latest")
     public ResponseEntity<Slice<NewsSearchResponse>> getLatestNews(
-            @ParameterObject @SortDefault(sort = "publishedDate", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @SortDefault.SortDefaults({
+                    @SortDefault(sort = "publishedAt", direction = Sort.Direction.DESC),
+                    @SortDefault(sort = "id", direction = Sort.Direction.DESC)
+            }) Pageable pageable) {
         return ResponseEntity.ok(searchService.getAllSummarizedNewsByPublishedDesc(pageable));
     }
 

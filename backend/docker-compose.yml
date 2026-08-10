@@ -40,3 +40,4 @@ services:
 
 volumes:
   postgres_data:
+    name: brife_postgres_data

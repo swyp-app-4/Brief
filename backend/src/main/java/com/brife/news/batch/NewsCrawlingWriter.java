@@ -64,7 +64,7 @@ public class NewsCrawlingWriter implements ItemWriter<ProcessedNewsDto> {
             // 임베딩 생성 및 저장 (실패해도 배치 전체는 중단하지 않음)
             try {
                 String embeddingText = saved.getTitle() + " " + saved.getSummary();
-                float[] embedding = embeddingService.embed(embeddingText);
+                float[] embedding = embeddingService.embedForDocument(embeddingText);
                 newsEmbeddingRepository.save(saved.getId(), embedding);
                 batchMetrics.incrementEmbeddingSuccessCount();
                 log.info("[Writer] 임베딩 저장 완료 - newsId={}", saved.getId());

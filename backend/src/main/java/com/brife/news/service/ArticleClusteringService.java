@@ -4,6 +4,7 @@ import com.brife.news.dto.RawArticleDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,10 +13,11 @@ import java.util.stream.Collectors;
 @Service
 public class ArticleClusteringService {
 
-    private static final int MIN_CLUSTER_SIZE = 3;
     private static final int MIN_WORD_LENGTH = 2;
     private static final int MIN_INTERSECTION_SIZE = 2;
     private static final int MAX_TOPICS_PER_BATCH = 3;
+    private static final int MAX_ARTICLES_PER_CLUSTER = 10;
+    private static final int MAX_ARTICLES_PER_PRESS = 2;
 
     private static final Set<String> BASE_STOP_WORDS = Set.of(
             "것", "수", "등", "및", "에서", "으로", "에게", "이번", "지난", "올해",
@@ -29,10 +31,17 @@ public class ArticleClusteringService {
         List<RawArticleDto> remaining = new ArrayList<>(articles);
 
         while (remaining.size() >= minClusterSize && result.size() < MAX_TOPICS_PER_BATCH) {
-            List<RawArticleDto> best = cluster(remaining, keyword, minClusterSize);
-            if (best.isEmpty()) break;
-            result.add(best);
-            remaining.removeAll(best);
+            List<RawArticleDto> fullCluster = findBestCluster(remaining, keyword);
+            if (fullCluster.size() < minClusterSize) break;
+
+            remaining.removeAll(fullCluster);
+            List<RawArticleDto> selected = limitSources(fullCluster);
+            if (selected.size() >= minClusterSize) {
+                result.add(selected);
+            } else {
+                log.info("[Clustering] 언론사 중복 제거 후 기사 부족 ({}개 < 최소 {}개) - keyword={}",
+                        selected.size(), minClusterSize, keyword);
+            }
         }
 
         log.info("[Clustering] {}건 → {}개 토픽 추출 (keyword={})",
@@ -43,6 +52,27 @@ public class ArticleClusteringService {
     // keyword 불용어
     public List<RawArticleDto> cluster(List<RawArticleDto> articles, String keyword, int minClusterSize) {
         if (articles == null || articles.isEmpty()) return Collections.emptyList();
+
+        List<RawArticleDto> bestCluster = findBestCluster(articles, keyword);
+        if (bestCluster.size() < minClusterSize) {
+            log.info("[Clustering] 동일 토픽 기사 부족 ({}개 < 최소 {}개) - keyword={} 합성 스킵",
+                    bestCluster.size(), minClusterSize, keyword);
+            return Collections.emptyList();
+        }
+
+        List<RawArticleDto> selected = limitSources(bestCluster);
+        if (selected.size() < minClusterSize) {
+            log.info("[Clustering] 언론사 중복 제거 후 기사 부족 ({}개 < 최소 {}개) - keyword={} 합성 스킵",
+                    selected.size(), minClusterSize, keyword);
+            return Collections.emptyList();
+        }
+
+        log.info("[Clustering] {}건 → {}건 (동일 토픽, keyword={})",
+                articles.size(), selected.size(), keyword);
+        return selected;
+    }
+
+    private List<RawArticleDto> findBestCluster(List<RawArticleDto> articles, String keyword) {
 
         Set<String> stopWords = new HashSet<>(BASE_STOP_WORDS);
         if (keyword != null && !keyword.isBlank()) {
@@ -76,15 +106,36 @@ public class ArticleClusteringService {
             }
         }
 
-        if (bestCluster.size() < minClusterSize) {
-            log.info("[Clustering] 동일 토픽 기사 부족 ({}개 < 최소 {}개) - keyword={} 합성 스킵",
-                    bestCluster.size(), minClusterSize, keyword);
-            return Collections.emptyList();
-        }
-
-        log.info("[Clustering] {}건 → {}건 (동일 토픽, keyword={})",
-                articles.size(), bestCluster.size(), keyword);
         return bestCluster;
+    }
+
+    private List<RawArticleDto> limitSources(List<RawArticleDto> cluster) {
+        Map<String, Integer> pressCounts = new HashMap<>();
+        return cluster.stream()
+                .sorted(Comparator.comparing(
+                        RawArticleDto::getPubDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .filter(article -> {
+                    String pressKey = resolvePressKey(article);
+                    int count = pressCounts.getOrDefault(pressKey, 0);
+                    if (count >= MAX_ARTICLES_PER_PRESS) return false;
+                    pressCounts.put(pressKey, count + 1);
+                    return true;
+                })
+                .limit(MAX_ARTICLES_PER_CLUSTER)
+                .toList();
+    }
+
+    private String resolvePressKey(RawArticleDto article) {
+        if (article.getPressName() != null && !article.getPressName().isBlank()) {
+            return article.getPressName().strip().toLowerCase(Locale.ROOT);
+        }
+        try {
+            String host = URI.create(article.getSourceUrl()).getHost();
+            return host != null ? host.toLowerCase(Locale.ROOT) : article.getSourceUrl();
+        } catch (Exception e) {
+            return article.getSourceUrl();
+        }
     }
 
     private Set<String> tokenize(String title, Set<String> stopWords) {
