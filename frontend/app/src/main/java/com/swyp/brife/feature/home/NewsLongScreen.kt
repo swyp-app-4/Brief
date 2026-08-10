@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -25,6 +26,8 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -65,6 +68,7 @@ import androidx.core.view.WindowCompat
 import com.swyp.brife.R
 import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.data.model.NewsDetailSection
+import com.swyp.brife.data.model.NewsListItem
 import com.swyp.brife.data.model.NewsSourceItemResponse
 import com.swyp.brife.feature.archive.component.CreateFolderBottomSheet
 import com.swyp.brife.ui.component.AppText
@@ -102,6 +106,10 @@ fun NewsLongScreen(
     sources: List<NewsSourceItemResponse> = emptyList(),
     isSourcesLoading: Boolean = false,
     sourcesError: Boolean = false,
+    similarNews: List<NewsListItem> = emptyList(),
+    isSimilarNewsLoading: Boolean = false,
+    similarNewsError: String? = null,
+    onSimilarNewsClick: (Long) -> Unit = {},
     showSourcesBottomSheet: Boolean = false,
     onSourcesBottomSheetRequest: () -> Unit = {},
     onSourcesBottomSheetDismiss: () -> Unit = {},
@@ -207,6 +215,13 @@ fun NewsLongScreen(
                 isSectionsLoading = isSectionsLoading,
                 sectionsError = sectionsError,
                 onRetryLoadSections = onRetryLoadSections
+            )
+
+            SimilarNewsSection(
+                similarNews = similarNews,
+                isLoading = isSimilarNewsLoading,
+                error = similarNewsError,
+                onNewsClick = onSimilarNewsClick
             )
 
             // 하단 고정 CTA 영역(위 패딩 12 + 버튼 50 + 아래 패딩 16 + nav bar)에 가려지지 않도록 여백 확보
@@ -473,6 +488,133 @@ private fun NewsLongContent(
             }
         }
     }
+}
+
+@Composable
+private fun SimilarNewsSection(
+    similarNews: List<NewsListItem>,
+    isLoading: Boolean,
+    error: String?,
+    onNewsClick: (Long) -> Unit
+) {
+    if (error != null || (!isLoading && similarNews.isEmpty())) return
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 24.dp)
+    ) {
+        AppText(
+            text = "브리프가 만든 추천 요약 기사예요.",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Black,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (isLoading) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(2) {
+                    SimilarNewsPlaceholderCard()
+                }
+            }
+        } else {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(
+                    items = similarNews.take(5),
+                    key = { it.id }
+                ) { news ->
+                    SimilarNewsCard(
+                        news = news,
+                        onClick = { onNewsClick(news.id) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SimilarNewsCard(
+    news: NewsListItem,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .width(164.dp)
+            .height(236.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE7EBF0))
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(96.dp)
+                    .background(Color(0xFFEFF2F5))
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(PrimaryNormal.copy(alpha = 0.1f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    AppText(
+                        text = news.categoryName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = PrimaryNormal,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AppText(
+                    text = news.title,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = Color.Black,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                AppText(
+                    text = news.publishedDate,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextCaption,
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SimilarNewsPlaceholderCard() {
+    Box(
+        modifier = Modifier
+            .width(164.dp)
+            .height(236.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFFEFF2F5))
+    )
 }
 
 @Composable

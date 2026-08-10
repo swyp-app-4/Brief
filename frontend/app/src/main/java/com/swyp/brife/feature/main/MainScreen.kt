@@ -648,6 +648,9 @@ fun MainScreen(
                 val isSourcesLoading by newsLongViewModel.isSourcesLoading.collectAsState()
                 val sourcesError by newsLongViewModel.sourcesError.collectAsState()
                 val showSourcesBottomSheet by newsLongViewModel.showSourcesBottomSheet.collectAsState()
+                val similarNews by newsLongViewModel.similarNews.collectAsState()
+                val isSimilarNewsLoading by newsLongViewModel.isSimilarNewsLoading.collectAsState()
+                val similarNewsError by newsLongViewModel.similarNewsError.collectAsState()
 
                 // 로그인 상태일 때만 폴더 목록 로드, 섹션은 항상 로드
                 // ArchiveDetail 진입: preselectedArchiveId로 해당 폴더 isSelected=true
@@ -656,6 +659,7 @@ fun MainScreen(
                     if (isLoggedIn) newsLongViewModel.loadFolders(preselectedArchiveId, newsId)
                     newsLongViewModel.loadSections(newsId)
                     newsLongViewModel.loadSources(newsId)
+                    newsLongViewModel.loadSimilarNews(newsId)
                 }
 
                 // API 응답으로 누락 필드 보정
@@ -682,6 +686,12 @@ fun MainScreen(
                     sources = newsLongSources,
                     isSourcesLoading = isSourcesLoading,
                     sourcesError = sourcesError,
+                    similarNews = similarNews,
+                    isSimilarNewsLoading = isSimilarNewsLoading,
+                    similarNewsError = similarNewsError,
+                    onSimilarNewsClick = { similarNewsId ->
+                        navController.navigate("${NavRoutes.NEWS_LONG}/$similarNewsId")
+                    },
                     showSourcesBottomSheet = showSourcesBottomSheet,
                     onSourcesBottomSheetRequest = { newsLongViewModel.setShowSourcesBottomSheet(true) },
                     onSourcesBottomSheetDismiss = { newsLongViewModel.setShowSourcesBottomSheet(false) },
