@@ -602,74 +602,49 @@ private fun SimilarNewsCard(
         getSimilarNewsImageRes(news.categoryName, news.id)
     }
 
-    Surface(
+    Column(
         modifier = Modifier
             .width(164.dp)
-            .height(236.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE7EBF0))
+            .clickable(onClick = onClick)
     ) {
-        Column {
-            if (imageRes != null) {
-                Image(
-                    painter = painterResource(id = imageRes),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(96.dp),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(96.dp)
-                        .background(Color(0xFFEFF2F5))
-                )
-            }
-
-            Column(
+        if (imageRes != null) {
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = null,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(PrimaryNormal.copy(alpha = 0.1f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    AppText(
-                        text = news.categoryName,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = PrimaryNormal,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                AppText(
-                    text = news.title,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = Color.Black,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                AppText(
-                    text = news.publishedDate,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextCaption,
-                    maxLines = 1
-                )
-            }
+                    .fillMaxWidth()
+                    .height(96.dp)
+                    .clip(RoundedCornerShape(14.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(96.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFFEFF2F5))
+            )
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CategoryChip(text = news.categoryName)
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        AppText(
+            text = news.title,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = Color.Black,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 44.dp)
+        )
     }
 }
 
@@ -753,13 +728,45 @@ private fun getSimilarNewsImageRes(categoryName: String, newsId: Long): Int? {
 
 @Composable
 private fun SimilarNewsPlaceholderCard() {
-    Box(
-        modifier = Modifier
-            .width(164.dp)
-            .height(236.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFEFF2F5))
-    )
+    Column(modifier = Modifier.width(164.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(96.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color(0xFFEFF2F5))
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Box(
+            modifier = Modifier
+                .width(72.dp)
+                .height(26.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color(0xFFEFF2F5))
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(Color(0xFFEFF2F5))
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Box(
+            modifier = Modifier
+                .width(132.dp)
+                .height(16.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(Color(0xFFEFF2F5))
+        )
+    }
 }
 
 @Composable
