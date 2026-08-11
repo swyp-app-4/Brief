@@ -225,6 +225,8 @@ fun NewsLongScreen(
             )
     }
 
+    var shareFlowStep by remember { mutableStateOf(ShareFlowStep.Closed) }
+    var selectedShareData by remember { mutableStateOf<InstagramShareData?>(null) }
     var showBookmarkSheet by remember { mutableStateOf(false) }
     var showCreateFolderSheet by remember { mutableStateOf(false) }
     var folderItems by remember { mutableStateOf(folders) }
@@ -301,23 +303,8 @@ fun NewsLongScreen(
                 },
                 onShareClick = {
                     onShareClick()
-                    captureComposableContent(
-                        context = context,
-                        onCaptured = { bitmap ->
-                            shareImageBitmap(context, bitmap, item.title)
-                        },
-                        content = {
-                            BrifeTheme {
-                                Surface(color = Color.White) {
-                                    NewsLongShareContent(
-                                        item = item,
-                                        imageRes = imageRes,
-                                        sections = sections
-                                    )
-                                }
-                            }
-                        }
-                    )
+                    selectedShareData = item.toInstagramShareData(imageRes)
+                    shareFlowStep = ShareFlowStep.Platform
                 }
             )
             NewsLongScrollProgressBar(progress = scrollProgress)
@@ -394,6 +381,37 @@ fun NewsLongScreen(
                 onRetry = onRetryLoadSources
             )
         }
+
+        NewsShareFlowHost(
+            step = shareFlowStep,
+            shareData = selectedShareData,
+            onStepChange = { shareFlowStep = it },
+            onDismiss = {
+                shareFlowStep = ShareFlowStep.Closed
+                selectedShareData = null
+            },
+            onOtherShareClick = { shareData ->
+                shareFlowStep = ShareFlowStep.Closed
+                selectedShareData = null
+                captureComposableContent(
+                    context = context,
+                    onCaptured = { bitmap ->
+                        shareImageBitmap(context, bitmap, shareData.title)
+                    },
+                    content = {
+                        BrifeTheme {
+                            Surface(color = Color.White) {
+                                NewsLongShareContent(
+                                    item = item,
+                                    imageRes = imageRes,
+                                    sections = sections
+                                )
+                            }
+                        }
+                    }
+                )
+            }
+        )
     }
 }
 

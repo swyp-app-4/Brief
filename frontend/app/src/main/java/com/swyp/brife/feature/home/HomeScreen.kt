@@ -56,6 +56,9 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val view = LocalView.current
+    var shareFlowStep by remember { mutableStateOf(ShareFlowStep.Closed) }
+    var selectedShareData by remember { mutableStateOf<InstagramShareData?>(null) }
+    var pendingShareRect by remember { mutableStateOf<Rect?>(null) }
 
 //    var showBottomSheet by remember { mutableStateOf(false) }
 //    // 한 세션 내에서 로그인 유도 바텀시트를 이미 표시했는지 여부
@@ -304,15 +307,14 @@ fun HomeScreen(
                                     onShareClick = {
                                         val coords = cardCoords ?: return@HomeNewsCardContent
                                         val bounds = coords.boundsInWindow()
-                                        val srcRect = Rect(
+                                        pendingShareRect = Rect(
                                             bounds.left.toInt(),
                                             bounds.top.toInt(),
                                             bounds.right.toInt(),
                                             bounds.bottom.toInt()
                                         )
-                                        captureWindowBitmap(context, view, srcRect) { bitmap ->
-                                            shareImageBitmap(context, bitmap, newsList[page].title)
-                                        }
+                                        selectedShareData = newsList[page].toInstagramShareData()
+                                        shareFlowStep = ShareFlowStep.Platform
                                     },
                                     onDetailClick = { onDetailClick(newsList[page]) }
                                 )
@@ -350,6 +352,26 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+
+        NewsShareFlowHost(
+            step = shareFlowStep,
+            shareData = selectedShareData,
+            onStepChange = { shareFlowStep = it },
+            onDismiss = {
+                shareFlowStep = ShareFlowStep.Closed
+                selectedShareData = null
+                pendingShareRect = null
+            },
+            onOtherShareClick = { shareData ->
+                val shareRect = pendingShareRect ?: return@NewsShareFlowHost
+                shareFlowStep = ShareFlowStep.Closed
+                selectedShareData = null
+                pendingShareRect = null
+                captureWindowBitmap(context, view, shareRect) { bitmap ->
+                    shareImageBitmap(context, bitmap, shareData.title)
+                }
+            }
+        )
     }
 }
 
