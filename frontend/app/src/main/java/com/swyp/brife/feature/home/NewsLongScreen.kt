@@ -83,6 +83,58 @@ import com.swyp.brife.ui.theme.TextSubtitle
 private val NewsLongTopBarContentHeight = 64.dp
 private val NewsLongScrollProgressHeight = 3.dp
 
+private val SimilarPoliticsImages = listOf(
+    R.drawable.similar_longform_politics_1,
+    R.drawable.similar_longform_politics_2,
+    R.drawable.similar_longform_politics_3,
+    R.drawable.similar_longform_politics_4,
+    R.drawable.similar_longform_politics_5_1,
+    R.drawable.similar_longform_politics_6_1,
+    R.drawable.similar_longform_politics_7_1,
+    R.drawable.similar_longform_politics_8_1,
+    R.drawable.similar_longform_politics_9_1
+)
+private val SimilarEconomyImages = listOf(
+    R.drawable.similar_longform_economy_1,
+    R.drawable.similar_longform_economy_2,
+    R.drawable.similar_longform_economy_3,
+    R.drawable.similar_longform_economy_4,
+    R.drawable.similar_longform_economy_5_1,
+    R.drawable.similar_longform_economy_6_1,
+    R.drawable.similar_longform_economy_7_1,
+    R.drawable.similar_longform_economy_8_1,
+    R.drawable.similar_longform_economy_9_1
+)
+private val SimilarTechImages = listOf(
+    R.drawable.similar_longform_tech_1,
+    R.drawable.similar_longform_tech_2,
+    R.drawable.similar_longform_tech_3,
+    R.drawable.similar_longform_tech_4,
+    R.drawable.similar_longform_tech_5_1,
+    R.drawable.similar_longform_tech_6_1,
+    R.drawable.similar_longform_tech_7_1,
+    R.drawable.similar_longform_tech_8_1,
+    R.drawable.similar_longform_tech_9_1
+)
+private val SimilarCultureImages = listOf(
+    R.drawable.similar_longform_culture_1,
+    R.drawable.similar_longform_culture_2,
+    R.drawable.similar_longform_culture_3,
+    R.drawable.similar_longform_culture_4
+)
+private val SimilarEntertainmentImages = listOf(
+    R.drawable.similar_longform_entertainment_1,
+    R.drawable.similar_longform_entertainment_2,
+    R.drawable.similar_longform_entertainment_3,
+    R.drawable.similar_longform_entertainment_4
+)
+private val SimilarLifeImages = listOf(
+    R.drawable.similar_longform_life_1,
+    R.drawable.similar_longform_life_2,
+    R.drawable.similar_longform_life_3,
+    R.drawable.similar_longform_life_4
+)
+
 @Composable
 fun NewsLongScreen(
     item: HomeNewsCardItem,
@@ -546,6 +598,10 @@ private fun SimilarNewsCard(
     news: NewsListItem,
     onClick: () -> Unit
 ) {
+    val imageRes = remember(news.categoryName, news.id) {
+        getSimilarNewsImageRes(news.categoryName, news.id)
+    }
+
     Surface(
         modifier = Modifier
             .width(164.dp)
@@ -556,12 +612,23 @@ private fun SimilarNewsCard(
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE7EBF0))
     ) {
         Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(96.dp)
-                    .background(Color(0xFFEFF2F5))
-            )
+            if (imageRes != null) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(96.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(96.dp)
+                        .background(Color(0xFFEFF2F5))
+                )
+            }
 
             Column(
                 modifier = Modifier
@@ -604,6 +671,84 @@ private fun SimilarNewsCard(
             }
         }
     }
+}
+
+private fun getSimilarNewsImageRes(categoryName: String, newsId: Long): Int? {
+    val images = when {
+        categoryName.contains("책") -> listOf(
+            R.drawable.similar_longform_culture_book,
+            R.drawable.similar_longform_culture_book_1_1
+        )
+        categoryName.contains("종교") -> listOf(
+            R.drawable.similar_longform_culture_religion_1,
+            R.drawable.similar_longform_culture_religion_2,
+            R.drawable.similar_longform_culture_religion_3_1
+        )
+        categoryName.contains("야구") -> listOf(
+            R.drawable.similar_longform_entertainment_baseball,
+            R.drawable.similar_longform_entertainment_baseball_1_1
+        )
+        categoryName.contains("농구") -> listOf(
+            R.drawable.similar_longform_entertainment_basketball,
+            R.drawable.similar_longform_entertainment_basketball_1_1
+        )
+        categoryName.contains("e스포츠", ignoreCase = true) -> listOf(
+            R.drawable.similar_longform_entertainment_esports,
+            R.drawable.similar_longform_entertainment_esports_1_1
+        )
+        categoryName.contains("골프") -> listOf(
+            R.drawable.similar_longform_entertainment_golf,
+            R.drawable.similar_longform_entertainment_golf_1_1
+        )
+        categoryName.contains("배구") -> listOf(
+            R.drawable.similar_longform_entertainment_volleyball,
+            R.drawable.similar_longform_entertainment_volleyball_1_1
+        )
+        categoryName.contains("아웃도어") -> listOf(
+            R.drawable.similar_longform_entertainment_outdoor,
+            R.drawable.similar_longform_entertainment_outdoor_1_1
+        )
+        categoryName.contains("스포츠일반") -> listOf(
+            R.drawable.similar_longform_entertainment_general,
+            R.drawable.similar_longform_entertainment_general_1_1
+        )
+        categoryName.contains("자동차") || categoryName.contains("시승기") -> listOf(
+            R.drawable.similar_longform_life_car,
+            R.drawable.similar_longform_life_car_1_1
+        )
+        categoryName.contains("도로") || categoryName.contains("교통") -> listOf(
+            R.drawable.similar_longform_life_traffic,
+            R.drawable.similar_longform_life_traffic_1_1
+        )
+        categoryName.contains("패션") || categoryName.contains("뷰티") -> listOf(
+            R.drawable.similar_longform_life_fashion,
+            R.drawable.similar_longform_life_fashion_1_1
+        )
+        categoryName.contains("음식") || categoryName.contains("맛집") -> listOf(
+            R.drawable.similar_longform_life_food,
+            R.drawable.similar_longform_life_food_1_1
+        )
+        categoryName.contains("여행") || categoryName.contains("레저") -> listOf(
+            R.drawable.similar_longform_life_travel,
+            R.drawable.similar_longform_life_travel_1_1
+        )
+        categoryName.contains("날씨") -> listOf(
+            R.drawable.similar_longform_life_weather,
+            R.drawable.similar_longform_life_weather_1_1
+        )
+        categoryName.contains("시사") || categoryName.contains("정치") -> SimilarPoliticsImages
+        categoryName.contains("경제") || categoryName.contains("재테크") -> SimilarEconomyImages
+        categoryName.contains("IT", ignoreCase = true) || categoryName.contains("테크") -> SimilarTechImages
+        categoryName.contains("문화") || categoryName.contains("예술") -> SimilarCultureImages
+        categoryName.contains("엔터") || categoryName.contains("스포츠") || categoryName.contains("연예") ->
+            SimilarEntertainmentImages
+        categoryName.contains("라이프") || categoryName.contains("성장") -> SimilarLifeImages
+        else -> return null
+    }
+
+    val remainder = newsId % images.size.toLong()
+    val index = if (remainder >= 0) remainder else remainder + images.size
+    return images[index.toInt()]
 }
 
 @Composable
