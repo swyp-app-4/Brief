@@ -975,7 +975,8 @@ private fun NewsSourcesBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = Color.White
+        containerColor = Color.White,
+        dragHandle = null
     ) {
         Column(
             modifier = Modifier
@@ -1084,7 +1085,7 @@ private fun NewsSourceCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF5F9FF))
+            .background(Color(0xFFF7F9FD))
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
