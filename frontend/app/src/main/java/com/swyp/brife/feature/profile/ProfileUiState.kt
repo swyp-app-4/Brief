@@ -29,6 +29,12 @@ fun categoryItemFromId(id: Long): ProfileCategoryItem? = when (id) {
 }
 
 fun profileImageUrlFromDrawableRes(@DrawableRes drawableRes: Int): String = when (drawableRes) {
+    R.drawable.img_home_art -> "img_profile_avatar"
+    R.drawable.img_home_economy -> "img_profile_economy"
+    R.drawable.img_home_entertainment -> "img_profile_entertainment"
+    R.drawable.img_home_life -> "img_profile_life"
+    R.drawable.img_home_tech -> "img_profile_tech"
+    R.drawable.img_home_politics -> "img_profile_politics"
     R.drawable.img_profile_avatar -> "img_profile_avatar"
     R.drawable.img_profile_economy -> "img_profile_economy"
     R.drawable.img_profile_entertainment -> "img_profile_entertainment"
@@ -40,13 +46,13 @@ fun profileImageUrlFromDrawableRes(@DrawableRes drawableRes: Int): String = when
 
 @DrawableRes
 fun profileImageResFromUrl(profileImageUrl: String?): Int = when (profileImageUrl) {
-    "img_profile_avatar" -> R.drawable.img_profile_avatar
-    "img_profile_economy" -> R.drawable.img_profile_economy
-    "img_profile_entertainment" -> R.drawable.img_profile_entertainment
-    "img_profile_life" -> R.drawable.img_profile_life
-    "img_profile_tech" -> R.drawable.img_profile_tech
-    "img_profile_politics" -> R.drawable.img_profile_politics
-    else -> R.drawable.img_profile_avatar
+    "img_profile_avatar" -> R.drawable.img_home_art
+    "img_profile_economy" -> R.drawable.img_home_economy
+    "img_profile_entertainment" -> R.drawable.img_home_entertainment
+    "img_profile_life" -> R.drawable.img_home_life
+    "img_profile_tech" -> R.drawable.img_home_tech
+    "img_profile_politics" -> R.drawable.img_home_politics
+    else -> R.drawable.img_home_art
 }
 
 val mockGuestProfileState = ProfileUiState(

@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -92,11 +94,26 @@ private fun ProfileImageBox(
     onEditClick: () -> Unit
 ) {
     Box(modifier = Modifier.size(140.dp)) {
-        Image(
-            painter = painterResource(id = imageRes),
-            contentDescription = "프로필 이미지",
-            modifier = Modifier.fillMaxSize()
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(androidx.compose.foundation.shape.CircleShape)
+                .background(Color(0xFFC6E2FF)),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = "프로필 이미지",
+                contentScale = ContentScale.Fit,
+                alignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = 1.18f
+                        scaleY = 1.18f
+                    }
+            )
+        }
 
         Icon(
             painter = painterResource(id = R.drawable.ic_profile_edit),
