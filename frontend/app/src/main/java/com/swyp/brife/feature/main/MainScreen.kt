@@ -290,7 +290,14 @@ fun MainScreen(
             if (guestPreviewRoute != NavRoutes.ARCHIVE) {
                 when {
                     currentRoute == NavRoutes.HOME -> {
-                        AppTopBar(onSettingClick = onNavigateToSetting)
+                        AppTopBar(showSettings = false)
+                    }
+                    currentRoute == NavRoutes.PROFILE -> {
+                        AppTopBar(
+                            showLogo = false,
+                            showSettings = true,
+                            onSettingClick = onNavigateToSetting
+                        )
                     }
                     isNewsLongRoute -> {
                         // NewsLongScreen이 자체 TopBar를 가지고 있으므로 렌더링하지 않음

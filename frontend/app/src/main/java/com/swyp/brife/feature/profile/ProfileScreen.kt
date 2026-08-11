@@ -60,7 +60,7 @@ fun ProfileScreen(
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(100.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         ProfileImageBox(
             imageRes = uiState.profileImageRes,
