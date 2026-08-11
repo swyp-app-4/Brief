@@ -793,7 +793,7 @@ private fun SummaryCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 AppText(
-                    text = "핵심 간편요약",
+                    text = "네줄 간편요약",
                     style = MaterialTheme.typography.titleSmall,
                     color = Color.Black
                 )
@@ -801,7 +801,7 @@ private fun SummaryCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            summaryPoints.take(3).forEach { point ->
+            summaryPoints.take(4).forEach { point ->
                 Row(
                     modifier = Modifier.padding(vertical = 6.dp),
                     verticalAlignment = Alignment.Top
