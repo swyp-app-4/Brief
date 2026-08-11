@@ -442,7 +442,7 @@ private fun NewsLongContent(
                 text = item.title,
                 style = MaterialTheme.typography.headlineSmall,
                 color = Color.Black,
-                maxLines = 2,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
 
