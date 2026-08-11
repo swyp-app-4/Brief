@@ -144,8 +144,7 @@ fun ProfileEditScreen(
                 contentDescription = "현재 선택한 프로필 캐릭터",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp)
+                    .align(Alignment.BottomEnd, )
                     .size(220.dp)
             )
         }
@@ -222,9 +221,9 @@ private fun ProfileCharacterPanel(
             .background(Color.White)
             .padding(horizontal = 20.dp)
     ) {
-        Column(modifier = Modifier.padding(top = 24.dp, bottom = 18.dp)) {
+        Column(modifier = Modifier.padding(top = 30.dp, bottom = 18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Spacer(modifier = Modifier.width(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
                 AppText(
                     text = "다른 여우 탐색하기",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
@@ -303,6 +302,7 @@ private fun ProfileImageGridItem(
                 .graphicsLayer {
                     scaleX = 1.4f
                     scaleY = 1.4f
+                    translationY = 10.dp.toPx()
                 },
             contentScale = ContentScale.Fit,
             alignment = Alignment.Center

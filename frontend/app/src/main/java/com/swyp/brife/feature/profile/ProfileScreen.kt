@@ -111,6 +111,7 @@ private fun ProfileImageBox(
                     .graphicsLayer {
                         scaleX = 1.4f
                         scaleY = 1.4f
+                        translationY = 16.dp.toPx()
                     }
             )
         }
