@@ -146,7 +146,7 @@ fun ProfileEditScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp)
-                    .size(164.dp)
+                    .size(220.dp)
             )
         }
 
@@ -224,6 +224,7 @@ private fun ProfileCharacterPanel(
     ) {
         Column(modifier = Modifier.padding(top = 24.dp, bottom = 18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.width(24.dp))
                 AppText(
                     text = "다른 여우 탐색하기",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
@@ -238,7 +239,7 @@ private fun ProfileCharacterPanel(
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             AppText(
                 text = "내 취향을 대신할 여우를 선택해보세요.",
@@ -300,8 +301,8 @@ private fun ProfileImageGridItem(
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
-                    scaleX = 1.18f
-                    scaleY = 1.18f
+                    scaleX = 1.4f
+                    scaleY = 1.4f
                 },
             contentScale = ContentScale.Fit,
             alignment = Alignment.Center

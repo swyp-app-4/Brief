@@ -109,8 +109,8 @@ private fun ProfileImageBox(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        scaleX = 1.18f
-                        scaleY = 1.18f
+                        scaleX = 1.4f
+                        scaleY = 1.4f
                     }
             )
         }
