@@ -983,12 +983,14 @@ private fun NewsSourcesBottomSheet(
                 .fillMaxWidth()
                 .navigationBarsPadding()
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
             AppText(
                 text = "관련 뉴스기사",
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 color = Color.Black,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
             )
+            Spacer(modifier = Modifier.height(8.dp))
 
             when {
                 isLoading -> {
