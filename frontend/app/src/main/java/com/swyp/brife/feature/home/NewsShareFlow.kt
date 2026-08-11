@@ -429,7 +429,7 @@ private fun LightInstagramShareCard(data: InstagramShareData, modifier: Modifier
 private fun ImageHeaderInstagramShareCard(data: InstagramShareData, modifier: Modifier) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(Color.White)
     ) {
         Box(
@@ -485,9 +485,9 @@ private fun ShareTitleAndDate(
 ) {
     AppText(
         text = data.title,
-        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
         color = titleColor,
-        maxLines = 2,
+        maxLines = 3,
         overflow = TextOverflow.Ellipsis
     )
     if (data.publishedDate.isNotBlank()) {
