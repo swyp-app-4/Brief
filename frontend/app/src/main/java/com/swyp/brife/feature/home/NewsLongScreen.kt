@@ -517,7 +517,7 @@ private fun NewsLongContent(
                 }
 
                 sections.isNotEmpty() -> {
-                    sections.take(3).forEachIndexed { index, section ->
+                    sections.take(4).forEachIndexed { index, section ->
                         if (index > 0) {
                             Spacer(modifier = Modifier.height(24.dp))
                         }
