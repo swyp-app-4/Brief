@@ -215,11 +215,14 @@ fun NewsLongScreen(
     }
 
     val imageRes = remember(item.imageRes, item.category, item.subCategory, item.newsId) {
-        item.imageRes ?: LongFormImageProvider.getStableImageRes(
-            item.category,
-            item.subCategory,
-            item.newsId
-        )
+        val similarCategoryName = item.subCategory.ifBlank { item.category }
+        getSimilarNewsImageRes(similarCategoryName, item.newsId)
+            ?: item.imageRes
+            ?: LongFormImageProvider.getStableImageRes(
+                item.category,
+                item.subCategory,
+                item.newsId
+            )
     }
 
     var showBookmarkSheet by remember { mutableStateOf(false) }
@@ -711,6 +714,7 @@ private fun getSimilarNewsImageRes(categoryName: String, newsId: Long): Int? {
             R.drawable.similar_longform_life_weather,
             R.drawable.similar_longform_life_weather_1_1
         )
+        categoryName.contains("산업/재계") -> SimilarEconomyImages
         categoryName.contains("시사") || categoryName.contains("정치") -> SimilarPoliticsImages
         categoryName.contains("경제") || categoryName.contains("재테크") -> SimilarEconomyImages
         categoryName.contains("IT", ignoreCase = true) || categoryName.contains("테크") -> SimilarTechImages
