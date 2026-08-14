@@ -50,6 +50,11 @@ import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextTitle
 
+private val ShareCardWidth = 320.dp
+private val ShareCardHeight = 432.dp
+private val ShareCardPreviewWidth = 196.dp
+private val ShareCardPreviewHeight = 265.dp
+
 enum class ShareFlowStep {
     Closed,
     Template,
@@ -109,8 +114,8 @@ fun NewsShareFlowHost(
         if (step == ShareFlowStep.Rendering && template != null) {
             captureTransparentComposableContent(
                 context = context,
-                width = 320.dp,
-                height = 460.dp,
+                width = ShareCardWidth,
+                height = ShareCardHeight,
                 onResult = { result ->
                     result.fold(
                         onSuccess = { bitmap ->
@@ -308,13 +313,13 @@ private fun ShareTemplatePreview(
     onClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier.width(196.dp),
+        modifier = Modifier.width(ShareCardPreviewWidth),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(282.dp)
+                .height(ShareCardPreviewHeight)
                 .border(
                     width = 2.dp,
                     color = if (isSelected) PrimaryNormal else Color.Transparent,
@@ -360,11 +365,12 @@ private fun DarkNewsShareCard(data: NewsShareData, modifier: Modifier) {
     SolidNewsShareCard(
         data = data,
         modifier = modifier,
-        backgroundColor = Color(0xFF292A2D),
+        backgroundColor = Color(0xFF2A292D),
+        summaryBackgroundColor = Color(0xFF3B3C40),
         titleColor = Color.White,
         dateColor = Color(0xFF989BA2),
         summaryTitleColor = Color.White,
-        summaryTextColor = Color(0xFF989BA2),
+        summaryTextColor = Color(0xFFC4C4C4),
         bulletColor = PrimaryNormal
     )
 }
@@ -375,6 +381,7 @@ private fun LightNewsShareCard(data: NewsShareData, modifier: Modifier) {
         data = data,
         modifier = modifier,
         backgroundColor = Color.White,
+        summaryBackgroundColor = Color(0xFFF5F9FF),
         titleColor = Color(0xFF212225),
         dateColor = Color(0xFF70737C),
         summaryTitleColor = Color(0xFF171719),
@@ -388,6 +395,7 @@ private fun SolidNewsShareCard(
     data: NewsShareData,
     modifier: Modifier,
     backgroundColor: Color,
+    summaryBackgroundColor: Color,
     titleColor: Color,
     dateColor: Color,
     summaryTitleColor: Color,
@@ -398,7 +406,7 @@ private fun SolidNewsShareCard(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
             .background(backgroundColor)
-            .padding(horizontal = 24.dp, vertical = 26.dp)
+            .padding(start = 24.dp, top = 26.dp, end = 24.dp, bottom = 16.dp)
     ) {
         ShareTitleAndDate(
             data = data,
@@ -410,7 +418,12 @@ private fun SolidNewsShareCard(
             summaryPoints = data.summaryPoints,
             titleColor = summaryTitleColor,
             pointColor = summaryTextColor,
-            bulletColor = bulletColor
+            bulletColor = bulletColor,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(summaryBackgroundColor)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
         )
     }
 }
@@ -462,7 +475,7 @@ private fun ImageHeaderNewsShareCard(data: NewsShareData, modifier: Modifier) {
             titleColor = Color(0xFF171719),
             pointColor = TextBody,
             bulletColor = PrimaryNormal,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 22.dp)
+            modifier = Modifier.padding(start = 24.dp, top = 22.dp, end = 24.dp, bottom = 12.dp)
         )
     }
 }
