@@ -112,22 +112,3 @@ fun shareViaSystem(context: Context, artifact: ShareArtifact, title: String): Re
         }
         context.startActivity(Intent.createChooser(intent, null))
     }
-
-fun shareViaInstagramStory(context: Context, artifact: ShareArtifact): Result<Unit> = runCatching {
-    val readPermission = Intent.FLAG_GRANT_READ_URI_PERMISSION
-
-    context.grantUriPermission("com.instagram.android", artifact.uri, readPermission)
-
-    val intent = Intent("com.instagram.share.ADD_TO_STORY").apply {
-        setPackage("com.instagram.android")
-        type = "image/png"
-        putExtra("interactive_asset_uri", artifact.uri)
-        putExtra("top_background_color", "#F7F9FD")
-        putExtra("bottom_background_color", "#F7F9FD")
-        clipData = ClipData.newRawUri("instagram_story_sticker", artifact.uri)
-        addFlags(readPermission)
-        if (context !is Activity) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-
-    context.startActivity(intent)
-}
