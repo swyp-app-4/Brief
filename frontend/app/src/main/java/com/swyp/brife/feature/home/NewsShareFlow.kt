@@ -52,9 +52,13 @@ import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextTitle
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 private val ShareCardWidth = 320.dp
 private val ShareCardHeight = 400.dp
+private val ImageHeaderShareCardHeight = 492.dp
 private val ShareCardPreviewWidth = 200.dp
 
 enum class ShareFlowStep {
@@ -68,6 +72,12 @@ enum class ShareCardTemplate {
     Dark,
     Light,
     ImageHeader
+}
+
+private fun ShareCardTemplate.cardHeight() = when (this) {
+    ShareCardTemplate.Dark,
+    ShareCardTemplate.Light -> ShareCardHeight
+    ShareCardTemplate.ImageHeader -> ImageHeaderShareCardHeight
 }
 
 data class NewsShareData(
@@ -117,7 +127,7 @@ fun NewsShareFlowHost(
             captureTransparentComposableContent(
                 context = context,
                 width = ShareCardWidth,
-                height = ShareCardHeight,
+                height = template.cardHeight(),
                 onResult = { result ->
                     result.fold(
                         onSuccess = { bitmap ->
@@ -363,7 +373,7 @@ private fun ScaledNewsShareCard(
         }
     ) { measurables, constraints ->
         val cardWidth = ShareCardWidth.roundToPx()
-        val cardHeight = ShareCardHeight.roundToPx()
+        val cardHeight = template.cardHeight().roundToPx()
         val previewWidth = constraints.maxWidth
         val scale = previewWidth.toFloat() / cardWidth
         val previewHeight = (cardHeight * scale).toInt()
@@ -532,7 +542,7 @@ private fun ShareTitleAndDate(
     if (data.publishedDate.isNotBlank()) {
         Spacer(modifier = Modifier.height(6.dp))
         AppText(
-            text = data.publishedDate,
+            text = formatSharePublishedDate(data.publishedDate),
             style = MaterialTheme.typography.bodySmall,
             color = dateColor,
             maxLines = 1,
@@ -540,6 +550,32 @@ private fun ShareTitleAndDate(
         )
     }
 }
+
+private fun formatSharePublishedDate(value: String): String {
+    val trimmedValue = value.trim()
+    val match = SHARE_DATE_PATTERN.matchEntire(trimmedValue) ?: return trimmedValue
+
+    return runCatching {
+        val date = LocalDate.of(
+            match.groupValues[1].toInt(),
+            match.groupValues[2].toInt(),
+            match.groupValues[3].toInt()
+        )
+        val formattedDate = date.format(SHARE_DATE_FORMATTER)
+        val hour = match.groupValues[4].takeIf(String::isNotEmpty)?.toInt()
+        if (hour == null) {
+            formattedDate
+        } else {
+            require(hour in 0..23)
+            "$formattedDate ${if (hour < 12) "오전" else "오후"}"
+        }
+    }.getOrElse { trimmedValue }
+}
+
+private val SHARE_DATE_PATTERN = Regex(
+    """^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$"""
+)
+private val SHARE_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd EEEE", Locale.KOREAN)
 
 @Composable
 private fun ShareSummarySection(
