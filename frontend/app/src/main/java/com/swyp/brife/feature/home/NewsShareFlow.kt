@@ -280,9 +280,7 @@ fun NewsShareCard(
     data: NewsShareData,
     modifier: Modifier = Modifier
 ) {
-    val cardModifier = modifier
-        .height(460.dp)
-        .padding(8.dp)
+    val cardModifier = modifier.fillMaxSize()
 
     when (template) {
         ShareCardTemplate.Dark -> DarkNewsShareCard(data, cardModifier)
@@ -293,60 +291,60 @@ fun NewsShareCard(
 
 @Composable
 private fun DarkNewsShareCard(data: NewsShareData, modifier: Modifier) {
-    Column(
-        modifier = modifier
-            .background(Color(0xFF292A2D))
-            .border(1.6.dp, Color(0xFF1F1F1F))
-    ) {
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(4.dp)
-                .background(PrimaryNormal)
-        )
-        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)) {
-            ShareTitleAndDate(
-                data = data,
-                titleColor = Color.White,
-                dateColor = Color(0xFF70737C)
-            )
-            Spacer(modifier = Modifier.height(18.dp))
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(Color.White.copy(alpha = 0.12f))
-            )
-            Spacer(modifier = Modifier.height(18.dp))
-            ShareSummarySection(
-                summaryPoints = data.summaryPoints,
-                titleColor = Color.White,
-                pointColor = Color(0xFF989BA2),
-                bulletColor = Color(0xFF989BA2)
-            )
-        }
-    }
+    SolidNewsShareCard(
+        data = data,
+        modifier = modifier,
+        backgroundColor = Color(0xFF292A2D),
+        titleColor = Color.White,
+        dateColor = Color(0xFF989BA2),
+        summaryTitleColor = Color.White,
+        summaryTextColor = Color(0xFF989BA2),
+        bulletColor = PrimaryNormal
+    )
 }
 
 @Composable
 private fun LightNewsShareCard(data: NewsShareData, modifier: Modifier) {
+    SolidNewsShareCard(
+        data = data,
+        modifier = modifier,
+        backgroundColor = Color.White,
+        titleColor = Color(0xFF212225),
+        dateColor = Color(0xFF70737C),
+        summaryTitleColor = Color(0xFF171719),
+        summaryTextColor = TextBody,
+        bulletColor = PrimaryNormal
+    )
+}
+
+@Composable
+private fun SolidNewsShareCard(
+    data: NewsShareData,
+    modifier: Modifier,
+    backgroundColor: Color,
+    titleColor: Color,
+    dateColor: Color,
+    summaryTitleColor: Color,
+    summaryTextColor: Color,
+    bulletColor: Color
+) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(Color.White)
+            .background(backgroundColor)
             .padding(horizontal = 24.dp, vertical = 26.dp)
     ) {
         ShareTitleAndDate(
             data = data,
-            titleColor = Color(0xFF212225),
-            dateColor = Color(0xFF70737C)
+            titleColor = titleColor,
+            dateColor = dateColor
         )
         Spacer(modifier = Modifier.height(24.dp))
         ShareSummarySection(
             summaryPoints = data.summaryPoints,
-            titleColor = Color(0xFF171719),
-            pointColor = TextBody,
-            bulletColor = PrimaryNormal
+            titleColor = summaryTitleColor,
+            pointColor = summaryTextColor,
+            bulletColor = bulletColor
         )
     }
 }
