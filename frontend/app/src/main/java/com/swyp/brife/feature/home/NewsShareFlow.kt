@@ -54,8 +54,8 @@ import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextTitle
 
 private val ShareCardWidth = 320.dp
-private val ShareCardHeight = 496.dp
-private val ShareCardPreviewWidth = 196.dp
+private val ShareCardHeight = 400.dp
+private val ShareCardPreviewWidth = 200.dp
 
 enum class ShareFlowStep {
     Closed,
