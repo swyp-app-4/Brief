@@ -1,6 +1,5 @@
 package com.swyp.brife.feature.home
 
-import android.graphics.Rect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -20,15 +19,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -54,11 +48,8 @@ fun HomeScreen(
     onPageChanged: (Int) -> Unit = {},
     topPadding: Dp = 0.dp
 ) {
-    val context = LocalContext.current
-    val view = LocalView.current
     var shareFlowStep by remember { mutableStateOf(ShareFlowStep.Closed) }
-    var selectedShareData by remember { mutableStateOf<InstagramShareData?>(null) }
-    var pendingShareRect by remember { mutableStateOf<Rect?>(null) }
+    var selectedShareData by remember { mutableStateOf<NewsShareData?>(null) }
 
 //    var showBottomSheet by remember { mutableStateOf(false) }
 //    // 한 세션 내에서 로그인 유도 바텀시트를 이미 표시했는지 여부
@@ -270,9 +261,6 @@ fun HomeScreen(
                             (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
                         val absOffset = pageOffset.absoluteValue
 
-                        // 카드 이미지 공유를 위해 카드 영역의 window 내 좌표를 추적
-                        var cardCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
-
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -291,8 +279,7 @@ fun HomeScreen(
                                         stop = 1f,
                                         fraction = 1f - absOffset.coerceIn(0f, 1f)
                                     )
-                                }
-                                .onGloballyPositioned { cardCoords = it },
+                                },
                             shape = RoundedCornerShape(20.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -305,16 +292,8 @@ fun HomeScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     contentScaleFactor = cardContentScale,
                                     onShareClick = {
-                                        val coords = cardCoords ?: return@HomeNewsCardContent
-                                        val bounds = coords.boundsInWindow()
-                                        pendingShareRect = Rect(
-                                            bounds.left.toInt(),
-                                            bounds.top.toInt(),
-                                            bounds.right.toInt(),
-                                            bounds.bottom.toInt()
-                                        )
-                                        selectedShareData = newsList[page].toInstagramShareData()
-                                        shareFlowStep = ShareFlowStep.Platform
+                                        selectedShareData = newsList[page].toNewsShareData()
+                                        shareFlowStep = ShareFlowStep.Template
                                     },
                                     onDetailClick = { onDetailClick(newsList[page]) }
                                 )
@@ -360,16 +339,6 @@ fun HomeScreen(
             onDismiss = {
                 shareFlowStep = ShareFlowStep.Closed
                 selectedShareData = null
-                pendingShareRect = null
-            },
-            onOtherShareClick = { shareData ->
-                val shareRect = pendingShareRect ?: return@NewsShareFlowHost
-                shareFlowStep = ShareFlowStep.Closed
-                selectedShareData = null
-                pendingShareRect = null
-                captureWindowBitmap(context, view, shareRect) { bitmap ->
-                    shareImageBitmap(context, bitmap, shareData.title)
-                }
             }
         )
     }

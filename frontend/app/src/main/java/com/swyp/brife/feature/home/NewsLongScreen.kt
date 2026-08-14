@@ -171,7 +171,6 @@ fun NewsLongScreen(
     onLoginRequired: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val view = LocalView.current
     val scrollState = rememberScrollState()
     val statusBarTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -226,7 +225,7 @@ fun NewsLongScreen(
     }
 
     var shareFlowStep by remember { mutableStateOf(ShareFlowStep.Closed) }
-    var selectedShareData by remember { mutableStateOf<InstagramShareData?>(null) }
+    var selectedShareData by remember { mutableStateOf<NewsShareData?>(null) }
     var showBookmarkSheet by remember { mutableStateOf(false) }
     var showCreateFolderSheet by remember { mutableStateOf(false) }
     var folderItems by remember { mutableStateOf(folders) }
@@ -303,8 +302,8 @@ fun NewsLongScreen(
                 },
                 onShareClick = {
                     onShareClick()
-                    selectedShareData = item.toInstagramShareData(imageRes)
-                    shareFlowStep = ShareFlowStep.Platform
+                    selectedShareData = item.toNewsShareData()
+                    shareFlowStep = ShareFlowStep.Template
                 }
             )
             NewsLongScrollProgressBar(progress = scrollProgress)
@@ -389,27 +388,6 @@ fun NewsLongScreen(
             onDismiss = {
                 shareFlowStep = ShareFlowStep.Closed
                 selectedShareData = null
-            },
-            onOtherShareClick = { shareData ->
-                shareFlowStep = ShareFlowStep.Closed
-                selectedShareData = null
-                captureComposableContent(
-                    context = context,
-                    onCaptured = { bitmap ->
-                        shareImageBitmap(context, bitmap, shareData.title)
-                    },
-                    content = {
-                        BrifeTheme {
-                            Surface(color = Color.White) {
-                                NewsLongShareContent(
-                                    item = item,
-                                    imageRes = imageRes,
-                                    sections = sections
-                                )
-                            }
-                        }
-                    }
-                )
             }
         )
     }
@@ -954,27 +932,6 @@ private fun NewsLongScrollProgressBar(progress: Float) {
                 .height(NewsLongScrollProgressHeight)
                 .background(PrimaryNormal)
         )
-    }
-}
-
-@Composable
-private fun NewsLongShareContent(
-    item: HomeNewsCardItem,
-    imageRes: Int,
-    sections: List<NewsDetailSection>
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-    ) {
-        NewsLongContent(
-            item = item,
-            imageRes = imageRes,
-            sections = sections
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 

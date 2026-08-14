@@ -52,19 +52,18 @@ import com.swyp.brife.ui.theme.TextTitle
 
 enum class ShareFlowStep {
     Closed,
-    Platform,
-    InstagramDestination,
     Template,
-    Rendering
+    Rendering,
+    Destination
 }
 
-enum class InstagramShareTemplate {
+enum class ShareCardTemplate {
     Dark,
     Light,
     ImageHeader
 }
 
-data class InstagramShareData(
+data class NewsShareData(
     val newsId: Long,
     val category: String,
     val subCategory: String,
@@ -74,34 +73,35 @@ data class InstagramShareData(
     val imageRes: Int?
 )
 
-fun HomeNewsCardItem.toInstagramShareData(
-    representativeImageRes: Int? = imageRes
-): InstagramShareData = InstagramShareData(
+fun HomeNewsCardItem.toNewsShareData(): NewsShareData = NewsShareData(
     newsId = newsId,
     category = category,
     subCategory = subCategory,
     title = title,
     summaryPoints = summaryPoints,
     publishedDate = updatedAt,
-    imageRes = representativeImageRes
+    imageRes = imageRes ?: LongFormImageProvider.getStableImageRes(category, subCategory, newsId)
 )
 
 @Composable
 fun NewsShareFlowHost(
     step: ShareFlowStep,
-    shareData: InstagramShareData?,
+    shareData: NewsShareData?,
     onStepChange: (ShareFlowStep) -> Unit,
-    onDismiss: () -> Unit,
-    onOtherShareClick: (InstagramShareData) -> Unit
+    onDismiss: () -> Unit
 ) {
     val data = shareData ?: return
     val context = LocalContext.current
     var selectedTemplate by remember(data.newsId) {
-        mutableStateOf<InstagramShareTemplate?>(null)
+        mutableStateOf<ShareCardTemplate?>(null)
     }
+    var shareArtifact by remember(data.newsId) { mutableStateOf<ShareArtifact?>(null) }
 
     LaunchedEffect(step, data.newsId) {
-        if (step == ShareFlowStep.Platform) selectedTemplate = null
+        if (step == ShareFlowStep.Template) {
+            selectedTemplate = null
+            shareArtifact = null
+        }
     }
 
     LaunchedEffect(step, data.newsId, selectedTemplate) {
@@ -114,31 +114,30 @@ fun NewsShareFlowHost(
                 onResult = { result ->
                     result.fold(
                         onSuccess = { bitmap ->
-                            shareInstagramStorySticker(context, bitmap).fold(
-                                onSuccess = { onDismiss() },
+                            createShareArtifact(context, bitmap).fold(
+                                onSuccess = { artifact ->
+                                    shareArtifact = artifact
+                                    onStepChange(ShareFlowStep.Destination)
+                                },
                                 onFailure = {
-                                    Toast.makeText(
-                                        context,
-                                        "Instagram 스토리를 열 수 없습니다. 기타 공유를 이용해주세요.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    onStepChange(ShareFlowStep.Platform)
+                                    Toast.makeText(context, "공유 이미지를 저장할 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                    onStepChange(ShareFlowStep.Template)
                                 }
                             )
                         },
                         onFailure = {
                             Toast.makeText(
                                 context,
-                                "공유 이미지를 만들 수 없습니다. 기타 공유를 이용해주세요.",
+                                "공유 이미지를 만들 수 없습니다.",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            onStepChange(ShareFlowStep.Platform)
+                            onStepChange(ShareFlowStep.Template)
                         }
                     )
                 }
             ) {
                 BrifeTheme {
-                    InstagramShareCard(
+                    NewsShareCard(
                         template = template,
                         data = data,
                         modifier = Modifier.fillMaxWidth()
@@ -149,29 +148,44 @@ fun NewsShareFlowHost(
     }
 
     when (step) {
-        ShareFlowStep.Platform -> SharePlatformBottomSheet(
-            onDismissRequest = onDismiss,
-            onInstagramClick = { onStepChange(ShareFlowStep.InstagramDestination) },
-            onOtherShareClick = { onOtherShareClick(data) }
-        )
-
-        ShareFlowStep.InstagramDestination -> InstagramDestinationBottomSheet(
-            onDismissRequest = onDismiss,
-            onStoryClick = { onStepChange(ShareFlowStep.Template) }
-        )
-
         ShareFlowStep.Template -> ShareTemplateBottomSheet(
             shareData = data,
             selectedTemplate = selectedTemplate,
             onTemplateSelected = { selectedTemplate = it },
             onDismissRequest = {
                 selectedTemplate = null
-                onStepChange(ShareFlowStep.InstagramDestination)
+                onDismiss()
             },
             onNextClick = {
                 if (selectedTemplate != null) onStepChange(ShareFlowStep.Rendering)
             }
         )
+
+        ShareFlowStep.Destination -> shareArtifact?.let { artifact ->
+            ShareDestinationBottomSheet(
+                onDismissRequest = onDismiss,
+                onInstagramClick = {
+                    shareViaInstagramStory(context, artifact).fold(
+                        onSuccess = { onDismiss() },
+                        onFailure = {
+                            Toast.makeText(
+                                context,
+                                "Instagram 스토리를 열 수 없습니다. 기타 공유를 이용해주세요.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    )
+                },
+                onOtherShareClick = {
+                    shareViaSystem(context, artifact, data.title).fold(
+                        onSuccess = { onDismiss() },
+                        onFailure = {
+                            Toast.makeText(context, "공유 앱을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            )
+        }
 
         ShareFlowStep.Closed,
         ShareFlowStep.Rendering -> Unit
@@ -180,7 +194,7 @@ fun NewsShareFlowHost(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SharePlatformBottomSheet(
+private fun ShareDestinationBottomSheet(
     onDismissRequest: () -> Unit,
     onInstagramClick: () -> Unit,
     onOtherShareClick: () -> Unit
@@ -198,26 +212,6 @@ private fun SharePlatformBottomSheet(
                 "Instagram" to onInstagramClick,
                 "기타 공유" to onOtherShareClick
             )
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun InstagramDestinationBottomSheet(
-    onDismissRequest: () -> Unit,
-    onStoryClick: () -> Unit
-) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        sheetState = sheetState,
-        containerColor = Color.White,
-        dragHandle = null
-    ) {
-        ShareOptionList(
-            options = listOf("스토리로 공유" to onStoryClick)
         )
     }
 }
@@ -249,9 +243,9 @@ private fun ShareOptionList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShareTemplateBottomSheet(
-    shareData: InstagramShareData,
-    selectedTemplate: InstagramShareTemplate?,
-    onTemplateSelected: (InstagramShareTemplate) -> Unit,
+    shareData: NewsShareData,
+    selectedTemplate: ShareCardTemplate?,
+    onTemplateSelected: (ShareCardTemplate) -> Unit,
     onDismissRequest: () -> Unit,
     onNextClick: () -> Unit
 ) {
@@ -277,7 +271,7 @@ private fun ShareTemplateBottomSheet(
             )
             Spacer(modifier = Modifier.height(8.dp))
             AppText(
-                text = "인스타그램 스토리에 공유할 디자인을 선택해주세요.",
+                text = "공유할 뉴스 카드 디자인을 선택해주세요.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextBody,
                 modifier = Modifier.padding(horizontal = 24.dp)
@@ -288,7 +282,7 @@ private fun ShareTemplateBottomSheet(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 24.dp)
             ) {
-                items(InstagramShareTemplate.entries) { template ->
+                items(ShareCardTemplate.entries) { template ->
                     ShareTemplatePreview(
                         template = template,
                         data = shareData,
@@ -310,8 +304,8 @@ private fun ShareTemplateBottomSheet(
 
 @Composable
 private fun ShareTemplatePreview(
-    template: InstagramShareTemplate,
-    data: InstagramShareData,
+    template: ShareCardTemplate,
+    data: NewsShareData,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -331,7 +325,7 @@ private fun ShareTemplatePreview(
                 .padding(4.dp)
                 .clickable(onClick = onClick)
         ) {
-            InstagramShareCard(
+            NewsShareCard(
                 template = template,
                 data = data,
                 modifier = Modifier.fillMaxSize()
@@ -349,9 +343,9 @@ private fun ShareTemplatePreview(
 }
 
 @Composable
-fun InstagramShareCard(
-    template: InstagramShareTemplate,
-    data: InstagramShareData,
+fun NewsShareCard(
+    template: ShareCardTemplate,
+    data: NewsShareData,
     modifier: Modifier = Modifier
 ) {
     val cardModifier = modifier
@@ -359,14 +353,14 @@ fun InstagramShareCard(
         .padding(8.dp)
 
     when (template) {
-        InstagramShareTemplate.Dark -> DarkInstagramShareCard(data, cardModifier)
-        InstagramShareTemplate.Light -> LightInstagramShareCard(data, cardModifier)
-        InstagramShareTemplate.ImageHeader -> ImageHeaderInstagramShareCard(data, cardModifier)
+        ShareCardTemplate.Dark -> DarkNewsShareCard(data, cardModifier)
+        ShareCardTemplate.Light -> LightNewsShareCard(data, cardModifier)
+        ShareCardTemplate.ImageHeader -> ImageHeaderNewsShareCard(data, cardModifier)
     }
 }
 
 @Composable
-private fun DarkInstagramShareCard(data: InstagramShareData, modifier: Modifier) {
+private fun DarkNewsShareCard(data: NewsShareData, modifier: Modifier) {
     Column(
         modifier = modifier
             .background(Color(0xFF292A2D))
@@ -403,7 +397,7 @@ private fun DarkInstagramShareCard(data: InstagramShareData, modifier: Modifier)
 }
 
 @Composable
-private fun LightInstagramShareCard(data: InstagramShareData, modifier: Modifier) {
+private fun LightNewsShareCard(data: NewsShareData, modifier: Modifier) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
@@ -426,7 +420,7 @@ private fun LightInstagramShareCard(data: InstagramShareData, modifier: Modifier
 }
 
 @Composable
-private fun ImageHeaderInstagramShareCard(data: InstagramShareData, modifier: Modifier) {
+private fun ImageHeaderNewsShareCard(data: NewsShareData, modifier: Modifier) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
@@ -479,7 +473,7 @@ private fun ImageHeaderInstagramShareCard(data: InstagramShareData, modifier: Mo
 
 @Composable
 private fun ShareTitleAndDate(
-    data: InstagramShareData,
+    data: NewsShareData,
     titleColor: Color,
     dateColor: Color
 ) {
@@ -566,9 +560,9 @@ private fun ShareSummaryList(
     }
 }
 
-private val InstagramShareTemplate.displayName: String
+private val ShareCardTemplate.displayName: String
     get() = when (this) {
-        InstagramShareTemplate.Dark -> "Dark"
-        InstagramShareTemplate.Light -> "Light"
-        InstagramShareTemplate.ImageHeader -> "ImageHeader"
+        ShareCardTemplate.Dark -> "Dark"
+        ShareCardTemplate.Light -> "Light"
+        ShareCardTemplate.ImageHeader -> "ImageHeader"
     }
