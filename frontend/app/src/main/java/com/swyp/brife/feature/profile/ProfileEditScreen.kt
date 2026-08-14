@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -137,23 +138,31 @@ fun ProfileEditScreen(
                 )
             }
 
-            Image(
-                painter = painterResource(id = R.drawable.profile_grass),
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
+            Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .fillMaxWidth(0.62f)
-            )
+                    .width(220.dp)
+                    .height(220.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.profile_grass),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .offset(y = 55.dp)
+                )
 
-            Image(
-                painter = painterResource(id = selectedOption.fullImageRes),
-                contentDescription = "현재 선택한 프로필 캐릭터",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd, )
-                    .size(220.dp)
-            )
+                Image(
+                    painter = painterResource(id = selectedOption.fullImageRes),
+                    contentDescription = "현재 선택한 프로필 캐릭터",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .size(200.dp)
+                )
+            }
         }
 
         ProfileCharacterPanel(

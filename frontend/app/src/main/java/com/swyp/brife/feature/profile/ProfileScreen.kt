@@ -92,22 +92,16 @@ private fun ProfileImageBox(
     imageRes: Int,
     onEditClick: () -> Unit
 ) {
-    Box(modifier = Modifier.size(140.dp)) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(androidx.compose.foundation.shape.CircleShape)
-                .background(Color(0xFFC6E2FF)),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = "프로필 이미지",
-                contentScale = ContentScale.Fit,
-                alignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+    Box(
+        modifier = Modifier.size(140.dp)
+    ) {
+        Image(
+            painter = painterResource(id = imageRes),
+            contentDescription = "프로필 이미지",
+            contentScale = ContentScale.Fit,
+            alignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        )
 
         Icon(
             painter = painterResource(id = R.drawable.ic_profile_edit),
@@ -121,7 +115,6 @@ private fun ProfileImageBox(
         )
     }
 }
-
 @Composable
 private fun GuestContent(
     uiState: ProfileUiState,
