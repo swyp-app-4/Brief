@@ -459,7 +459,7 @@ private fun SolidNewsShareCard(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
                 .background(summaryBackgroundColor)
-                .padding(horizontal = 16.dp, vertical = 16.dp)
+                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 12.dp)
         )
     }
 }
@@ -511,7 +511,7 @@ private fun ImageHeaderNewsShareCard(data: NewsShareData, modifier: Modifier) {
             titleColor = Color(0xFF171719),
             pointColor = TextBody,
             bulletColor = PrimaryNormal,
-            modifier = Modifier.padding(start = 24.dp, top = 22.dp, end = 24.dp, bottom = 12.dp)
+            modifier = Modifier.padding(start = 24.dp, top = 22.dp, end = 24.dp, bottom = 8.dp)
         )
     }
 }
@@ -602,7 +602,7 @@ private fun ShareSummaryList(
             )
         }
         if (index < visibleSummaries.lastIndex) {
-            Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(5.dp))
         }
     }
 }
