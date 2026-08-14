@@ -27,7 +27,7 @@ data class ShareArtifact(val uri: Uri)
 fun captureTransparentComposableContent(
     context: Context,
     width: Dp,
-    height: Dp,
+    minHeight: Dp,
     onResult: (Result<Bitmap>) -> Unit,
     content: @Composable () -> Unit
 ) {
@@ -37,10 +37,10 @@ fun captureTransparentComposableContent(
         ?: return onResult(Result.failure(IllegalStateException("Decor view is unavailable")))
     val density = context.resources.displayMetrics.density
     val widthPx = (width.value * density).roundToInt().coerceAtLeast(1)
-    val heightPx = (height.value * density).roundToInt().coerceAtLeast(1)
+    val minHeightPx = (minHeight.value * density).roundToInt().coerceAtLeast(1)
 
     val composeView = ComposeView(context).apply {
-        layoutParams = FrameLayout.LayoutParams(widthPx, heightPx)
+        layoutParams = FrameLayout.LayoutParams(widthPx, ViewGroup.LayoutParams.WRAP_CONTENT)
         translationX = decorView.width.toFloat()
         setBackgroundColor(android.graphics.Color.TRANSPARENT)
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
@@ -54,8 +54,9 @@ fun captureTransparentComposableContent(
         try {
             composeView.measure(
                 View.MeasureSpec.makeMeasureSpec(widthPx, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(heightPx, View.MeasureSpec.EXACTLY)
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
             )
+            val heightPx = composeView.measuredHeight.coerceAtLeast(minHeightPx)
             composeView.layout(0, 0, widthPx, heightPx)
 
             handler.postDelayed({

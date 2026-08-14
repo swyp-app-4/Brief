@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -57,8 +58,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 private val ShareCardWidth = 320.dp
-private val ShareCardHeight = 400.dp
-private val ImageHeaderShareCardHeight = 492.dp
+private val SolidShareCardMinHeight = 280.dp
+private val ImageHeaderShareCardMinHeight = 300.dp
 private val ShareCardPreviewWidth = 200.dp
 
 enum class ShareFlowStep {
@@ -74,10 +75,10 @@ enum class ShareCardTemplate {
     ImageHeader
 }
 
-private fun ShareCardTemplate.cardHeight() = when (this) {
+private fun ShareCardTemplate.minCardHeight() = when (this) {
     ShareCardTemplate.Dark,
-    ShareCardTemplate.Light -> ShareCardHeight
-    ShareCardTemplate.ImageHeader -> ImageHeaderShareCardHeight
+    ShareCardTemplate.Light -> SolidShareCardMinHeight
+    ShareCardTemplate.ImageHeader -> ImageHeaderShareCardMinHeight
 }
 
 data class NewsShareData(
@@ -127,7 +128,7 @@ fun NewsShareFlowHost(
             captureTransparentComposableContent(
                 context = context,
                 width = ShareCardWidth,
-                height = template.cardHeight(),
+                minHeight = template.minCardHeight(),
                 onResult = { result ->
                     result.fold(
                         onSuccess = { bitmap ->
@@ -157,7 +158,9 @@ fun NewsShareFlowHost(
                     NewsShareCard(
                         template = template,
                         data = data,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = template.minCardHeight())
                     )
                 }
             }
@@ -368,18 +371,25 @@ private fun ScaledNewsShareCard(
             NewsShareCard(
                 template = template,
                 data = data,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = template.minCardHeight())
             )
         }
     ) { measurables, constraints ->
         val cardWidth = ShareCardWidth.roundToPx()
-        val cardHeight = template.cardHeight().roundToPx()
+        val minCardHeight = template.minCardHeight().roundToPx()
         val previewWidth = constraints.maxWidth
         val scale = previewWidth.toFloat() / cardWidth
-        val previewHeight = (cardHeight * scale).toInt()
         val card = measurables.single().measure(
-            Constraints.fixed(cardWidth, cardHeight)
+            Constraints(
+                minWidth = cardWidth,
+                maxWidth = cardWidth,
+                minHeight = minCardHeight,
+                maxHeight = Constraints.Infinity
+            )
         )
+        val previewHeight = (card.height * scale).toInt()
 
         layout(previewWidth, previewHeight) {
             card.placeWithLayer(0, 0) {
@@ -397,7 +407,7 @@ fun NewsShareCard(
     data: NewsShareData,
     modifier: Modifier = Modifier
 ) {
-    val cardModifier = modifier.fillMaxSize()
+    val cardModifier = modifier
 
     when (template) {
         ShareCardTemplate.Dark -> DarkNewsShareCard(data, cardModifier)
@@ -599,13 +609,15 @@ private fun ShareSummarySection(
                 color = titleColor
             )
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        ShareSummaryList(
-            summaryPoints = summaryPoints,
-            textColor = pointColor,
-            bulletColor = bulletColor,
-            maxLines = 3
-        )
+        if (summaryPoints.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            ShareSummaryList(
+                summaryPoints = summaryPoints,
+                textColor = pointColor,
+                bulletColor = bulletColor,
+                maxLines = 3
+            )
+        }
     }
 }
 
