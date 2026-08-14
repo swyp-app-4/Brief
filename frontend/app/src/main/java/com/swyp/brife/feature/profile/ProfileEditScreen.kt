@@ -93,7 +93,7 @@ fun ProfileEditScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.43f)
+                .weight(0.47f)
         ) {
             ProfileEditTopBar(
                 onBackClick = onBackClick,
@@ -141,8 +141,9 @@ fun ProfileEditScreen(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .width(220.dp)
-                    .height(220.dp)
+                    .width(210.dp)
+                    .height(210.dp)
+                    .offset(x = 6.dp, y=-10.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.profile_grass),
@@ -160,7 +161,7 @@ fun ProfileEditScreen(
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .size(200.dp)
+                        .size(190.dp)
                 )
             }
         }
@@ -171,7 +172,7 @@ fun ProfileEditScreen(
             onImageSelected = { selectedOption = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.57f)
+                .weight(0.53f)
         )
     }
 }
@@ -237,7 +238,10 @@ private fun ProfileCharacterPanel(
             .background(Color.White)
             .padding(horizontal = 20.dp)
     ) {
-        Column(modifier = Modifier.padding(top = 30.dp, bottom = 18.dp)) {
+        Column(modifier = Modifier.padding(top = 30.dp
+            , bottom = 18.dp
+                    )
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.height(24.dp))
                 AppText(
