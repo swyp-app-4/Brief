@@ -36,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -53,17 +52,19 @@ import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextTitle
 
 private data class ProfileImageOption(
-    @DrawableRes val imageRes: Int,
+    @DrawableRes val fullImageRes: Int,
+    @DrawableRes val selectImageRes: Int,
+    @DrawableRes val profileImageRes: Int,
     val categoryLabel: String
 )
 
 private val profileImageOptions = listOf(
-    ProfileImageOption(R.drawable.img_home_art, "문화 · 예술"),
-    ProfileImageOption(R.drawable.img_home_economy, "경제 · 재테크"),
-    ProfileImageOption(R.drawable.img_home_entertainment, "엔터 · 스포츠"),
-    ProfileImageOption(R.drawable.img_home_life, "라이프 · 성장"),
-    ProfileImageOption(R.drawable.img_home_tech, "IT · 테크"),
-    ProfileImageOption(R.drawable.img_home_politics, "시사 · 정치")
+    ProfileImageOption(R.drawable.culture_full, R.drawable.profile_culture2, R.drawable.profile_culture, "문화 · 예술"),
+    ProfileImageOption(R.drawable.economy_full, R.drawable.profile_economy2, R.drawable.profile_economy, "경제 · 재테크"),
+    ProfileImageOption(R.drawable.entertainment_full, R.drawable.profile_entertainment2, R.drawable.profile_entertainment, "엔터 · 스포츠"),
+    ProfileImageOption(R.drawable.life_full, R.drawable.profile_life2, R.drawable.profile_life, "라이프 · 성장"),
+    ProfileImageOption(R.drawable.tech_full, R.drawable.profile_tech2, R.drawable.profile_tech, "IT · 테크"),
+    ProfileImageOption(R.drawable.politics_full, R.drawable.profile_politics2, R.drawable.profile_politics, "시사 · 정치")
 )
 
 @Composable
@@ -74,13 +75,10 @@ fun ProfileEditScreen(
     onBackClick: () -> Unit = {},
     onSaveClick: (Int) -> Unit = {}
 ) {
-    var currentSelectedImageRes by remember(selectedImageRes) {
-        mutableStateOf(selectedImageRes.toHomeCharacterRes())
+    var selectedOption by remember(selectedImageRes) {
+        mutableStateOf(selectedImageRes.toProfileImageOption())
     }
-    val selectedCategory = profileImageOptions
-        .firstOrNull { it.imageRes == currentSelectedImageRes }
-        ?.categoryLabel
-        .orEmpty()
+    val selectedCategory = selectedOption.categoryLabel
 
     Column(
         modifier = Modifier
@@ -98,7 +96,7 @@ fun ProfileEditScreen(
         ) {
             ProfileEditTopBar(
                 onBackClick = onBackClick,
-                onSaveClick = { onSaveClick(currentSelectedImageRes) },
+                onSaveClick = { onSaveClick(selectedOption.profileImageRes) },
                 modifier = Modifier.align(Alignment.TopCenter)
             )
 
@@ -140,7 +138,16 @@ fun ProfileEditScreen(
             }
 
             Image(
-                painter = painterResource(id = currentSelectedImageRes),
+                painter = painterResource(id = R.drawable.profile_grass),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .fillMaxWidth(0.62f)
+            )
+
+            Image(
+                painter = painterResource(id = selectedOption.fullImageRes),
                 contentDescription = "현재 선택한 프로필 캐릭터",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
@@ -150,9 +157,9 @@ fun ProfileEditScreen(
         }
 
         ProfileCharacterPanel(
-            currentSelectedImageRes = currentSelectedImageRes,
+            selectedOption = selectedOption,
             enabled = !isGuestPreview,
-            onImageSelected = { currentSelectedImageRes = it },
+            onImageSelected = { selectedOption = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(0.57f)
@@ -210,9 +217,9 @@ private fun ProfileEditTopBar(
 
 @Composable
 private fun ProfileCharacterPanel(
-    @DrawableRes currentSelectedImageRes: Int,
+    selectedOption: ProfileImageOption,
     enabled: Boolean,
-    onImageSelected: (Int) -> Unit,
+    onImageSelected: (ProfileImageOption) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -259,10 +266,10 @@ private fun ProfileCharacterPanel(
         ) {
             items(profileImageOptions) { option ->
                 ProfileImageGridItem(
-                    imageRes = option.imageRes,
-                    isSelected = option.imageRes == currentSelectedImageRes,
+                    imageRes = option.selectImageRes,
+                    isSelected = option == selectedOption,
                     enabled = enabled,
-                    onClick = { onImageSelected(option.imageRes) }
+                    onClick = { onImageSelected(option) }
                 )
             }
         }
@@ -298,28 +305,24 @@ private fun ProfileImageGridItem(
             painter = painterResource(id = imageRes),
             contentDescription = "프로필 선택 캐릭터",
             modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer {
-                    scaleX = 1.4f
-                    scaleY = 1.4f
-                    translationY = 10.dp.toPx()
-                },
+                .fillMaxSize(),
             contentScale = ContentScale.Fit,
             alignment = Alignment.Center
         )
     }
 }
 
-@DrawableRes
-private fun Int.toHomeCharacterRes(): Int = when (this) {
-    R.drawable.img_profile_avatar -> R.drawable.img_home_art
-    R.drawable.img_profile_economy -> R.drawable.img_home_economy
-    R.drawable.img_profile_entertainment -> R.drawable.img_home_entertainment
-    R.drawable.img_profile_life -> R.drawable.img_home_life
-    R.drawable.img_profile_tech -> R.drawable.img_home_tech
-    R.drawable.img_profile_politics -> R.drawable.img_home_politics
-    else -> this
-}
+private fun Int.toProfileImageOption(): ProfileImageOption =
+    profileImageOptions.firstOrNull { it.profileImageRes == this }
+        ?: when (this) {
+            R.drawable.img_profile_avatar -> profileImageOptions[0]
+            R.drawable.img_profile_economy -> profileImageOptions[1]
+            R.drawable.img_profile_entertainment -> profileImageOptions[2]
+            R.drawable.img_profile_life -> profileImageOptions[3]
+            R.drawable.img_profile_tech -> profileImageOptions[4]
+            R.drawable.img_profile_politics -> profileImageOptions[5]
+            else -> profileImageOptions[0]
+        }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -327,7 +330,7 @@ private fun ProfileEditScreenPreview() {
     BrifeTheme {
         ProfileEditScreen(
             username = "브리프",
-            selectedImageRes = R.drawable.img_home_economy
+            selectedImageRes = R.drawable.profile_economy
         )
     }
 }

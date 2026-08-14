@@ -14,7 +14,7 @@ data class ProfileUiState(
     val userName: String = "",
     val userEmail: String = "",
     val profileImageUrl: String? = null,
-    @DrawableRes val profileImageRes: Int = R.drawable.img_profile_avatar,
+    @DrawableRes val profileImageRes: Int = R.drawable.profile_culture,
     val interests: List<ProfileCategoryItem> = emptyList()
 )
 
@@ -29,12 +29,12 @@ fun categoryItemFromId(id: Long): ProfileCategoryItem? = when (id) {
 }
 
 fun profileImageUrlFromDrawableRes(@DrawableRes drawableRes: Int): String = when (drawableRes) {
-    R.drawable.img_home_art -> "img_profile_avatar"
-    R.drawable.img_home_economy -> "img_profile_economy"
-    R.drawable.img_home_entertainment -> "img_profile_entertainment"
-    R.drawable.img_home_life -> "img_profile_life"
-    R.drawable.img_home_tech -> "img_profile_tech"
-    R.drawable.img_home_politics -> "img_profile_politics"
+    R.drawable.profile_culture -> "img_profile_avatar"
+    R.drawable.profile_economy -> "img_profile_economy"
+    R.drawable.profile_entertainment -> "img_profile_entertainment"
+    R.drawable.profile_life -> "img_profile_life"
+    R.drawable.profile_tech -> "img_profile_tech"
+    R.drawable.profile_politics -> "img_profile_politics"
     R.drawable.img_profile_avatar -> "img_profile_avatar"
     R.drawable.img_profile_economy -> "img_profile_economy"
     R.drawable.img_profile_entertainment -> "img_profile_entertainment"
@@ -46,18 +46,18 @@ fun profileImageUrlFromDrawableRes(@DrawableRes drawableRes: Int): String = when
 
 @DrawableRes
 fun profileImageResFromUrl(profileImageUrl: String?): Int = when (profileImageUrl) {
-    "img_profile_avatar" -> R.drawable.img_home_art
-    "img_profile_economy" -> R.drawable.img_home_economy
-    "img_profile_entertainment" -> R.drawable.img_home_entertainment
-    "img_profile_life" -> R.drawable.img_home_life
-    "img_profile_tech" -> R.drawable.img_home_tech
-    "img_profile_politics" -> R.drawable.img_home_politics
-    else -> R.drawable.img_home_art
+    "img_profile_avatar" -> R.drawable.profile_culture
+    "img_profile_economy" -> R.drawable.profile_economy
+    "img_profile_entertainment" -> R.drawable.profile_entertainment
+    "img_profile_life" -> R.drawable.profile_life
+    "img_profile_tech" -> R.drawable.profile_tech
+    "img_profile_politics" -> R.drawable.profile_politics
+    else -> R.drawable.profile_culture
 }
 
 val mockGuestProfileState = ProfileUiState(
     isLoggedIn = false,
-    profileImageRes = R.drawable.img_profile_avatar,
+    profileImageRes = R.drawable.profile_culture,
     interests = listOf(
         ProfileCategoryItem(1L, "시사 정치", R.drawable.news_politics),
         ProfileCategoryItem(2L, "경제 재테크", R.drawable.economy),
@@ -70,7 +70,7 @@ val mockLoggedInProfileState = ProfileUiState(
     userName = "홍길동",
     userEmail = "user@brife.com",
     profileImageUrl = "img_profile_avatar",
-    profileImageRes = R.drawable.img_profile_avatar,
+    profileImageRes = R.drawable.profile_culture,
     interests = listOf(
         ProfileCategoryItem(1L, "시사 정치", R.drawable.news_politics),
         ProfileCategoryItem(2L, "경제 재테크", R.drawable.economy)

@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -106,13 +105,7 @@ private fun ProfileImageBox(
                 contentDescription = "프로필 이미지",
                 contentScale = ContentScale.Fit,
                 alignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        scaleX = 1.4f
-                        scaleY = 1.4f
-                        translationY = 16.dp.toPx()
-                    }
+                modifier = Modifier.fillMaxSize()
             )
         }
 
