@@ -79,6 +79,8 @@ import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 private val NewsLongTopBarContentHeight = 64.dp
 private val NewsLongScrollProgressHeight = 3.dp
@@ -1053,7 +1055,7 @@ private fun NewsSourceCard(
     pressName: String,
     onClick: () -> Unit
 ) {
-    val formattedDate = publishedDate.substringBefore("T").trim()
+    val formattedDate = formatSourcePublishedDate(publishedDate)
     val metaText = listOf(formattedDate, pressName)
         .filter { it.isNotBlank() }
         .joinToString(" · ")
@@ -1092,3 +1094,19 @@ private fun NewsSourceCard(
         )
     }
 }
+
+private fun formatSourcePublishedDate(value: String): String {
+    val trimmedValue = value.trim()
+    val dateValue = SOURCE_PUBLISHED_DATE_PATTERN
+        .matchEntire(trimmedValue)
+        ?.groupValues
+        ?.get(1)
+        ?: return value
+
+    return runCatching {
+        LocalDate.parse(dateValue).format(SOURCE_PUBLISHED_DATE_FORMATTER)
+    }.getOrElse { value }
+}
+
+private val SOURCE_PUBLISHED_DATE_PATTERN = Regex("""^(\d{4}-\d{2}-\d{2})(?:[T ].*)?$""")
+private val SOURCE_PUBLISHED_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd")
