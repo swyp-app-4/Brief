@@ -51,9 +51,9 @@ import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextTitle
 
 private val ShareCardWidth = 320.dp
-private val ShareCardHeight = 432.dp
+private val ShareCardHeight = 496.dp
 private val ShareCardPreviewWidth = 196.dp
-private val ShareCardPreviewHeight = 265.dp
+private val ShareCardPreviewHeight = 304.dp
 
 enum class ShareFlowStep {
     Closed,
@@ -532,7 +532,7 @@ private fun ShareSummarySection(
             summaryPoints = summaryPoints,
             textColor = pointColor,
             bulletColor = bulletColor,
-            maxLines = 2
+            maxLines = 3
         )
     }
 }
@@ -544,11 +544,10 @@ private fun ShareSummaryList(
     bulletColor: Color,
     maxLines: Int
 ) {
-    summaryPoints.take(4).forEach { summary ->
+    val visibleSummaries = summaryPoints.take(4)
+    visibleSummaries.forEachIndexed { index, summary ->
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 3.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Top
         ) {
             AppText(
@@ -565,6 +564,9 @@ private fun ShareSummaryList(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
+        }
+        if (index < visibleSummaries.lastIndex) {
+            Spacer(modifier = Modifier.height(3.dp))
         }
     }
 }
