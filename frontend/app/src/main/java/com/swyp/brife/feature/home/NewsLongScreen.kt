@@ -81,6 +81,7 @@ import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 private val NewsLongTopBarContentHeight = 64.dp
 private val NewsLongScrollProgressHeight = 3.dp
@@ -447,7 +448,7 @@ private fun NewsLongContent(
             Spacer(modifier = Modifier.height(10.dp))
 
             AppText(
-                text = item.updatedAt,
+                text = formatLongFormPublishedDate(item.updatedAt),
                 style = MaterialTheme.typography.bodySmall,
                 color = TextCaption
             )
@@ -1096,6 +1097,14 @@ private fun NewsSourceCard(
 }
 
 private fun formatSourcePublishedDate(value: String): String {
+    return formatPublishedDate(value, SOURCE_PUBLISHED_DATE_FORMATTER)
+}
+
+private fun formatLongFormPublishedDate(value: String): String {
+    return formatPublishedDate(value, LONG_FORM_PUBLISHED_DATE_FORMATTER)
+}
+
+private fun formatPublishedDate(value: String, formatter: DateTimeFormatter): String {
     val trimmedValue = value.trim()
     val dateValue = SOURCE_PUBLISHED_DATE_PATTERN
         .matchEntire(trimmedValue)
@@ -1104,9 +1113,11 @@ private fun formatSourcePublishedDate(value: String): String {
         ?: return value
 
     return runCatching {
-        LocalDate.parse(dateValue).format(SOURCE_PUBLISHED_DATE_FORMATTER)
+        LocalDate.parse(dateValue).format(formatter)
     }.getOrElse { value }
 }
 
 private val SOURCE_PUBLISHED_DATE_PATTERN = Regex("""^(\d{4}-\d{2}-\d{2})(?:[T ].*)?$""")
 private val SOURCE_PUBLISHED_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+private val LONG_FORM_PUBLISHED_DATE_FORMATTER =
+    DateTimeFormatter.ofPattern("yyyy.MM.dd EEEE", Locale.KOREAN)
