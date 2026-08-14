@@ -35,12 +35,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.swyp.brife.R
 import com.swyp.brife.ui.component.AppText
@@ -53,7 +56,6 @@ import com.swyp.brife.ui.theme.TextTitle
 private val ShareCardWidth = 320.dp
 private val ShareCardHeight = 496.dp
 private val ShareCardPreviewWidth = 196.dp
-private val ShareCardPreviewHeight = 304.dp
 
 enum class ShareFlowStep {
     Closed,
@@ -319,7 +321,6 @@ private fun ShareTemplatePreview(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(ShareCardPreviewHeight)
                 .border(
                     width = 2.dp,
                     color = if (isSelected) PrimaryNormal else Color.Transparent,
@@ -328,10 +329,10 @@ private fun ShareTemplatePreview(
                 .padding(4.dp)
                 .clickable(onClick = onClick)
         ) {
-            NewsShareCard(
+            ScaledNewsShareCard(
                 template = template,
                 data = data,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxWidth()
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -342,6 +343,41 @@ private fun ShareTemplatePreview(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
+    }
+}
+
+@Composable
+private fun ScaledNewsShareCard(
+    template: ShareCardTemplate,
+    data: NewsShareData,
+    modifier: Modifier = Modifier
+) {
+    Layout(
+        modifier = modifier,
+        content = {
+            NewsShareCard(
+                template = template,
+                data = data,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    ) { measurables, constraints ->
+        val cardWidth = ShareCardWidth.roundToPx()
+        val cardHeight = ShareCardHeight.roundToPx()
+        val previewWidth = constraints.maxWidth
+        val scale = previewWidth.toFloat() / cardWidth
+        val previewHeight = (cardHeight * scale).toInt()
+        val card = measurables.single().measure(
+            Constraints.fixed(cardWidth, cardHeight)
+        )
+
+        layout(previewWidth, previewHeight) {
+            card.placeWithLayer(0, 0) {
+                scaleX = scale
+                scaleY = scale
+                transformOrigin = TransformOrigin(0f, 0f)
+            }
+        }
     }
 }
 
