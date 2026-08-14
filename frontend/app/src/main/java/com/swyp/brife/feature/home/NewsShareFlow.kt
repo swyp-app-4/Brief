@@ -53,7 +53,8 @@ import com.swyp.brife.ui.theme.TextTitle
 enum class ShareFlowStep {
     Closed,
     Template,
-    Rendering
+    Rendering,
+    Destination
 }
 
 enum class ShareCardTemplate {
@@ -94,10 +95,12 @@ fun NewsShareFlowHost(
     var selectedTemplate by remember(data.newsId) {
         mutableStateOf<ShareCardTemplate?>(null)
     }
+    var shareArtifact by remember(data.newsId) { mutableStateOf<ShareArtifact?>(null) }
 
     LaunchedEffect(step, data.newsId) {
         if (step == ShareFlowStep.Template) {
             selectedTemplate = null
+            shareArtifact = null
         }
     }
 
@@ -113,17 +116,8 @@ fun NewsShareFlowHost(
                         onSuccess = { bitmap ->
                             createShareArtifact(context, bitmap).fold(
                                 onSuccess = { artifact ->
-                                    shareViaSystem(context, artifact, data.title).fold(
-                                        onSuccess = { onDismiss() },
-                                        onFailure = {
-                                            Toast.makeText(
-                                                context,
-                                                "공유 앱을 열 수 없습니다.",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            onDismiss()
-                                        }
-                                    )
+                                    shareArtifact = artifact
+                                    onStepChange(ShareFlowStep.Destination)
                                 },
                                 onFailure = {
                                     Toast.makeText(context, "공유 이미지를 저장할 수 없습니다.", Toast.LENGTH_SHORT).show()
@@ -167,8 +161,80 @@ fun NewsShareFlowHost(
             }
         )
 
+        ShareFlowStep.Destination -> shareArtifact?.let { artifact ->
+            ShareDestinationBottomSheet(
+                onDismissRequest = onDismiss,
+                onInstagramStoryClick = {
+                    shareViaInstagramStory(context, artifact).fold(
+                        onSuccess = { onDismiss() },
+                        onFailure = {
+                            Toast.makeText(
+                                context,
+                                "Instagram 스토리를 열 수 없습니다. 기타 공유를 이용해주세요.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    )
+                },
+                onOtherShareClick = {
+                    shareViaSystem(context, artifact, data.title).fold(
+                        onSuccess = { onDismiss() },
+                        onFailure = {
+                            Toast.makeText(context, "공유 앱을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            )
+        }
+
         ShareFlowStep.Closed,
         ShareFlowStep.Rendering -> Unit
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ShareDestinationBottomSheet(
+    onDismissRequest: () -> Unit,
+    onInstagramStoryClick: () -> Unit,
+    onOtherShareClick: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
+        containerColor = Color.White,
+        dragHandle = null
+    ) {
+        ShareOptionList(
+            options = listOf(
+                "Instagram Story" to onInstagramStoryClick,
+                "기타 공유" to onOtherShareClick
+            )
+        )
+    }
+}
+
+@Composable
+private fun ShareOptionList(options: List<Pair<String, () -> Unit>>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(top = 8.dp, bottom = 20.dp)
+    ) {
+        options.forEach { (label, onClick) ->
+            AppText(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextBody,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onClick)
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
+            )
+        }
     }
 }
 
