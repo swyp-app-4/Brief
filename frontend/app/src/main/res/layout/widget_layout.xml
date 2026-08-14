@@ -22,7 +22,7 @@
             android:layout_marginStart="5dp"
             android:adjustViewBounds="true"
             android:scaleType="fitStart"
-            android:src="@drawable/img_widget_toplogo" />
+            android:src="@drawable/img_widget_toplogo3" />
 
         <TextView
             android:layout_width="0dp"
