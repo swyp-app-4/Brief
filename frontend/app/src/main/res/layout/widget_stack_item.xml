@@ -31,7 +31,7 @@
         android:focusable="false"
         android:orientation="vertical"
         android:background="@drawable/widget_card_bg"
-        android:padding="21dp"
+        android:padding="16dp"
         android:gravity="center_vertical">
 
         <TextView
@@ -47,7 +47,7 @@
             android:id="@+id/widget_tv_summary_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:textColor="#4A5568"
             android:textSize="14sp"
             android:maxLines="1"
@@ -57,7 +57,17 @@
             android:id="@+id/widget_tv_summary_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
+            android:textColor="#4A5568"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/widget_tv_summary_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:textColor="#4A5568"
             android:textSize="14sp"
             android:maxLines="1"

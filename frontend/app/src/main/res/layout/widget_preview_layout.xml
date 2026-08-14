@@ -61,7 +61,7 @@
             android:background="@drawable/widget_card_bg"
             android:gravity="center_vertical"
             android:orientation="vertical"
-            android:padding="21dp">
+            android:padding="16dp">
 
             <TextView
                 android:layout_width="match_parent"
@@ -75,7 +75,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="핵심 흐름을 한눈에 확인하세요"
@@ -85,10 +85,20 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="지금 이슈를 간단히 살펴보세요"
+                android:textColor="#4A5568"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="놓치기 쉬운 배경까지 확인하세요"
                 android:textColor="#4A5568"
                 android:textSize="14sp" />
         </LinearLayout>
