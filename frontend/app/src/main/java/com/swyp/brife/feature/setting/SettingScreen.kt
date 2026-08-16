@@ -172,7 +172,7 @@ fun SettingScreen(
         if (showWithdrawSheet) {
             SettingConfirmBottomSheet(
                 illustRes = R.drawable.img_deleteuser,
-                message = "계정을 삭제하시겠어요?",
+                message = "정말 회원탈퇴를 진행할까요?",
                 primaryText = "조금 더 둘러볼게요",
                 actionText = "탈퇴하기",
                 onPrimaryClick = { showWithdrawSheet = false },
@@ -237,7 +237,9 @@ private fun WithdrawConfirmDialog(
         },
         text = {
             AppText(
-                text = "탈퇴를 진행하려면 한 번 더 확인이 필요합니다.",
+                text = "탈퇴 즉시 서비스 이용이 제한되며, 계정과 데이터는 30일 후 완전히 삭제됩니다.\n\n" +
+                    "30일 동안 같은 소셜 계정으로 로그인하거나 재가입할 수 없고, " +
+                    "탈퇴 완료 후에는 취소하거나 계정을 복구할 수 없습니다.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSubtitle,
                 textAlign = TextAlign.Center,

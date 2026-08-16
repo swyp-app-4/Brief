@@ -420,49 +420,7 @@ fun AppNavGraph(
                         withdrawErrorMessage = null
 
                         val currentMethod = authLocalStorage.getLoginMethod()
-//                        val deleteResult = userRepository.deleteUser()
-//                        if (deleteResult.isSuccess) {
-//                            clearLocalSessionState(clearAllAuth = true)
-//
-//                            // 순서 중요: 세션 버전을 먼저 올려 ViewModel key를 변경하고, 로그인을 false로 만듦
-//                            mainSessionVersion++
-//                            isLoggedIn = false
-//                            loginMethod = ""
-//                            isWithdrawing = false
-//                            isWithdrawn = true
-//                        }
-
-                        // 1. 카카오 사용자면 SDK unlink 먼저
-                        if (currentMethod == "kakao") {
-                            val unlinkResult = kakaoUnlink()
-                            if (unlinkResult.isFailure) {
-                                isWithdrawing = false
-                                withdrawErrorMessage = "카카오 연결 해제에 실패했습니다.\n잠시 후 다시 시도해주세요."
-                                return@launch
-                            }
-                        }
-
-                        // 2. 네이버 사용자면 NidOAuth.logout()으로 토큰 폐기
-                        if (currentMethod == "naver") {
-                            val disconnectResult = naverDisconnect()
-                            if (disconnectResult.isFailure) {
-                                isWithdrawing = false
-                                withdrawErrorMessage = "네이버 연결 해제에 실패했습니다.\n잠시 후 다시 시도해주세요."
-                                return@launch
-                            }
-                        }
-
-                        // 3. 구글 사용자면 Credential Manager credential state 초기화
-                        if (currentMethod == "google") {
-                            val clearResult = googleClearCredentialState(context)
-                            if (clearResult.isFailure) {
-                                isWithdrawing = false
-                                withdrawErrorMessage = "구글 인증 초기화에 실패했습니다.\n잠시 후 다시 시도해주세요."
-                                return@launch
-                            }
-                        }
-
-                        // 3. DELETE /users/me 호출 — 결과 반드시 확인
+                        // 1. 백엔드 탈퇴 성공 여부를 회원탈퇴 성공의 기준으로 사용
                         val deleteResult = userRepository.deleteUser()
                         if (deleteResult.isFailure) {
                             isWithdrawing = false
@@ -470,16 +428,29 @@ fun AppNavGraph(
                             return@launch
                         }
 
-                        // 3. 로컬 데이터 완전 초기화 (약관 동의 상태 포함)
+                        // 2. DELETE 성공 후에만 로컬 인증 및 세션 상태 초기화
                         clearLocalSessionState(clearAllAuth = true)
-
-                        // ★ 4. UI 즉시 반영을 위한 상태 업데이트 (이 부분이 핵심)
                         isLoggedIn = false
                         loginMethod = ""
-                        mainSessionVersion++
 
+                        // 3. 소셜 SDK 정리는 탈퇴 성공 이후 best-effort로 수행
+                        when (currentMethod) {
+                            "kakao" -> kakaoUnlink()
+                            "naver" -> naverDisconnect()
+                            "google" -> googleClearCredentialState(context)
+                        }
+
+                        // 4. 기존 로그인 상태의 화면을 제거하고 게스트 Main/Home으로 이동
                         isWithdrawing = false
-                        isWithdrawn = true // Toast 메시지 출력을 위한 플래그
+                        navController.navigate(NavRoutes.MAIN) {
+                            popUpTo(NavRoutes.MAIN) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                        Toast.makeText(
+                            context,
+                            "회원탈퇴가 완료되었습니다. 계정과 데이터는 30일 후 완전히 삭제됩니다.",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             )
