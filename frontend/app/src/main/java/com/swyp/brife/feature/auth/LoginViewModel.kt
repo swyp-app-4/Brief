@@ -215,9 +215,8 @@ class LoginViewModel(
     /**
      * 약관 동의 완료 후 처리.
      * ① 토큰 저장
-     * ② 관심사 동기화(POST) → 완료 후 isTermsSuccess = true 설정
-     *    → 실패해도 로그인 유지 (best-effort)
-     * 약관 동의 직후는 항상 신규회원이므로 POST /users/me/interests 사용
+     * ② 기존회원만 로컬 관심사를 PUT으로 동기화
+     * ③ 신규회원은 onboarding 완료 후 선택한 관심사를 POST
      */
     private fun completeTermsLogin(
         accessToken: String,
@@ -233,17 +232,14 @@ class LoginViewModel(
             persistTermsAgreement = true
         )
 
-        // 수정 후: _uiState.value.isNewUser로 POST/PUT 분기
         viewModelScope.launch {
-            if (subCategoryIds.isNotEmpty() || groupIds.isNotEmpty()) {
-                if (_uiState.value.isNewUser) {
-                    userRepository.saveInterests(accessToken, subCategoryIds, groupIds)   // POST
-                } else {
-                    userRepository.updateInterests(accessToken, subCategoryIds, groupIds) // PUT
-                }
+            if (!_uiState.value.isNewUser &&
+                (subCategoryIds.isNotEmpty() || groupIds.isNotEmpty())
+            ) {
+                userRepository.updateInterests(accessToken, subCategoryIds, groupIds)
             }
 
-            // ③ 동기화 완료 후 상태 전환 → LoginTermsRoute가 홈으로 이동
+            // LoginTermsRoute가 신규회원은 onboarding, 기존회원은 홈으로 이동
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 needTermsAgreement = false,

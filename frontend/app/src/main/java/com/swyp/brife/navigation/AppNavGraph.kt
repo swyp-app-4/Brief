@@ -237,9 +237,27 @@ fun AppNavGraph(
             OnboardingSubInterestRoute(
                 selectedParentCategoryIds = selectedParentCategoryIds,
                 onNextClick = {
-                    WidgetRefreshHelper.refreshAll(context)
-                    navController.navigate(NavRoutes.MAIN) {
-                        popUpTo(NavRoutes.ONBOARDING_GUIDE) { inclusive = true }
+                    scope.launch {
+                        if (authLocalStorage.isLoggedIn()) {
+                            val accessToken = authLocalStorage.getAccessToken()
+                            if (accessToken != null) {
+                                userRepository.saveInterests(
+                                    accessToken = accessToken,
+                                    categoryIds = onboardingLocalStorage.getSelectedSubCategoryIds(),
+                                    groupIds = onboardingLocalStorage.getSelectedCategoryIds()
+                                )
+                            }
+                        }
+
+                        WidgetRefreshHelper.refreshAll(context)
+                        navController.navigate(NavRoutes.MAIN) {
+                            if (authLocalStorage.isLoggedIn()) {
+                                popUpTo(NavRoutes.MAIN) { inclusive = true }
+                            } else {
+                                popUpTo(NavRoutes.ONBOARDING_GUIDE) { inclusive = true }
+                            }
+                            launchSingleTop = true
+                        }
                     }
                 }
             )
@@ -301,7 +319,10 @@ fun AppNavGraph(
                     onNavigateToOnboarding = {
                         isLoggedIn = true // 신규 유저 온보딩 진입 시에도 로그인 상태로 판단
                         loginMethod = authLocalStorage.getLoginMethod() ?: ""
-                        navigateAfterLogin()
+                        navController.navigate(NavRoutes.ONBOARDING_INTEREST) {
+                            popUpTo(NavRoutes.AUTH) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     },
                     onNavigateToHome = {
                         isLoggedIn = true // 상태 업데이트!
