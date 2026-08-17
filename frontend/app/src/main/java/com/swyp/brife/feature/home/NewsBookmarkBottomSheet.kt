@@ -36,6 +36,7 @@ import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.PrimaryNormal
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.TextTitle
 
@@ -147,7 +148,7 @@ fun NewsBookmarkBottomSheet(
                     enabled = !isSaving,
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(0.dp)
@@ -155,7 +156,7 @@ fun NewsBookmarkBottomSheet(
                     AppText(
                         text = if (isSaving) "저장 중..." else "취소",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleSmall
+                        style = PrimaryButtonTextStyle
                     )
                 }
 
@@ -164,7 +165,7 @@ fun NewsBookmarkBottomSheet(
                     enabled = !isSaving,
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryNormal),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(0.dp)
@@ -172,7 +173,7 @@ fun NewsBookmarkBottomSheet(
                     AppText(
                         text = if (isSaving) "저장 중..." else "저장",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleSmall
+                        style = PrimaryButtonTextStyle
                     )
                 }
             }

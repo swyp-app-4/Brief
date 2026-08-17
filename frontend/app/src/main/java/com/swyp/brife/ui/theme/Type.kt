@@ -11,7 +11,32 @@ import com.swyp.brife.R
 val Pretendard = FontFamily(
     Font(R.font.pretendard_regular, FontWeight.Normal),
     Font(R.font.pretendard_medium, FontWeight.Medium),
+    Font(R.font.pretendard_semibold, FontWeight.SemiBold),
     Font(R.font.pretendard_bold, FontWeight.Bold)
+)
+
+val PrimaryButtonTextStyle = TextStyle(
+    fontFamily = Pretendard,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.sp
+)
+
+val CompactPrimaryButtonTextStyle = TextStyle(
+    fontFamily = Pretendard,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 14.sp,
+    lineHeight = 21.sp,
+    letterSpacing = (-0.14).sp
+)
+
+val LongFormCtaTextStyle = TextStyle(
+    fontFamily = Pretendard,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 15.sp,
+    lineHeight = 22.5.sp,
+    letterSpacing = 0.sp
 )
 
 val SulphurPoint = FontFamily(

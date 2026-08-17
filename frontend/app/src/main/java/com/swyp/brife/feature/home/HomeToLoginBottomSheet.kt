@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.CtaDisabled
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import androidx.compose.foundation.background
 import com.swyp.brife.R
 
@@ -77,7 +78,7 @@ fun HomeToLoginBottomSheet(
                     onClick = onBrowseClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .heightIn(min = 50.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = CtaDisabled,
@@ -86,7 +87,7 @@ fun HomeToLoginBottomSheet(
                 ) {
                     AppText(
                         text = "더 둘러보기",
-                        style = MaterialTheme.typography.labelLarge,
+                        style = PrimaryButtonTextStyle,
                         color = Color.White
                     )
                 }

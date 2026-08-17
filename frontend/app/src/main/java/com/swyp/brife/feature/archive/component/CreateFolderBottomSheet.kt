@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.PrimaryNormal
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextTitle
@@ -123,7 +124,7 @@ fun CreateFolderBottomSheet(
                     onClick = onDismissRequest,
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFD5D8DC)
                     ),
@@ -133,7 +134,7 @@ fun CreateFolderBottomSheet(
                     AppText(
                         text = "취소",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleSmall
+                        style = PrimaryButtonTextStyle
                     )
                 }
 
@@ -142,7 +143,7 @@ fun CreateFolderBottomSheet(
                     onClick = { if (!isError && folderName.isNotBlank()) onSave(folderName) },
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryNormal,
                         disabledContainerColor = PrimaryNormal.copy(alpha = 0.5f)
@@ -154,7 +155,7 @@ fun CreateFolderBottomSheet(
                     AppText(
                         text = "저장",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleSmall
+                        style = PrimaryButtonTextStyle
                     )
                 }
             }

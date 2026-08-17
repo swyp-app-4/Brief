@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -67,6 +68,7 @@ import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryNormal
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
@@ -395,7 +397,7 @@ fun ArchiveScreen(
                     onClick = onCancelDelete,
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
@@ -403,7 +405,7 @@ fun ArchiveScreen(
                     AppText(
                         text = "취소",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleSmall
+                        style = PrimaryButtonTextStyle
                     )
                 }
 
@@ -412,7 +414,7 @@ fun ArchiveScreen(
                     enabled = selectedFolderIds.isNotEmpty(),
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Negative,
                         disabledContainerColor = Negative.copy(alpha = 0.4f)
@@ -423,7 +425,7 @@ fun ArchiveScreen(
                     AppText(
                         text = "삭제",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleSmall
+                        style = PrimaryButtonTextStyle
                     )
                 }
             }
@@ -833,7 +835,7 @@ private fun ArchiveSelectionModeBanner(
         TextButton(onClick = onCancelClick) {
             AppText(
                 text = "취소",
-                style = MaterialTheme.typography.labelLarge,
+                style = PrimaryButtonTextStyle,
                 color = PrimaryNormal
             )
         }

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.CtaDisabled
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 
 // HomeToLoginBottomSheet와 동일한 구조 — 일러스트·텍스트·버튼 텍스트만 파라미터로 분리
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +74,7 @@ internal fun SettingConfirmBottomSheet(
                     onClick = onActionClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .heightIn(min = 50.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = CtaDisabled,
@@ -82,7 +83,7 @@ internal fun SettingConfirmBottomSheet(
                 ) {
                     AppText(
                         text = actionText,
-                        style = MaterialTheme.typography.labelLarge,
+                        style = PrimaryButtonTextStyle,
                         color = Color.White
                     )
                 }

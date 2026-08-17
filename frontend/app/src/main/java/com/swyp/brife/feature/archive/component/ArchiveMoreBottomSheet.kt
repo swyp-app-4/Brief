@@ -13,6 +13,7 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.Negative
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextSubtitle
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,14 +73,14 @@ fun ArchiveMoreBottomSheet(
                 onClick = onDismissRequest,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .heightIn(min = 50.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
                 contentPadding = PaddingValues(0.dp)
             ) {
                 AppText(
                     text = "취소",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = PrimaryButtonTextStyle,
                     color = Color.White
                 )
             }

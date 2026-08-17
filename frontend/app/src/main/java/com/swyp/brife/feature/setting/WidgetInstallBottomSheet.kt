@@ -17,6 +17,7 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.PrimaryNormal
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.R
@@ -79,7 +80,7 @@ internal fun WidgetInstallBottomSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .heightIn(min = 56.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
@@ -96,7 +97,7 @@ internal fun WidgetInstallBottomSheet(
                 ) {
                     AppText(
                         text = "취소",
-                        style = MaterialTheme.typography.labelLarge,
+                        style = PrimaryButtonTextStyle,
                         color = Color.White
                     )
                 }
@@ -115,7 +116,7 @@ internal fun WidgetInstallBottomSheet(
                 ) {
                     AppText(
                         text = "추가",
-                        style = MaterialTheme.typography.labelLarge,
+                        style = PrimaryButtonTextStyle,
                         color = Color.White
                     )
                 }

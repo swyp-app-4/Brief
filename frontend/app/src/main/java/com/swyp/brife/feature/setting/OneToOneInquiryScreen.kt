@@ -521,7 +521,7 @@ private fun InquiryTypeBottomSheet(
                     onClick = onDismissRequest,
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(0.dp)
@@ -529,7 +529,7 @@ private fun InquiryTypeBottomSheet(
                     AppText(
                         text = "취소",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleSmall
+                        style = PrimaryButtonTextStyle
                     )
                 }
                 Button(
@@ -542,7 +542,7 @@ private fun InquiryTypeBottomSheet(
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp),
+                        .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryNormal),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(0.dp)
@@ -550,7 +550,7 @@ private fun InquiryTypeBottomSheet(
                     AppText(
                         text = "선택 완료",
                         color = Color.White,
-                        style = MaterialTheme.typography.titleSmall
+                        style = PrimaryButtonTextStyle
                     )
                 }
             }

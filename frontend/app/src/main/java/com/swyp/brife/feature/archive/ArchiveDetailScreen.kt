@@ -25,6 +25,7 @@ import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryNormal
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextTitle
 import com.swyp.brife.R
@@ -189,7 +190,7 @@ fun ArchiveDetailScreen(
                         enabled = selectedItemIds.isNotEmpty(),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
+                            .heightIn(min = 56.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Negative,
@@ -199,7 +200,7 @@ fun ArchiveDetailScreen(
                     ) {
                         AppText(
                             text = "삭제",
-                            style = MaterialTheme.typography.titleSmall,
+                            style = PrimaryButtonTextStyle,
                             color = Color.White
                         )
                     }
@@ -317,14 +318,14 @@ private fun ArchiveDetailMoreBottomSheet(
                 onClick = onDismissRequest,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .heightIn(min = 50.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
                 contentPadding = PaddingValues(0.dp)
             ) {
                 AppText(
                     text = "취소",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = PrimaryButtonTextStyle,
                     color = Color.White
                 )
             }
@@ -379,14 +380,14 @@ private fun SortFilterBottomSheet(
                 onClick = onDismissRequest,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .heightIn(min = 50.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
                 contentPadding = PaddingValues(0.dp)
             ) {
                 AppText(
                     text = "취소",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = PrimaryButtonTextStyle,
                     color = Color.White
                 )
             }

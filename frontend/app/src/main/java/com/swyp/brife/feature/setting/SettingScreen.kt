@@ -44,6 +44,7 @@ import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.Positive
 import com.swyp.brife.ui.theme.PrimaryNormal
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
@@ -205,7 +206,7 @@ fun SettingScreen(
                     TextButton(onClick = onWithdrawErrorDismiss) {
                         AppText(
                             text = "확인",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = PrimaryButtonTextStyle,
                             color = PrimaryNormal
                         )
                     }
@@ -250,7 +251,7 @@ private fun WithdrawConfirmDialog(
             TextButton(onClick = onConfirmClick) {
                 AppText(
                     text = "확인",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = PrimaryButtonTextStyle,
                     color = TextCaption
                 )
             }
@@ -259,7 +260,7 @@ private fun WithdrawConfirmDialog(
             TextButton(onClick = onCancelClick) {
                 AppText(
                     text = "취소",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = PrimaryButtonTextStyle,
                     color = PrimaryNormal
                 )
             }

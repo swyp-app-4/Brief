@@ -75,6 +75,7 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.component.CategoryChip
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.LongFormCtaTextStyle
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
@@ -323,7 +324,8 @@ fun NewsLongScreen(
         ) {
             PrimaryButton(
                 text = "관련 뉴스기사 보기",
-                onClick = { onSourcesBottomSheetRequest() }
+                onClick = { onSourcesBottomSheetRequest() },
+                textStyle = LongFormCtaTextStyle
             )
         }
 

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -43,6 +44,7 @@ import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.PrimaryNormal
+import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 
 @Composable
 fun OnboardingSubInterestScreen(
@@ -138,7 +140,7 @@ fun OnboardingSubInterestScreen(
                 onClick = onSkipClick,
                 modifier = Modifier
                     .weight(1f)
-                    .height(56.dp),
+                    .heightIn(min = 56.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CtaDisabled,
@@ -147,7 +149,7 @@ fun OnboardingSubInterestScreen(
             ) {
                 AppText(
                     text = "건너뛰기",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = PrimaryButtonTextStyle,
                     color = Color.White
                 )
             }
@@ -156,7 +158,7 @@ fun OnboardingSubInterestScreen(
                 onClick = onSubmitClick,
                 modifier = Modifier
                     .weight(1f)
-                    .height(56.dp),
+                    .heightIn(min = 56.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CtaActive,
@@ -165,7 +167,7 @@ fun OnboardingSubInterestScreen(
             ) {
                 AppText(
                     text = if (uiState.isSubmitting) "저장 중..." else "다음",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = PrimaryButtonTextStyle,
                     color = Color.White
                 )
             }

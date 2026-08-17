@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,6 +38,7 @@ import com.swyp.brife.R
 import com.swyp.brife.ui.component.CategoryChip
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.CompactPrimaryButtonTextStyle
 
 
 
@@ -219,7 +221,8 @@ private fun SummaryInsightBox(
             onClick = onDetailClick,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .height(buttonHeight)
+                .heightIn(min = buttonHeight),
+            textStyle = CompactPrimaryButtonTextStyle
         )
     }
 }
