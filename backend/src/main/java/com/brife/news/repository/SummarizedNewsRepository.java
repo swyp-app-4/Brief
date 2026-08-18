@@ -77,15 +77,21 @@ public interface SummarizedNewsRepository extends JpaRepository<SummarizedNews, 
             FROM summarized_news
             WHERE is_summarized = true
               AND created_at >= :since
-              AND similarity(title || ' ' || summary, :title || ' ' || :summary) >= 0.85
-            ORDER BY similarity(title || ' ' || summary, :title || ' ' || :summary) DESC
-            LIMIT 5
+              AND (
+                    similarity(title || ' ' || summary, :title || ' ' || :summary) >= 0.85
+                    OR similarity(title, :title) >= 0.55
+                  )
+            ORDER BY GREATEST(
+                    similarity(title || ' ' || summary, :title || ' ' || :summary),
+                    similarity(title, :title)
+                  ) DESC
+            LIMIT 10
             """)
     List<DuplicateNewsCandidate> findDuplicateCandidates(
             @Param("title") String title,
             @Param("summary") String summary,
             @Param("since") LocalDateTime since);
 
-    @EntityGraph(attributePaths = {"category"})
+    @EntityGraph(attributePaths = {"category", "category.categoryGroup"})
     List<SummarizedNews> findAllByIdIn(List<Long> ids);
 }

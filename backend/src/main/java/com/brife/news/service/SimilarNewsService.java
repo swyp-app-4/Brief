@@ -1,7 +1,7 @@
 package com.brife.news.service;
 
 import com.brife.news.domain.SummarizedNews;
-import com.brife.news.dto.NewsSearchResponse;
+import com.brife.news.dto.SimilarNewsResponse;
 import com.brife.news.repository.NewsEmbeddingRepository;
 import com.brife.news.repository.SummarizedNewsRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class SimilarNewsService {
     private final SummarizedNewsRepository summarizedNewsRepository;
 
     @Transactional(readOnly = true)
-    public List<NewsSearchResponse> getSimilarNews(Long newsId) {
+    public List<SimilarNewsResponse> getSimilarNews(Long newsId) {
         if (!newsEmbeddingRepository.existsByNewsId(newsId)) {
             log.debug("[SimilarNews] embedding not found - newsId={}", newsId);
             return List.of();
@@ -44,7 +44,7 @@ public class SimilarNewsService {
 
         return similarIds.stream()
                 .filter(newsMap::containsKey)
-                .map(id -> NewsSearchResponse.from(newsMap.get(id)))
+                .map(id -> SimilarNewsResponse.from(newsMap.get(id)))
                 .collect(Collectors.toList());
     }
 }

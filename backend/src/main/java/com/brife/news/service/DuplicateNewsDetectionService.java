@@ -2,6 +2,7 @@ package com.brife.news.service;
 
 import com.brife.news.dto.SynthesisResult;
 import com.brife.news.repository.DuplicateNewsCandidate;
+import com.brife.news.repository.NewsEmbeddingRepository;
 import com.brife.news.repository.SummarizedNewsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,17 @@ public class DuplicateNewsDetectionService {
     private static final double MIN_TITLE_SIMILARITY = 0.90;
     private static final double MIN_SUMMARY_SIMILARITY = 0.88;
     private static final double MIN_CORE_TOKEN_OVERLAP = 0.70;
+    private static final double REVIEW_TITLE_SIMILARITY = 0.70;
+    private static final double REVIEW_SUMMARY_SIMILARITY = 0.75;
+    private static final double REVIEW_CORE_TOKEN_OVERLAP = 0.65;
+    private static final double TITLE_LED_SIMILARITY = 0.55;
+    private static final double TITLE_LED_SUMMARY_SIMILARITY = 0.30;
+    private static final double TITLE_LED_CORE_TOKEN_OVERLAP = 0.70;
+    private static final double RECOMMENDATION_TITLE_SIMILARITY = 0.72;
+    private static final double RECOMMENDATION_OVERALL_SIMILARITY = 0.68;
+    private static final double RECOMMENDATION_TOKEN_OVERLAP = 0.45;
+    private static final double RECOMMENDATION_EMBEDDING_SIMILARITY = 0.90;
+    private static final int MIN_SHARED_RECOMMENDATION_TOKENS = 2;
     private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+(?:[.,]\\d+)*%?");
     private static final Set<String> STATE_WORDS = Set.of(
             "예정", "검토", "추진", "발표", "확정", "결정", "체결", "승인",
@@ -41,6 +53,7 @@ public class DuplicateNewsDetectionService {
             "뉴스", "속보", "단독", "종합", "일부", "전망", "가능성", "본격");
 
     private final SummarizedNewsRepository summarizedNewsRepository;
+    private final NewsEmbeddingRepository newsEmbeddingRepository;
     private final List<AcceptedNews> acceptedInCurrentBatch = new ArrayList<>();
 
     public synchronized boolean isDuplicateWithoutNewInformation(SynthesisResult result) {
@@ -61,12 +74,6 @@ public class DuplicateNewsDetectionService {
         for (DuplicateNewsCandidate candidate : summarizedNewsRepository.findDuplicateCandidates(
                 result.getTitle(), result.getSummary(), LocalDateTime.now().minusHours(LOOKBACK_HOURS))) {
             double overallSimilarity = candidate.getOverallSimilarity();
-            if (overallSimilarity < REVIEW_SIMILARITY) continue;
-            if (overallSimilarity < DUPLICATE_SIMILARITY) {
-                log.debug("[Duplicate] Similar event kept as a new article - existingNewsId={}, similarity={}",
-                        candidate.getId(), overallSimilarity);
-                continue;
-            }
             if (isDuplicateContent(
                     result.getTitle(), result.getSummary(), candidate.getTitle(), candidate.getSummary(),
                     overallSimilarity, candidate.getTitleSimilarity(), candidate.getSummarySimilarity())) {
@@ -86,29 +93,70 @@ public class DuplicateNewsDetectionService {
         acceptedInCurrentBatch.clear();
     }
 
-    public boolean representsSameEvent(String leftTitle, String leftSummary,
-                                       String rightTitle, String rightSummary) {
+    public boolean representsSameEvent(Long leftNewsId, String leftTitle, String leftSummary,
+                                       Long rightNewsId, String rightTitle, String rightSummary) {
         if (isBlank(leftTitle) || isBlank(rightTitle)) return false;
+
+        Set<String> leftTokens = extractCoreTokens(leftTitle);
+        Set<String> rightTokens = extractCoreTokens(rightTitle);
         double titleSimilarity = trigramSimilarity(leftTitle, rightTitle);
         double overallSimilarity = trigramSimilarity(
                 leftTitle + " " + safe(leftSummary), rightTitle + " " + safe(rightSummary));
-        double tokenOverlap = overlapCoefficient(extractCoreTokens(leftTitle), extractCoreTokens(rightTitle));
-        return titleSimilarity >= 0.88 || (overallSimilarity >= 0.80 && tokenOverlap >= 0.65);
+        double tokenOverlap = overlapCoefficient(leftTokens, rightTokens);
+
+        if (titleSimilarity >= RECOMMENDATION_TITLE_SIMILARITY) {
+            return true;
+        }
+        if (overallSimilarity >= RECOMMENDATION_OVERALL_SIMILARITY
+                && tokenOverlap >= RECOMMENDATION_TOKEN_OVERLAP) {
+            return true;
+        }
+        if (sharedTokenCount(leftTokens, rightTokens) < MIN_SHARED_RECOMMENDATION_TOKENS) {
+            return false;
+        }
+
+        Double embeddingSimilarity = newsEmbeddingRepository.findCosineSimilarity(leftNewsId, rightNewsId);
+        return embeddingSimilarity != null
+                && embeddingSimilarity >= RECOMMENDATION_EMBEDDING_SIMILARITY;
+    }
+
+    private int sharedTokenCount(Set<String> left, Set<String> right) {
+        Set<String> intersection = new HashSet<>(left);
+        intersection.retainAll(right);
+        return intersection.size();
     }
 
     private boolean isDuplicateContent(String newTitle, String newSummary,
                                        String existingTitle, String existingSummary,
                                        double overallSimilarity, double titleSimilarity,
                                        double summarySimilarity) {
-        if (overallSimilarity < DUPLICATE_SIMILARITY) return false;
-        return titleSimilarity >= MIN_TITLE_SIMILARITY
-                && summarySimilarity >= MIN_SUMMARY_SIMILARITY
-                && overlapCoefficient(extractCoreTokens(newTitle), extractCoreTokens(existingTitle))
-                        >= MIN_CORE_TOKEN_OVERLAP
-                && extractNumbers(newTitle + " " + newSummary)
-                        .equals(extractNumbers(existingTitle + " " + existingSummary))
-                && extractStateWords(newTitle + " " + newSummary)
-                        .equals(extractStateWords(existingTitle + " " + existingSummary));
+        Set<String> newNumbers = extractNumbers(newTitle + " " + newSummary);
+        Set<String> existingNumbers = extractNumbers(existingTitle + " " + existingSummary);
+        Set<String> newStates = extractStateWords(newTitle + " " + newSummary);
+        Set<String> existingStates = extractStateWords(existingTitle + " " + existingSummary);
+        if (!newNumbers.equals(existingNumbers) || !newStates.equals(existingStates)) {
+            return false;
+        }
+
+        double coreTokenOverlap = overlapCoefficient(
+                extractCoreTokens(newTitle), extractCoreTokens(existingTitle));
+
+        if (overallSimilarity >= DUPLICATE_SIMILARITY) {
+            return (titleSimilarity >= MIN_TITLE_SIMILARITY
+                    && summarySimilarity >= MIN_SUMMARY_SIMILARITY)
+                    || coreTokenOverlap >= MIN_CORE_TOKEN_OVERLAP;
+        }
+
+        if (overallSimilarity >= REVIEW_SIMILARITY) {
+            return (titleSimilarity >= REVIEW_TITLE_SIMILARITY
+                    && coreTokenOverlap >= REVIEW_CORE_TOKEN_OVERLAP)
+                    || (summarySimilarity >= REVIEW_SUMMARY_SIMILARITY
+                    && coreTokenOverlap >= REVIEW_CORE_TOKEN_OVERLAP);
+        }
+
+        return titleSimilarity >= TITLE_LED_SIMILARITY
+                && summarySimilarity >= TITLE_LED_SUMMARY_SIMILARITY
+                && coreTokenOverlap >= TITLE_LED_CORE_TOKEN_OVERLAP;
     }
 
     private Set<String> extractNumbers(String text) {
