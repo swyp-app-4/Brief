@@ -4,9 +4,11 @@ import com.brife.user.repository.AppUserRepository;
 import com.brife.user.service.ExpiredUserDeletionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -14,6 +16,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class UserCleanupSchedulerTest {
+
+    @Test
+    void runsOnceADayAtMidnightInSeoul() throws NoSuchMethodException {
+        Scheduled scheduled = UserCleanupScheduler.class
+                .getDeclaredMethod("hardDeleteExpiredUsers")
+                .getAnnotation(Scheduled.class);
+
+        assertThat(scheduled.cron()).isEqualTo("0 0 0 * * *");
+        assertThat(scheduled.zone()).isEqualTo("Asia/Seoul");
+    }
 
     @Test
     void continuesWithNextUserWhenOneDeletionFails() {

@@ -21,7 +21,7 @@ public class UserCleanupScheduler {
     private final AppUserRepository appUserRepository;
     private final ExpiredUserDeletionService deletionService;
 
-    @Scheduled(cron = "0 0 * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void hardDeleteExpiredUsers() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
         long lastId = 0L;
