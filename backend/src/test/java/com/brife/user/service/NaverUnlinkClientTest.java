@@ -16,10 +16,16 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class NaverUnlinkClientTest {
 
     @Test
+    void productionConstructorDoesNotRequireRestClientBuilderBean() {
+        new NaverUnlinkClient("client-id", "client-secret");
+    }
+
+    @Test
     void revokesRefreshTokenAndItsLinkedAccessToken() {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        NaverUnlinkClient client = new NaverUnlinkClient(builder, "client-id", "client-secret");
+        NaverUnlinkClient client = new NaverUnlinkClient(
+                builder.baseUrl("https://nid.naver.com").build(), "client-id", "client-secret");
         MultiValueMap<String, String> expectedForm = new LinkedMultiValueMap<>();
         expectedForm.add("client_id", "client-id");
         expectedForm.add("client_secret", "client-secret");

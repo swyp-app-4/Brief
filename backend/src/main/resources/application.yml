@@ -37,6 +37,9 @@ naver:
     client-id: ${NAVER_CLIENT_ID}
     client-secret: ${NAVER_CLIENT_SECRET}
     news-url: https://openapi.naver.com/v1/search/news.json
+  login:
+    client-id: ${NAVER_LOGIN_CLIENT_ID:${NAVER_CLIENT_ID}}
+    client-secret: ${NAVER_LOGIN_CLIENT_SECRET:${NAVER_CLIENT_SECRET}}
 
 vertex:
   ai:
