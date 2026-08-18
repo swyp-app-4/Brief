@@ -14,10 +14,13 @@ public class NaverUnlinkClient {
     private final String clientId;
     private final String clientSecret;
 
-    public NaverUnlinkClient(RestClient.Builder restClientBuilder,
-                             @Value("${naver.api.client-id}") String clientId,
-                             @Value("${naver.api.client-secret}") String clientSecret) {
-        this.restClient = restClientBuilder.baseUrl("https://nid.naver.com").build();
+    public NaverUnlinkClient(@Value("${naver.login.client-id}") String clientId,
+                             @Value("${naver.login.client-secret}") String clientSecret) {
+        this(RestClient.builder().baseUrl("https://nid.naver.com").build(), clientId, clientSecret);
+    }
+
+    NaverUnlinkClient(RestClient restClient, String clientId, String clientSecret) {
+        this.restClient = restClient;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
     }
