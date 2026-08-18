@@ -1,11 +1,15 @@
 package com.brife.user.service;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+
+import java.util.Map;
 
 import static org.springframework.test.web.client.ExpectedCount.once;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
@@ -16,8 +20,17 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class NaverUnlinkClientTest {
 
     @Test
-    void productionConstructorDoesNotRequireRestClientBuilderBean() {
-        new NaverUnlinkClient("client-id", "client-secret");
+    void createsBeanWithoutRestClientBuilderBean() {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
+            context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("test", Map.of(
+                    "naver.login.client-id", "client-id",
+                    "naver.login.client-secret", "client-secret"
+            )));
+            context.register(NaverUnlinkClient.class);
+            context.refresh();
+
+            context.getBean(NaverUnlinkClient.class);
+        }
     }
 
     @Test
