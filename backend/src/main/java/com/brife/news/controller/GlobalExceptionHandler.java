@@ -4,6 +4,7 @@ import com.brife.news.dto.ErrorResponse;
 import com.brife.news.exception.InvalidSearchKeywordException;
 import com.brife.user.exception.AccountWithdrawnException;
 import com.brife.user.exception.AuthException;
+import com.brife.user.exception.InvalidWithdrawalRequestException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +78,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponse("ACCOUNT_WITHDRAWN", e.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidWithdrawalRequestException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidWithdrawalRequestException(InvalidWithdrawalRequestException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse("INVALID_WITHDRAWAL_REQUEST", e.getMessage()));
     }
 
     // 그 외 서버 오류
