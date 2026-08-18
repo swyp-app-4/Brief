@@ -3,6 +3,7 @@ package com.brife.news.repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -55,6 +56,27 @@ public class NewsEmbeddingRepository {
                 "SELECT COUNT(1) FROM news_embedding WHERE news_id = ?",
                 Integer.class, newsId);
         return count != null && count > 0;
+    }
+
+    public Double findCosineSimilarity(Long firstNewsId, Long secondNewsId) {
+        if (firstNewsId == null || secondNewsId == null) {
+            return null;
+        }
+        if (firstNewsId.equals(secondNewsId)) {
+            return 1.0;
+        }
+
+        String sql = """
+                SELECT 1.0 - (a.embedding <=> b.embedding)
+                FROM news_embedding a
+                JOIN news_embedding b ON b.news_id = ?
+                WHERE a.news_id = ?
+                """;
+        try {
+            return jdbcTemplate.queryForObject(sql, Double.class, secondNewsId, firstNewsId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     private String toVectorString(float[] embedding) {

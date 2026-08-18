@@ -1,6 +1,6 @@
 package com.brife.news.controller;
 
-import com.brife.news.dto.NewsSearchResponse;
+import com.brife.news.dto.SimilarNewsResponse;
 import com.brife.news.service.SimilarNewsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +23,7 @@ public class SimilarNewsController {
 
     @Operation(summary = "유사 기사 추천", description = "해당 뉴스와 임베딩 유사도가 높은 기사 최대 5개를 반환합니다.")
     @GetMapping("/{id}/similar")
-    public ResponseEntity<List<NewsSearchResponse>> getSimilarNews(@PathVariable Long id) {
+    public ResponseEntity<List<SimilarNewsResponse>> getSimilarNews(@PathVariable Long id) {
         return ResponseEntity.ok(similarNewsService.getSimilarNews(id));
     }
 }

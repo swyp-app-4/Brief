@@ -73,6 +73,31 @@ class NewsServiceTest {
                 .containsExactly(1L, 2L, 4L, 5L, 6L);
     }
 
+    @Test
+    void skipsSameEventAndRefillsRecommendationToFiveNews() {
+        CategoryGroup group = group(1L, "News");
+        SummarizedNews first = news(1L, category(11L, "Culture", group),
+                "오디세이 개봉 13일 만에 500만 돌파", "오디세이가 관객 500만 명을 돌파했습니다.");
+        SummarizedNews duplicate = news(2L, category(12L, "Movie", group),
+                "오디세이 500만 관객 돌파 흥행 질주", "오디세이가 개봉 13일 만에 500만 관객을 기록했습니다.");
+        SummarizedNews third = news(3L, category(13L, "Economy", group));
+        SummarizedNews fourth = news(4L, category(14L, "Society", group));
+        SummarizedNews fifth = news(5L, category(15L, "Technology", group));
+        SummarizedNews refill = news(6L, category(16L, "Sports", group));
+
+        when(summarizedNewsRepository.findLatestRecommendationCandidates(any(Pageable.class)))
+                .thenReturn(List.of(first, duplicate, third, fourth, fifth, refill));
+        when(duplicateNewsDetectionService.representsSameEvent(
+                duplicate.getId(), duplicate.getTitle(), duplicate.getSummary(),
+                first.getId(), first.getTitle(), first.getSummary()))
+                .thenReturn(true);
+
+        List<WidgetNewsDto> result = newsService.getTop5News(List.of(), List.of());
+
+        assertThat(result).extracting(WidgetNewsDto::getId)
+                .containsExactly(1L, 3L, 4L, 5L, 6L);
+    }
+
     private CategoryGroup group(Long id, String name) {
         CategoryGroup group = mock(CategoryGroup.class);
         lenient().when(group.getId()).thenReturn(id);
@@ -89,11 +114,15 @@ class NewsServiceTest {
     }
 
     private SummarizedNews news(Long id, Category category) {
+        return news(id, category, "Title " + id, "Summary " + id);
+    }
+
+    private SummarizedNews news(Long id, Category category, String title, String summary) {
         SummarizedNews news = mock(SummarizedNews.class);
         lenient().when(news.getId()).thenReturn(id);
         lenient().when(news.getCategory()).thenReturn(category);
-        lenient().when(news.getTitle()).thenReturn("Title " + id);
-        lenient().when(news.getSummary()).thenReturn("Summary " + id);
+        lenient().when(news.getTitle()).thenReturn(title);
+        lenient().when(news.getSummary()).thenReturn(summary);
         lenient().when(news.getPublishedDate()).thenReturn(LocalDate.now());
         return news;
     }

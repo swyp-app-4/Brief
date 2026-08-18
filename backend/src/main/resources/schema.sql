@@ -20,3 +20,7 @@ CREATE INDEX IF NOT EXISTS idx_summarized_news_title_trgm
     ON summarized_news USING gin (title gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_summarized_news_summary_trgm
     ON summarized_news USING gin (summary gin_trgm_ops);
+
+-- Duplicate detection only compares recently generated news.
+CREATE INDEX IF NOT EXISTS idx_summarized_news_created_at
+    ON summarized_news (created_at DESC);

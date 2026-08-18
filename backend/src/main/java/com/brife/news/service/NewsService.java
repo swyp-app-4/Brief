@@ -132,8 +132,8 @@ public class NewsService {
             if (categoryCounts.getOrDefault(categoryId, 0) >= MAX_PER_CATEGORY) continue;
             boolean sameEvent = selected.stream().anyMatch(existing ->
                     duplicateNewsDetectionService.representsSameEvent(
-                            candidate.getTitle(), candidate.getSummary(),
-                            existing.getTitle(), existing.getSummary()));
+                            candidate.getId(), candidate.getTitle(), candidate.getSummary(),
+                            existing.getId(), existing.getTitle(), existing.getSummary()));
             if (sameEvent) continue;
 
             selected.add(candidate);
