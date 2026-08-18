@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.random.RandomGenerator;
 
 @Component
@@ -13,7 +14,7 @@ public class RecommendedNewsSelector {
     private final RandomGenerator randomGenerator;
 
     public RecommendedNewsSelector() {
-        this(RandomGenerator.getDefault());
+        this(new Random());
     }
 
     RecommendedNewsSelector(RandomGenerator randomGenerator) {
