@@ -4,6 +4,7 @@ import com.brife.user.domain.AppUser;
 import com.brife.user.domain.RefreshToken;
 import com.brife.user.dto.AuthResponse;
 import com.brife.user.dto.TermsRequest;
+import com.brife.user.exception.AccountWithdrawnException;
 import com.brife.user.exception.AuthException;
 import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
@@ -83,6 +84,8 @@ public class OAuthService {
             String nickname = (String) claims.get("name");
 
             return generateAuthResponse(email, nickname, "google", providerId);
+        } catch (AccountWithdrawnException e) {
+            throw e;
         } catch (Exception e) {
             throw new IllegalArgumentException("유효하지 않은 Google ID Token입니다.");
         }
@@ -104,6 +107,11 @@ public class OAuthService {
 
         AppUser user = appUserRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() -> new AuthException("존재하지 않는 유저입니다."));
+
+        if (user.isDeleted()) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new AccountWithdrawnException();
+        }
 
         return jwtProvider.generateAccessToken(user.getId(), user.getRole());
     }
@@ -127,17 +135,26 @@ public class OAuthService {
 
     private AuthResponse generateAuthResponse(String email, String nickname,
                                                String provider, String providerId) {
-        boolean isNewUser = !appUserRepository.existsByProviderAndProviderId(provider, providerId);
-
         AppUser user = appUserRepository.findByProviderAndProviderId(provider, providerId)
-                .map(entity -> entity.update(nickname))
-                .orElse(AppUser.builder()
-                        .email(email)
-                        .nickname(nickname)
-                        .provider(provider)
-                        .providerId(providerId)
-                        .role("ROLE_USER")
-                        .build());
+                .orElse(null);
+        boolean isNewUser = user == null;
+
+        if (user != null && user.isDeleted()) {
+            throw new AccountWithdrawnException();
+        }
+
+        if (user != null) {
+            user.update(nickname);
+        } else {
+            user = AppUser.builder()
+                    .email(email)
+                    .nickname(nickname)
+                    .provider(provider)
+                    .providerId(providerId)
+                    .role("ROLE_USER")
+                    .build();
+        }
+
         appUserRepository.save(user);
 
         String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole());

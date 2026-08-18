@@ -4,17 +4,19 @@ import com.brife.news.domain.Category;
 import com.brife.news.domain.CategoryGroup;
 import com.brife.news.repository.CategoryGroupRepository;
 import com.brife.news.repository.CategoryRepository;
+import com.brife.notification.repository.UserFcmTokenRepository;
 import com.brife.user.domain.AppUser;
 import com.brife.user.domain.UserInterest;
 import com.brife.user.dto.InterestRequest;
 import com.brife.user.dto.UserProfileResponse;
 import com.brife.user.dto.UserProfileUpdate;
-import com.brife.archive.repository.ArchiveItemRepository;
-import com.brife.archive.repository.ArchiveRepository;
+import com.brife.user.dto.WithdrawalRequest;
+import com.brife.user.exception.InvalidWithdrawalRequestException;
 import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
 import com.brife.user.repository.UserInterestRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProfileService {
 
     private final AppUserRepository appUserRepository;
@@ -31,8 +34,8 @@ public class ProfileService {
     private final CategoryRepository categoryRepository;
     private final CategoryGroupRepository categoryGroupRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final ArchiveItemRepository archiveItemRepository;
-    private final ArchiveRepository archiveRepository;
+    private final UserFcmTokenRepository userFcmTokenRepository;
+    private final NaverUnlinkClient naverUnlinkClient;
 
     public UserProfileResponse getProfile(Long userId) {
         AppUser user = appUserRepository.findById(userId)
@@ -83,15 +86,28 @@ public class ProfileService {
 
     @Transactional
     @CacheEvict(value = "top5News", key = "#userId")
-    public void deleteUser(Long userId) {
+    public void deleteUser(Long userId, WithdrawalRequest request) {
         AppUser user = appUserRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
-        archiveItemRepository.deleteByUserId(userId);
-        archiveRepository.deleteByUserId(userId);
-        userInterestRepository.deleteByUserId(userId);
+        String naverRefreshToken = request != null ? request.naverRefreshToken() : null;
+        if ("naver".equals(user.getProvider())
+                && (naverRefreshToken == null || naverRefreshToken.isBlank())) {
+            throw new InvalidWithdrawalRequestException("Naver 회원탈퇴에는 refresh token이 필요합니다.");
+        }
+
         refreshTokenRepository.deleteByUserId(userId);
-        appUserRepository.delete(user);
+        userFcmTokenRepository.deleteByUserId(userId);
+        user.delete();
+
+        if ("naver".equals(user.getProvider())) {
+            try {
+                naverUnlinkClient.revokeRefreshToken(naverRefreshToken);
+            } catch (Exception e) {
+                log.warn("Naver 연동 해제 실패: userId={}, errorType={}",
+                        userId, e.getClass().getSimpleName());
+            }
+        }
     }
 
     private List<UserInterest> buildInterests(AppUser user, InterestRequest request) {

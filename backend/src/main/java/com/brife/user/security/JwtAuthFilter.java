@@ -1,5 +1,7 @@
 package com.brife.user.security;
 
+import com.brife.user.domain.AppUser;
+import com.brife.user.repository.AppUserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,11 +17,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final AppUserRepository appUserRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -36,6 +40,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             Claims claims = jwtProvider.parseToken(token);
             Long userId = Long.parseLong(claims.getSubject());
             String role = claims.get("role", String.class);
+
+            Optional<AppUser> user = appUserRepository.findById(userId);
+            if (user.isEmpty()) {
+                writeError(response, HttpServletResponse.SC_UNAUTHORIZED,
+                        "UNAUTHORIZED", "존재하지 않는 유저입니다.");
+                return;
+            }
+            if (user.get().isDeleted()) {
+                writeError(response, HttpServletResponse.SC_FORBIDDEN,
+                        "ACCOUNT_WITHDRAWN", "탈퇴 후 30일 동안 로그인하거나 재가입할 수 없습니다.");
+                return;
+            }
 
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     userId, null, List.of(new SimpleGrantedAuthority(role)));
@@ -54,11 +70,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void writeUnauthorized(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        writeError(response, HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED", message);
+    }
+
+    private void writeError(HttpServletResponse response, int status, String code, String message) throws IOException {
+        response.setStatus(status);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write("""
-                {"code":"UNAUTHORIZED","message":"%s"}
-                """.formatted(message));
+                {"code":"%s","message":"%s"}
+                """.formatted(code, message));
     }
 }

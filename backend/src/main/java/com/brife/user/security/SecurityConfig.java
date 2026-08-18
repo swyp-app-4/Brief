@@ -1,5 +1,6 @@
 package com.brife.user.security;
 
+import com.brife.user.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
+    private final AppUserRepository appUserRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -38,7 +40,7 @@ public class SecurityConfig {
                     response.getWriter().write("{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다.\"}");
                 })
             )
-            .addFilterBefore(new JwtAuthFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new JwtAuthFilter(jwtProvider, appUserRepository), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

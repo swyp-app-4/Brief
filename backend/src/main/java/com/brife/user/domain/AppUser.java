@@ -72,5 +72,8 @@ public class AppUser {
         this.deletedAt = LocalDateTime.now();
     }
 
-}
+    public boolean isDeleted() {
+        return this.deletedAt != null;
+    }
 
+}

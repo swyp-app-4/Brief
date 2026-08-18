@@ -3,6 +3,7 @@ package com.brife.user.controller;
 import com.brife.user.dto.InterestRequest;
 import com.brife.user.dto.UserProfileResponse;
 import com.brife.user.dto.UserProfileUpdate;
+import com.brife.user.dto.WithdrawalRequest;
 import com.brife.user.service.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,10 +32,12 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateProfile(userId, request));
     }
 
-    @Operation(summary = "회원 탈퇴", description = "인증된 사용자의 계정을 삭제합니다.")
+    @Operation(summary = "회원 탈퇴", description = "인증된 사용자를 탈퇴 처리합니다. Naver 사용자는 refresh token이 필요합니다.")
     @DeleteMapping("/me")
-    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal Long userId) {
-        profileService.deleteUser(userId);
+    public ResponseEntity<Void> deleteUser(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody(required = false) WithdrawalRequest request) {
+        profileService.deleteUser(userId, request);
         return ResponseEntity.noContent().build();
     }
 
