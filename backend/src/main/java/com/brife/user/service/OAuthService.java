@@ -4,6 +4,7 @@ import com.brife.user.domain.AppUser;
 import com.brife.user.domain.RefreshToken;
 import com.brife.user.dto.AuthResponse;
 import com.brife.user.dto.TermsRequest;
+import com.brife.user.exception.AccountWithdrawnException;
 import com.brife.user.exception.AuthException;
 import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
@@ -83,6 +84,8 @@ public class OAuthService {
             String nickname = (String) claims.get("name");
 
             return generateAuthResponse(email, nickname, "google", providerId);
+        } catch (AccountWithdrawnException e) {
+            throw e;
         } catch (Exception e) {
             throw new IllegalArgumentException("유효하지 않은 Google ID Token입니다.");
         }
@@ -107,7 +110,7 @@ public class OAuthService {
 
         if (user.isDeleted()) {
             refreshTokenRepository.delete(refreshToken);
-            throw new AuthException("탈퇴 처리된 유저입니다.");
+            throw new AccountWithdrawnException();
         }
 
         return jwtProvider.generateAccessToken(user.getId(), user.getRole());
@@ -137,7 +140,7 @@ public class OAuthService {
         boolean isNewUser = user == null;
 
         if (user != null && user.isDeleted()) {
-            throw new AuthException("탈퇴 처리된 유저입니다.");
+            throw new AccountWithdrawnException();
         }
 
         if (user != null) {

@@ -2,6 +2,7 @@ package com.brife.news.controller;
 
 import com.brife.news.dto.ErrorResponse;
 import com.brife.news.exception.InvalidSearchKeywordException;
+import com.brife.user.exception.AccountWithdrawnException;
 import com.brife.user.exception.AuthException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -69,6 +70,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponse("UNAUTHORIZED", e.getMessage()));
+    }
+
+    @ExceptionHandler(AccountWithdrawnException.class)
+    public ResponseEntity<ErrorResponse> handleAccountWithdrawnException(AccountWithdrawnException e) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse("ACCOUNT_WITHDRAWN", e.getMessage()));
     }
 
     // 그 외 서버 오류

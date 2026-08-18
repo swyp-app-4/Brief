@@ -42,8 +42,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String role = claims.get("role", String.class);
 
             Optional<AppUser> user = appUserRepository.findById(userId);
-            if (user.isEmpty() || user.get().isDeleted()) {
-                writeUnauthorized(response, "탈퇴 처리되었거나 존재하지 않는 유저입니다.");
+            if (user.isEmpty()) {
+                writeError(response, HttpServletResponse.SC_UNAUTHORIZED,
+                        "UNAUTHORIZED", "존재하지 않는 유저입니다.");
+                return;
+            }
+            if (user.get().isDeleted()) {
+                writeError(response, HttpServletResponse.SC_FORBIDDEN,
+                        "ACCOUNT_WITHDRAWN", "탈퇴 후 30일 동안 로그인하거나 재가입할 수 없습니다.");
                 return;
             }
 
@@ -64,11 +70,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void writeUnauthorized(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        writeError(response, HttpServletResponse.SC_UNAUTHORIZED, "UNAUTHORIZED", message);
+    }
+
+    private void writeError(HttpServletResponse response, int status, String code, String message) throws IOException {
+        response.setStatus(status);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write("""
-                {"code":"UNAUTHORIZED","message":"%s"}
-                """.formatted(message));
+                {"code":"%s","message":"%s"}
+                """.formatted(code, message));
     }
 }
