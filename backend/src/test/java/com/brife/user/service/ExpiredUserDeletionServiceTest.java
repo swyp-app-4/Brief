@@ -2,6 +2,8 @@ package com.brife.user.service;
 
 import com.brife.archive.repository.ArchiveItemRepository;
 import com.brife.archive.repository.ArchiveRepository;
+import com.brife.notification.repository.UserFcmTokenRepository;
+import com.brife.notification.repository.UserNotificationSettingRepository;
 import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
 import com.brife.user.repository.UserInterestRepository;
@@ -22,17 +24,21 @@ class ExpiredUserDeletionServiceTest {
         RefreshTokenRepository tokens = mock(RefreshTokenRepository.class);
         ArchiveItemRepository items = mock(ArchiveItemRepository.class);
         ArchiveRepository archives = mock(ArchiveRepository.class);
+        UserFcmTokenRepository fcmTokens = mock(UserFcmTokenRepository.class);
+        UserNotificationSettingRepository notificationSettings = mock(UserNotificationSettingRepository.class);
         when(users.existsById(1L)).thenReturn(true);
         ExpiredUserDeletionService service = new ExpiredUserDeletionService(
-                users, interests, tokens, items, archives);
+                users, interests, tokens, items, archives, fcmTokens, notificationSettings);
 
         assertThat(service.deleteByUserId(1L)).isTrue();
 
-        InOrder order = inOrder(items, archives, interests, tokens, users);
+        InOrder order = inOrder(items, archives, interests, tokens, fcmTokens, notificationSettings, users);
         order.verify(items).deleteByUserId(1L);
         order.verify(archives).deleteByUserId(1L);
         order.verify(interests).deleteByUserId(1L);
         order.verify(tokens).deleteByUserId(1L);
+        order.verify(fcmTokens).deleteByUserId(1L);
+        order.verify(notificationSettings).deleteByUserId(1L);
         order.verify(users).deleteById(1L);
     }
 }

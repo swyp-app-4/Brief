@@ -2,6 +2,7 @@ package com.brife.user.service;
 
 import com.brife.news.repository.CategoryGroupRepository;
 import com.brife.news.repository.CategoryRepository;
+import com.brife.notification.repository.UserFcmTokenRepository;
 import com.brife.user.domain.AppUser;
 import com.brife.user.repository.AppUserRepository;
 import com.brife.user.repository.RefreshTokenRepository;
@@ -22,6 +23,7 @@ class ProfileServiceWithdrawalTest {
         AppUserRepository appUserRepository = mock(AppUserRepository.class);
         UserInterestRepository userInterestRepository = mock(UserInterestRepository.class);
         RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
+        UserFcmTokenRepository fcmTokenRepository = mock(UserFcmTokenRepository.class);
         AppUser user = AppUser.builder().id(1L).email("user@example.com")
                 .provider("google").providerId("provider-id").build();
         when(appUserRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -31,11 +33,13 @@ class ProfileServiceWithdrawalTest {
                 userInterestRepository,
                 mock(CategoryRepository.class),
                 mock(CategoryGroupRepository.class),
-                refreshTokenRepository);
+                refreshTokenRepository,
+                fcmTokenRepository);
 
         service.deleteUser(1L);
 
         assertThat(user.isDeleted()).isTrue();
         verify(refreshTokenRepository).deleteByUserId(1L);
+        verify(fcmTokenRepository).deleteByUserId(1L);
     }
 }

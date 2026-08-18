@@ -4,6 +4,7 @@ import com.brife.news.domain.Category;
 import com.brife.news.domain.CategoryGroup;
 import com.brife.news.repository.CategoryGroupRepository;
 import com.brife.news.repository.CategoryRepository;
+import com.brife.notification.repository.UserFcmTokenRepository;
 import com.brife.user.domain.AppUser;
 import com.brife.user.domain.UserInterest;
 import com.brife.user.dto.InterestRequest;
@@ -29,6 +30,7 @@ public class ProfileService {
     private final CategoryRepository categoryRepository;
     private final CategoryGroupRepository categoryGroupRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserFcmTokenRepository userFcmTokenRepository;
 
     public UserProfileResponse getProfile(Long userId) {
         AppUser user = appUserRepository.findById(userId)
@@ -84,6 +86,7 @@ public class ProfileService {
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
         refreshTokenRepository.deleteByUserId(userId);
+        userFcmTokenRepository.deleteByUserId(userId);
         user.delete();
     }
 
