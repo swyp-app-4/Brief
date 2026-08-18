@@ -3,8 +3,10 @@ package com.brife.news.batch;
 import com.brife.news.domain.RawNews;
 import com.brife.news.domain.SummarizedNews;
 import com.brife.news.dto.ProcessedNewsDto;
+import com.brife.news.repository.NewsEmbeddingRepository;
 import com.brife.news.repository.RawNewsRepository;
 import com.brife.news.repository.SummarizedNewsRepository;
+import com.brife.news.service.EmbeddingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -22,6 +24,9 @@ public class NewsCrawlingWriter implements ItemWriter<ProcessedNewsDto> {
 
     private final RawNewsRepository rawNewsRepository;
     private final SummarizedNewsRepository summarizedNewsRepository;
+    private final EmbeddingService embeddingService;
+    private final NewsEmbeddingRepository newsEmbeddingRepository;
+    private final NewsBatchMetrics batchMetrics;
 
     @Override
     public void write(Chunk<? extends ProcessedNewsDto> chunk) throws Exception {
@@ -37,6 +42,7 @@ public class NewsCrawlingWriter implements ItemWriter<ProcessedNewsDto> {
                             .publishedAt(data.getPublishedAt())
                             .build()
             );
+            batchMetrics.incrementGeneratedNewsCount();
 
             List<RawNews> rawNewsList = data.getNewArticles().stream()
                     .map(raw -> {
@@ -54,6 +60,18 @@ public class NewsCrawlingWriter implements ItemWriter<ProcessedNewsDto> {
                     .toList();
 
             rawNewsRepository.saveAll(rawNewsList);
+
+            // 임베딩 생성 및 저장 (실패해도 배치 전체는 중단하지 않음)
+            try {
+                String embeddingText = saved.getTitle() + " " + saved.getSummary();
+                float[] embedding = embeddingService.embedForDocument(embeddingText);
+                newsEmbeddingRepository.save(saved.getId(), embedding);
+                batchMetrics.incrementEmbeddingSuccessCount();
+                log.info("[Writer] 임베딩 저장 완료 - newsId={}", saved.getId());
+            } catch (Exception e) {
+                batchMetrics.incrementEmbeddingFailCount();
+                log.warn("[Writer] 임베딩 저장 실패 - newsId={}, reason={}", saved.getId(), e.getMessage());
+            }
 
             log.info("[Writer] 완료 - title={}, 신규기사={}건",
                     data.getSynthesisResult().getTitle(), rawNewsList.size());

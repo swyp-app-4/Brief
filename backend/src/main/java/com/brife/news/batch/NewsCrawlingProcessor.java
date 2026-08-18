@@ -6,8 +6,10 @@ import com.brife.news.dto.KeywordGroupDto;
 import com.brife.news.dto.ProcessedNewsDto;
 import com.brife.news.dto.RawArticleDto;
 import com.brife.news.dto.SynthesisResult;
+import com.brife.news.exception.InvalidSynthesisResultException;
 import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.RawNewsRepository;
+import com.brife.news.service.DuplicateNewsDetectionService;
 import com.brife.news.service.SummarizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,8 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
     private final CategoryRepository categoryRepository;
     private final RawNewsRepository rawNewsRepository;
     private final ObjectMapper objectMapper;
+    private final DuplicateNewsDetectionService duplicateNewsDetectionService;
+    private final NewsBatchMetrics batchMetrics;
 
     @Override
     public ProcessedNewsDto process(KeywordGroupDto group) throws Exception {
@@ -36,12 +40,34 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
                 .filter(a -> a.getNaverUrl() == null || !rawNewsRepository.existsByNaverUrl(a.getNaverUrl()))
                 .toList();
 
-        if (newArticles.isEmpty()) {
-            log.info("[Processor] 스킵 - 새로운 기사 없음. keyword={}", group.getKeyword());
+        if (newArticles.size() < group.getMinClusterSize()) {
+            log.info("[Processor] 스킵 - 신규 기사 수 미달. keyword={}, newArticles={}, minimum={}",
+                    group.getKeyword(), newArticles.size(), group.getMinClusterSize());
+            batchMetrics.incrementSkippedClusterCount();
             return null;
         }
 
-        SynthesisResult result = summarizationService.synthesize(group.getKeyword(), newArticles);
+        SynthesisResult result;
+        try {
+            result = summarizationService.synthesize(
+                    group.getCategoryName(), group.getKeyword(), newArticles);
+        } catch (InvalidSynthesisResultException e) {
+            log.warn("[Processor] 스킵 - 요약 품질 기준 미달. category={}, reason={}",
+                    group.getCategoryName(), e.getMessage());
+            batchMetrics.incrementSkippedClusterCount();
+            return null;
+        }
+        if (!result.isCategoryRelevant()) {
+            log.info("[Processor] 스킵 - 카테고리 부적합. category={}, reason={}",
+                    group.getCategoryName(), result.getCategoryReason());
+            batchMetrics.incrementSkippedClusterCount();
+            return null;
+        }
+        if (duplicateNewsDetectionService.isDuplicateWithoutNewInformation(result)) {
+            batchMetrics.incrementSkippedClusterCount();
+            return null;
+        }
+
         String sectionsJson;
         try {
             sectionsJson = objectMapper.writeValueAsString(result.getSections());
@@ -58,7 +84,7 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
                 .newArticles(newArticles)
                 .synthesisResult(result)
                 .sectionsJson(sectionsJson)
-                .totalArticleCount(group.getArticles().size())
+                .totalArticleCount(newArticles.size())
                 .publishedDate(publishedAt.toLocalDate())
                 .publishedAt(publishedAt)
                 .build();

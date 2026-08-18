@@ -1,5 +1,6 @@
 package com.brife.news.config;
 
+import com.brife.news.batch.BatchCompletionListener;
 import com.brife.news.batch.NewsCrawlingProcessor;
 import com.brife.news.batch.NewsCrawlingReader;
 import com.brife.news.batch.NewsCrawlingWriter;
@@ -16,6 +17,8 @@ import org.springframework.batch.core.listener.SkipListener;
 import org.springframework.dao.DataAccessException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Slf4j
@@ -29,22 +32,25 @@ public class NewsCrawlingJobConfig {
     private final PlatformTransactionManager transactionManager;
 
     @Bean
-    public Job newsCrawlingJob(Step newsCrawlingStep) {
+    public Job newsCrawlingJob(Step newsCrawlingStep, BatchCompletionListener listener) {
         return new JobBuilder("newsCrawlingJob", jobRepository)
                 .start(newsCrawlingStep)
+                .listener(listener)
                 .build();
     }
 
     @Bean
     public Step newsCrawlingStep(NewsCrawlingReader reader,
                                   NewsCrawlingProcessor processor,
-                                  NewsCrawlingWriter writer) {
+                                  NewsCrawlingWriter writer,
+                                  @Qualifier("newsBatchTaskExecutor") AsyncTaskExecutor taskExecutor) {
         return new StepBuilder("newsCrawlingStep", jobRepository)
                 .<KeywordGroupDto, ProcessedNewsDto>chunk(1)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
                 .transactionManager(transactionManager)
+                .taskExecutor(taskExecutor)
                 .faultTolerant()
                 .skipPolicy((t, skipCount) ->
                         !(t instanceof DataAccessException) && t instanceof RuntimeException && skipCount < MAX_SKIP_COUNT)

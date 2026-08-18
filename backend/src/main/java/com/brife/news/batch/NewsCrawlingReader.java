@@ -6,6 +6,7 @@ import com.brife.news.dto.KeywordGroupDto;
 import com.brife.news.dto.NaverNewsResponse;
 import com.brife.news.dto.RawArticleDto;
 import com.brife.news.repository.CategoryRepository;
+import com.brife.news.repository.RawNewsRepository;
 import com.brife.news.service.ArticleClusteringService;
 import com.brife.news.service.ArticleExtractorService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
@@ -43,10 +45,14 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
     private final ArticleExtractorService articleExtractor;
     private final ArticleClusteringService clusteringService;
     private final CategoryRepository categoryRepository;
+    private final RawNewsRepository rawNewsRepository;
     private final Executor crawlingExecutor;
     private final Retry naverRetry;
+    private final NewsBatchMetrics batchMetrics;
 
     private final Queue<KeywordGroupDto> queue = new ConcurrentLinkedQueue<>();
+    private final Map<String, RawArticleDto> extractedArticleCache = new ConcurrentHashMap<>();
+    private final Map<String, Object> extractionLocks = new ConcurrentHashMap<>();
     private boolean initialized = false;
 
     public NewsCrawlingReader(NaverNewsProperties properties,
@@ -54,19 +60,23 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
                               ArticleExtractorService articleExtractor,
                               ArticleClusteringService clusteringService,
                               CategoryRepository categoryRepository,
+                              RawNewsRepository rawNewsRepository,
                               @Qualifier("crawlingExecutor") Executor crawlingExecutor,
-                              RetryRegistry retryRegistry) {
+                              RetryRegistry retryRegistry,
+                              NewsBatchMetrics batchMetrics) {
         this.properties = properties;
         this.restTemplate = restTemplate;
         this.articleExtractor = articleExtractor;
         this.clusteringService = clusteringService;
         this.categoryRepository = categoryRepository;
+        this.rawNewsRepository = rawNewsRepository;
         this.crawlingExecutor = crawlingExecutor;
         this.naverRetry = retryRegistry.retry("naver");
+        this.batchMetrics = batchMetrics;
     }
 
     @Override
-    public KeywordGroupDto read() {
+    public synchronized KeywordGroupDto read() {
         if (!initialized) {
             fetchAll();
             initialized = true;
@@ -80,7 +90,6 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
             log.warn("[Reader] category 테이블이 비어있음. DB에 카테고리를 먼저 등록.");
             return;
         }
-
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (Category category : categories) {
@@ -89,11 +98,13 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
             CompletableFuture<Void> future = CompletableFuture
                     .supplyAsync(() -> clusteringService.clusterAll(fetchMerged(keyword), keyword, minClusterSize), crawlingExecutor)
                     .thenAccept(clusters -> {
+                        batchMetrics.addClusterCount(clusters.size());
                         for (List<RawArticleDto> articles : clusters) {
                             queue.add(KeywordGroupDto.builder()
                                     .categoryId(category.getId())
                                     .categoryName(category.getName())
                                     .keyword(keyword)
+                                    .minClusterSize(minClusterSize)
                                     .articles(articles)
                                     .build());
                         }
@@ -124,22 +135,53 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         return 4;
     }
 
-    // 구분 키워드별 각각 호출 후 sourceUrl 기준 중복 제거해서 합침
+    // 날짜·DB 중복을 먼저 제거한 뒤 남은 기사만 원문을 요청합니다.
     private List<RawArticleDto> fetchMerged(String query) {
         String[] keywords = query.split("\\|");
-        if (keywords.length == 1) {
-            return fetchFromNaver(query.trim());
-        }
-        Map<String, RawArticleDto> merged = new java.util.LinkedHashMap<>();
+        Map<String, PendingArticle> merged = new LinkedHashMap<>();
         for (String kw : keywords) {
-            for (RawArticleDto article : fetchFromNaver(kw.trim())) {
-                merged.putIfAbsent(article.getSourceUrl(), article);
+            for (PendingArticle article : fetchFromNaver(kw.trim())) {
+                merged.putIfAbsent(article.sourceUrl(), article);
             }
         }
-        return new ArrayList<>(merged.values());
+
+        List<String> naverUrls = merged.values().stream()
+                .map(article -> article.item().getLink())
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Set<String> existingUrls = naverUrls.isEmpty()
+                ? Set.of()
+                : rawNewsRepository.findExistingNaverUrls(naverUrls);
+        List<String> sourceUrls = new ArrayList<>(merged.keySet());
+        Set<String> existingSourceUrls = sourceUrls.isEmpty()
+                ? Set.of()
+                : rawNewsRepository.findExistingSourceUrls(sourceUrls);
+
+        return merged.values().stream()
+                .filter(article -> article.item().getLink() != null)
+                .filter(article -> !existingUrls.contains(article.item().getLink()))
+                .filter(article -> !existingSourceUrls.contains(article.sourceUrl()))
+                .map(this::extractCached)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
-    private List<RawArticleDto> fetchFromNaver(String keyword) {
+    private RawArticleDto extractCached(PendingArticle pending) {
+        RawArticleDto cached = extractedArticleCache.get(pending.sourceUrl());
+        if (cached != null) return cached;
+
+        Object lock = extractionLocks.computeIfAbsent(pending.sourceUrl(), ignored -> new Object());
+        synchronized (lock) {
+            try {
+                return extractedArticleCache.computeIfAbsent(pending.sourceUrl(), ignored -> toRawArticle(pending));
+            } finally {
+                extractionLocks.remove(pending.sourceUrl(), lock);
+            }
+        }
+    }
+
+    private List<PendingArticle> fetchFromNaver(String keyword) {
         try {
             return Retry.decorateCheckedSupplier(naverRetry, () -> doFetchFromNaver(keyword)).get();
         } catch (Throwable e) {
@@ -148,15 +190,15 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         }
     }
 
-    private List<RawArticleDto> doFetchFromNaver(String keyword) {
+    private List<PendingArticle> doFetchFromNaver(String keyword) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Naver-Client-Id", properties.getClientId());
         headers.set("X-Naver-Client-Secret", properties.getClientSecret());
 
-        // 최신순 100개 수집
+        // TODO: 테스트 후 100으로 복구
         String url = UriComponentsBuilder.fromUriString(properties.getNewsUrl())
                 .queryParam("query", keyword)
-                .queryParam("display", 100)
+                .queryParam("display", 50)
                 .queryParam("sort", "date")
                 .build()
                 .toUriString();
@@ -164,26 +206,36 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         ResponseEntity<NaverNewsResponse> response = restTemplate.exchange(
                 url, HttpMethod.GET, new HttpEntity<>(headers), NaverNewsResponse.class);
 
+        batchMetrics.incrementNaverApiCallCount();
         if (response.getBody() == null || response.getBody().getItems() == null) {
             return Collections.emptyList();
         }
+        batchMetrics.addFetchedArticleCount(response.getBody().getItems().size());
 
-        // 카테고리는 이미 병렬로 돌고 있어서 내부 파싱은 순차 처리 (풀 재사용 시 데드락 방지)
         LocalDateTime since = LocalDateTime.now().minusHours(24);
         return response.getBody().getItems().stream()
-                .map(this::toRawArticle)
+                .map(item -> toPendingArticle(item, since))
                 .filter(Objects::nonNull)
-                .filter(a -> a.getPubDate() != null && a.getPubDate().isAfter(since))
                 .toList();
     }
 
-    private RawArticleDto toRawArticle(NaverNewsResponse.NaverNewsItem item) {
+    private PendingArticle toPendingArticle(NaverNewsResponse.NaverNewsItem item, LocalDateTime since) {
+        LocalDateTime pubDate = parseDate(item.getPubDate());
+        if (pubDate == null || !pubDate.isAfter(since)) return null;
+        String sourceUrl = resolveSourceUrl(item);
+        if (sourceUrl == null || sourceUrl.isBlank()) return null;
+        return new PendingArticle(item, sourceUrl, pubDate);
+    }
+
+    private RawArticleDto toRawArticle(PendingArticle pending) {
+        NaverNewsResponse.NaverNewsItem item = pending.item();
         String cleanTitle = Jsoup.parse(item.getTitle()).text();
         String cleanDesc  = Jsoup.parse(item.getDescription()).text();
-        String sourceUrl  = resolveSourceUrl(item);
+        String sourceUrl  = pending.sourceUrl();
 
         String body = cleanDesc;
         String pressName = "";
+        boolean extractSuccess = false;
         try {
             Document doc = Jsoup.connect(sourceUrl)
                     .timeout(5000)
@@ -191,18 +243,28 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
                     .referrer("https://www.google.com")
                     .get();
             String extracted = articleExtractor.extractFromDoc(doc);
-            if (!extracted.isBlank()) body = extracted;
-            pressName = articleExtractor.extractPressName(doc);
+            if (!extracted.isBlank()) {
+                body = extracted;
+                extractSuccess = true;
+            }
+            pressName = articleExtractor.extractPressName(doc, sourceUrl);
         } catch (Exception e) {
             log.debug("[Reader] 원문 접속 실패 - url={}", sourceUrl);
+            pressName = articleExtractor.resolvePressNameFromDomain(sourceUrl);
         }
+        if (extractSuccess) {
+            batchMetrics.incrementOriginalExtractSuccessCount();
+        } else {
+            batchMetrics.incrementOriginalExtractFallbackCount();
+        }
+        batchMetrics.addTotalOriginalTextLength(body.length());
 
         return RawArticleDto.builder()
                 .title(cleanTitle)
                 .description(body)
                 .sourceUrl(sourceUrl)
                 .naverUrl(item.getLink())
-                .pubDate(parseDate(item.getPubDate()))
+                .pubDate(pending.pubDate())
                 .pressName(pressName)
                 .build();
     }
@@ -221,7 +283,13 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
                     .withZoneSameInstant(java.time.ZoneId.of("Asia/Seoul"))
                     .toLocalDateTime();
         } catch (Exception e) {
-            return LocalDateTime.now();
+            log.debug("[Reader] 발행일 파싱 실패 - value={}", pubDate);
+            return null;
         }
+    }
+
+    private record PendingArticle(NaverNewsResponse.NaverNewsItem item,
+                                  String sourceUrl,
+                                  LocalDateTime pubDate) {
     }
 }

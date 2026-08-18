@@ -30,6 +30,8 @@ class ArticleExtractorServiceTest {
                     이것은 테스트 기사 본문입니다. 충분히 긴 내용이 필요하므로 여러 문장을 추가합니다.
                     양자역학 연구팀이 새로운 실험 결과를 발표했습니다. 이번 연구는 국내 최초로 진행되었으며
                     학계의 큰 주목을 받고 있습니다. 앞으로의 연구 방향에 대해서도 활발한 논의가 이루어지고 있습니다.
+                    연구진은 후속 실험을 통해 결과를 재검증하고 국제 학술지에 상세한 분석을 공개할 예정입니다.
+                    관련 분야 전문가들은 산업 현장에 적용할 수 있는 가능성도 함께 검토하고 있습니다.
                   </div>
                 </body></html>
                 """;
@@ -50,6 +52,8 @@ class ArticleExtractorServiceTest {
                     특히 의료, 금융, 제조업 분야에서 눈에 띄는 성과를 보이고 있으며,
                     전문가들은 향후 5년 내 더욱 큰 변화가 있을 것으로 전망하고 있습니다.
                     정부도 관련 정책 마련에 적극 나서고 있어 귀추가 주목됩니다.
+                    기업들도 전문 인력을 확보하고 데이터 기반 업무 체계를 도입하기 위한 투자를 확대하고 있습니다.
+                    다만 개인정보 보호와 결과 검증을 위한 제도적 장치도 함께 마련해야 한다는 지적이 나옵니다.
                   </article>
                 </body></html>
                 """;
@@ -88,6 +92,8 @@ class ArticleExtractorServiceTest {
                     이것은 충분히 긴 본문입니다. 기사 내용이 충분히 있어야 선택됩니다.
                     국내 경제 상황이 빠르게 변화하고 있으며 다양한 지표들이 이를 반영하고 있습니다.
                     전문가들은 앞으로의 전망에 대해 신중한 입장을 보이고 있습니다.
+                    정부와 시장 참여자들은 추가 지표를 확인한 뒤 대응 방향을 결정할 예정입니다.
+                    가계와 기업에 미치는 영향을 줄이기 위한 보완책도 함께 논의되고 있습니다.
                   </article>
                 </body></html>
                 """;
@@ -113,6 +119,8 @@ class ArticleExtractorServiceTest {
                     실제 기사 본문 내용입니다. 오늘 국회에서 중요한 법안이 통과되었습니다.
                     여야 의원들이 합의하여 처리된 이번 법안은 많은 시민들의 관심을 받고 있습니다.
                     전문가들도 이번 결정에 대해 긍정적인 평가를 내리고 있는 상황입니다.
+                    법안 시행에 필요한 세부 기준은 관계 부처 협의를 거쳐 순차적으로 마련될 예정입니다.
+                    국회는 제도 시행 과정에서 발생하는 문제를 지속해서 점검하겠다고 밝혔습니다.
                     <script>alert('악성스크립트')</script>
                     <nav>네비게이션 메뉴</nav>
                   </article>
@@ -184,6 +192,8 @@ class ArticleExtractorServiceTest {
                     정부가 새로운 부동산 정책을 발표했습니다. 이번 정책은 서민 주거
                     안정을 목표로 하고 있으며, 다양한 지원책이 포함되어 있습니다.
                     전문가들은 실효성에 대해 엇갈린 반응을 보이고 있습니다.
+                    정부는 시장 상황을 지속해서 점검하고 필요할 경우 추가 대책을 마련하겠다고 설명했습니다.
+                    정책 시행 이후 거래량과 주거 비용 변화가 주요 평가 기준이 될 것으로 예상됩니다.
                     ▶ 구독하고 더 많은 뉴스 보기
                     ▶ 조선일보 유튜브 채널 구독
                   </article>
@@ -254,5 +264,15 @@ class ArticleExtractorServiceTest {
         String result = extractor.extractFromDoc(doc);
 
         assertThat(result).doesNotContain("   ");
+    }
+
+    @Test
+    @DisplayName("언론사 메타 태그가 없으면 도메인으로 언론사명을 보완")
+    void resolvePressNameFromDomain() {
+        Document doc = Jsoup.parse("<html><head></head><body></body></html>");
+
+        String result = extractor.extractPressName(doc, "https://www.osen.co.kr/article/123");
+
+        assertThat(result).isEqualTo("OSEN");
     }
 }

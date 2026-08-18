@@ -15,19 +15,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,95 +37,72 @@ import java.util.stream.Collectors;
 public class NewsService {
 
     private static final int BODY_PREVIEW_LENGTH = 150;
+    private static final int RECOMMENDATION_SIZE = 5;
+    private static final int MAX_PER_CATEGORY = 2;
+    private static final int CANDIDATE_LIMIT = 100;
+    private static final int RECOMMENDATION_LOOKBACK_HOURS = 48;
 
     private final SummarizedNewsRepository summarizedNewsRepository;
     private final CategoryRepository categoryRepository;
     private final UserInterestRepository userInterestRepository;
     private final RawNewsRepository rawNewsRepository;
     private final ObjectMapper objectMapper;
+    private final DuplicateNewsDetectionService duplicateNewsDetectionService;
 
-    // categoryIds, groupIds 혼합 지원. 대분류별 최소 1개 보장 후 sourceCount 순으로 5개 채움
     public List<WidgetNewsDto> getTop5News(List<Long> categoryIds, List<Long> groupIds) {
-        List<Long> mergedIds = new ArrayList<>(categoryIds);
+        List<Long> selectedCategoryIds = categoryIds == null
+                ? List.of()
+                : categoryIds.stream().filter(Objects::nonNull).distinct().toList();
+        Set<Long> parentGroupIds = new LinkedHashSet<>();
+        if (groupIds != null) {
+            groupIds.stream().filter(Objects::nonNull).forEach(parentGroupIds::add);
+        }
+        categoryRepository.findAllById(selectedCategoryIds).stream()
+                .map(category -> category.getCategoryGroup().getId())
+                .forEach(parentGroupIds::add);
 
-        if (!groupIds.isEmpty()) {
-            for (Long groupId : groupIds) {
-                List<Long> subIds = categoryRepository.findByCategoryGroup_IdIn(List.of(groupId))
-                        .stream().map(c -> c.getId()).toList();
+        List<Long> parentCategoryIds = parentGroupIds.isEmpty()
+                ? List.of()
+                : categoryRepository.findByCategoryGroup_IdIn(new ArrayList<>(parentGroupIds)).stream()
+                        .map(category -> category.getId())
+                        .distinct()
+                        .toList();
 
-                // 해당 대분류 하위에 선택된 소분류가 있으면 소분류만 적용, 없으면 대분류 전체 추가
-                boolean hasSelectedSub = subIds.stream().anyMatch(categoryIds::contains);
-                if (!hasSelectedSub) {
-                    subIds.stream()
-                            .filter(id -> !mergedIds.contains(id))
-                            .forEach(mergedIds::add);
-                }
-            }
+        LocalDateTime since = LocalDateTime.now().minusHours(RECOMMENDATION_LOOKBACK_HOURS);
+        PageRequest page = PageRequest.of(0, CANDIDATE_LIMIT);
+        List<SummarizedNews> selected = new ArrayList<>();
+        Set<Long> usedIds = new LinkedHashSet<>();
+        Map<Long, Integer> categoryCounts = new HashMap<>();
+
+        if (!selectedCategoryIds.isEmpty()) {
+            appendCandidates(selected, usedIds, categoryCounts,
+                    summarizedNewsRepository.findRecommendationCandidates(selectedCategoryIds, since, page));
+        }
+        if (selected.size() < RECOMMENDATION_SIZE && !parentCategoryIds.isEmpty()) {
+            appendCandidates(selected, usedIds, categoryCounts,
+                    summarizedNewsRepository.findRecommendationCandidates(parentCategoryIds, since, page));
+        }
+        if (selected.size() < RECOMMENDATION_SIZE) {
+            appendCandidates(selected, usedIds, categoryCounts,
+                    summarizedNewsRepository.findLatestRecommendationCandidates(page));
         }
 
-        if (mergedIds.isEmpty()) return List.of();
-
-        // 마지막 배치 시각 기준으로 그 배치 결과 우선 조회
-        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-        List<SummarizedNews> candidates = summarizedNewsRepository.findMaxCreatedAt()
-                .map(lastBatch -> summarizedNewsRepository
-                        .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
-                                mergedIds, lastBatch.minusMinutes(90)))  // 배치 실행 시간 고려 +30분 여유
-                .orElse(List.of());
-
-        if (candidates.size() < 5) {
-            // 해당 배치에 뉴스가 부족하면 당일(자정 이후) 전체로 확장
-            candidates = summarizedNewsRepository
-                    .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(mergedIds, todayStart);
-        }
-
-        if (candidates.size() < 5) {
-            // 당일도 부족하면 48시간으로 확장 (서비스 초기 or 관심사 좁은 경우)
-            candidates = summarizedNewsRepository
-                    .findTop20ByCategoryIdInAndCreatedAtAfterOrderBySourceCountDesc(
-                            mergedIds, LocalDateTime.now().minusHours(48));
-        }
-
-        // 대분류별 1개 보장 (sourceCount 높은 순으로 정렬된 candidates에서 그룹당 첫 번째)
-        Map<Long, SummarizedNews> groupPicks = new LinkedHashMap<>();
-        for (SummarizedNews news : candidates) {
-            Long gId = news.getCategory().getCategoryGroup().getId();
-            groupPicks.putIfAbsent(gId, news);
-        }
-
-        List<SummarizedNews> result = new ArrayList<>(groupPicks.values());
-        Set<Long> usedIds = result.stream()
-                .map(SummarizedNews::getId)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        // 남은 슬롯을 sourceCount 순으로 채움
-        candidates.stream()
-                .filter(n -> !usedIds.contains(n.getId()))
-                .limit(5 - result.size())
-                .forEach(result::add);
-
-        // 최대 5개 제한
-        if (result.size() > 5) {
-            result = result.subList(0, 5);
-        }
-
-        return result.stream()
+        return selected.stream()
                 .map(news -> WidgetNewsDto.from(news, extractBodyPreview(news.getBody())))
                 .toList();
     }
 
+    @Cacheable(value = "top5News", key = "#userId", unless = "#result.isEmpty()")
     public List<WidgetNewsDto> getRecommendedNews(Long userId) {
         List<UserInterest> interests = userInterestRepository.findByUserId(userId);
-        if (interests.isEmpty()) return List.of();
 
         List<Long> categoryIds = interests.stream()
-                .filter(i -> i.getCategory() != null)
-                .map(i -> i.getCategory().getId())
+                .filter(interest -> interest.getCategory() != null)
+                .map(interest -> interest.getCategory().getId())
                 .toList();
-
         List<Long> groupIds = interests.stream()
-                .filter(i -> i.getCategoryGroup() != null)
-                .map(i -> i.getCategoryGroup().getId())
+                .filter(interest -> interest.getCategoryGroup() != null)
+                .map(interest -> interest.getCategoryGroup().getId())
                 .toList();
 
         return getTop5News(categoryIds, groupIds);
@@ -133,9 +111,7 @@ public class NewsService {
     public NewsDetailDto getNewsDetail(Long id) {
         SummarizedNews news = summarizedNewsRepository.findWithCategoryById(id)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 뉴스입니다. id=" + id));
-
-        List<SectionResponseDto> sections = parseSections(news.getBody(), id);
-        return NewsDetailDto.from(news, sections);
+        return NewsDetailDto.from(news, parseSections(news.getBody(), id));
     }
 
     public List<NewsSourceDto> getNewsSources(Long id) {
@@ -145,13 +121,33 @@ public class NewsService {
         return rawNewsRepository.findSourcesBySummarizedNewsId(id);
     }
 
-    // 첫 번째 섹션 content 앞 150자
+    private void appendCandidates(List<SummarizedNews> selected,
+                                  Set<Long> usedIds,
+                                  Map<Long, Integer> categoryCounts,
+                                  List<SummarizedNews> candidates) {
+        for (SummarizedNews candidate : candidates) {
+            if (selected.size() >= RECOMMENDATION_SIZE) return;
+            Long categoryId = candidate.getCategory().getId();
+            if (usedIds.contains(candidate.getId())) continue;
+            if (categoryCounts.getOrDefault(categoryId, 0) >= MAX_PER_CATEGORY) continue;
+            boolean sameEvent = selected.stream().anyMatch(existing ->
+                    duplicateNewsDetectionService.representsSameEvent(
+                            candidate.getTitle(), candidate.getSummary(),
+                            existing.getTitle(), existing.getSummary()));
+            if (sameEvent) continue;
+
+            selected.add(candidate);
+            usedIds.add(candidate.getId());
+            categoryCounts.merge(categoryId, 1, Integer::sum);
+        }
+    }
+
     private String extractBodyPreview(String body) {
         if (body == null || body.isBlank()) return "";
         try {
             List<SectionDto> sections = objectMapper.readValue(body, new TypeReference<>() {});
-            if (sections.isEmpty() || sections.get(0).getContent() == null) return "";
-            String content = sections.get(0).getContent();
+            if (sections.isEmpty() || sections.getFirst().getContent() == null) return "";
+            String content = sections.getFirst().getContent();
             return content.length() > BODY_PREVIEW_LENGTH
                     ? content.substring(0, BODY_PREVIEW_LENGTH)
                     : content;

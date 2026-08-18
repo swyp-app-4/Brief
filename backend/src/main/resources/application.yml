@@ -12,10 +12,10 @@ spring:
 
   sql:
     init:
-      mode: always  # schema.sql로 익스텐션 먼저 설치
+      mode: always  # schema.sql로 필요한 확장과 수동 관리 테이블 생성
 
   jpa:
-    defer-datasource-initialization: true  # schema.sql → Hibernate DDL 순서 보장
+    defer-datasource-initialization: true  # schema.sql 실행 후 Hibernate DDL 실행
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -32,19 +32,21 @@ spring:
     jdbc:
       initialize-schema: always
 
-# 네이버 뉴스 API
 naver:
   api:
     client-id: ${NAVER_CLIENT_ID}
     client-secret: ${NAVER_CLIENT_SECRET}
     news-url: https://openapi.naver.com/v1/search/news.json
 
-# Vertex AI (뉴스 요약 전용) - GOOGLE_APPLICATION_CREDENTIALS 환경변수 필요
 vertex:
   ai:
     project-id: ${VERTEX_PROJECT_ID}
     region: ${VERTEX_REGION:us-central1}
     model: ${VERTEX_MODEL:gemini-2.5-flash}
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
 
 resilience4j:
   ratelimiter:
@@ -53,6 +55,10 @@ resilience4j:
         limit-for-period: 30
         limit-refresh-period: 60s
         timeout-duration: 120s
+      embedding:
+        limit-for-period: 60
+        limit-refresh-period: 60s
+        timeout-duration: 3s
   retry:
     instances:
       naver:

@@ -10,6 +10,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class SynthesisResult {
+    private boolean categoryRelevant;
+    private String categoryReason;
     private String title;
     private String summary;
     private List<SectionDto> sections;
