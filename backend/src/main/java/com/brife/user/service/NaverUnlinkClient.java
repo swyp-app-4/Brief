@@ -1,5 +1,6 @@
 package com.brife.user.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ public class NaverUnlinkClient {
     private final String clientId;
     private final String clientSecret;
 
+    @Autowired
     public NaverUnlinkClient(@Value("${naver.login.client-id}") String clientId,
                              @Value("${naver.login.client-secret}") String clientSecret) {
         this(RestClient.builder().baseUrl("https://nid.naver.com").build(), clientId, clientSecret);
