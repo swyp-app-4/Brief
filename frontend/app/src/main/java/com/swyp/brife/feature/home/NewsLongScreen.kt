@@ -219,7 +219,11 @@ fun NewsLongScreen(
 
     val imageRes = remember(item.imageRes, item.category, item.subCategory, item.newsId) {
         val similarCategoryName = item.subCategory.ifBlank { item.category }
-        getSimilarNewsImageRes(similarCategoryName, item.newsId)
+        getSimilarNewsImageRes(
+            categoryName = similarCategoryName,
+            groupName = item.category,
+            newsId = item.newsId
+        )
             ?: item.imageRes
             ?: LongFormImageProvider.getStableImageRes(
                 item.category,
@@ -602,8 +606,12 @@ private fun SimilarNewsCard(
     news: NewsListItem,
     onClick: () -> Unit
 ) {
-    val imageRes = remember(news.categoryName, news.id) {
-        getSimilarNewsImageRes(news.categoryName, news.id)
+    val imageRes = remember(news.groupName, news.categoryName, news.id) {
+        getSimilarNewsImageRes(
+            categoryName = news.categoryName,
+            groupName = news.groupName.orEmpty(),
+            newsId = news.id
+        )
     }
 
     Column(
@@ -634,7 +642,12 @@ private fun SimilarNewsCard(
         Spacer(modifier = Modifier.height(12.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            CategoryChip(text = news.categoryName)
+            news.groupName?.takeIf { it.isNotBlank() }?.let {
+                CategoryChip(text = it)
+            }
+            if (news.categoryName.isNotBlank()) {
+                CategoryChip(text = news.categoryName)
+            }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -652,7 +665,14 @@ private fun SimilarNewsCard(
     }
 }
 
-private fun getSimilarNewsImageRes(categoryName: String, newsId: Long): Int? {
+private fun getSimilarNewsImageRes(
+    categoryName: String,
+    groupName: String,
+    newsId: Long
+): Int? = getSimilarNewsImageResForName(categoryName, newsId)
+    ?: getSimilarNewsImageResForName(groupName, newsId)
+
+private fun getSimilarNewsImageResForName(categoryName: String, newsId: Long): Int? {
     val images = when {
         categoryName.contains("책") -> listOf(
             R.drawable.similar_longform_culture_book,

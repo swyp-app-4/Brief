@@ -70,6 +70,7 @@ data class RecommendedNewsResponse(
 // 서버가 일부 필드를 반환하지 않을 경우 NPE 방지를 위해 모든 필드에 기본값 설정
 data class NewsListItem(
     @SerializedName("id") val id: Long = 0L,
+    @SerializedName("groupName") val groupName: String? = null,
     @SerializedName("categoryName") val categoryName: String = "",
     @SerializedName("title") val title: String = "",
     @SerializedName("publishedDate") val publishedDate: String = ""
