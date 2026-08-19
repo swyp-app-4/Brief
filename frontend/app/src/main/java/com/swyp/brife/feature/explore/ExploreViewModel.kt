@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class ExploreViewModel(
     private val searchHistoryStorage: SearchHistoryLocalStorage,
@@ -72,7 +74,11 @@ class ExploreViewModel(
                         async {
                             item.toArchiveNewsItem(
                                 detail = exploreRepository.getNewsDetail(item.id).getOrNull()
-                            )
+                            ).let { archiveItem ->
+                                archiveItem.copy(
+                                    time = formatExplorePublishedDate(archiveItem.time)
+                                )
+                            }
                         }
                     }.awaitAll()
 
@@ -81,7 +87,7 @@ class ExploreViewModel(
 
                     if (reset) {
                         val rawDate = pageResponse.content.firstOrNull()?.publishedDate ?: ""
-                        cachedLatestUpdatedTime = if (rawDate.length >= 10) rawDate.take(10) else rawDate
+                        cachedLatestUpdatedTime = formatExplorePublishedDate(rawDate)
                     }
 
                     latestPage = targetPage
@@ -182,7 +188,11 @@ class ExploreViewModel(
                         async {
                             item.toArchiveNewsItem(
                                 detail = exploreRepository.getNewsDetail(item.id).getOrNull()
-                            )
+                            ).let { archiveItem ->
+                                archiveItem.copy(
+                                    time = formatExplorePublishedDate(archiveItem.time)
+                                )
+                            }
                         }
                     }.awaitAll()
 
@@ -279,6 +289,12 @@ class ExploreViewModel(
 // - summary: API list 미제공 → ""
 // - company: categoryName으로 대체
 // - imageUrl: newsId (id) 기반 결정론적 이미지로 수정
+private val exploreDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+
+private fun formatExplorePublishedDate(value: String): String = runCatching {
+    LocalDate.parse(value.trim(), DateTimeFormatter.ISO_LOCAL_DATE).format(exploreDateFormatter)
+}.getOrDefault(value)
+
 private fun NewsListItem.toArchiveNewsItem(detail: NewsDetailResponse?) = ArchiveNewsItem(
     title = title.ifBlank { detail?.title?.ifBlank { "뉴스 #$id" } ?: "뉴스 #$id" },
     summary = "",
