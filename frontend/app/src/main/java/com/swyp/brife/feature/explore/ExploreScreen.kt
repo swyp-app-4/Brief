@@ -41,6 +41,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -164,6 +165,7 @@ private fun ExploreTopBar(
     onClearQuery: () -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     // 검색 활성화 시 키보드 자동 포커스
     LaunchedEffect(isSearchActive) {
@@ -223,7 +225,12 @@ private fun ExploreTopBar(
                         .focusRequester(focusRequester),
                     textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextSubtitle),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { onSearch(searchQuery) }),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            onSearch(searchQuery)
+                            focusManager.clearFocus()
+                        }
+                    ),
                     singleLine = true,
                     cursorBrush = SolidColor(CtaActive),
                     decorationBox = { innerTextField ->

@@ -47,6 +47,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -474,6 +475,7 @@ private fun ArchiveSearchTopBar(
     modifier: Modifier = Modifier
 ) {
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -532,7 +534,12 @@ private fun ArchiveSearchTopBar(
                     .focusRequester(focusRequester),
                 textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextSubtitle),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { onSearchSubmit() }),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        onSearchSubmit()
+                        focusManager.clearFocus()
+                    }
+                ),
                 singleLine = true,
                 cursorBrush = SolidColor(CtaActive),
                 decorationBox = { innerTextField ->
