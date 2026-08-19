@@ -14,6 +14,11 @@ data class LoginResponse(
     val isNewUser: Boolean
 )
 
+data class ApiErrorResponse(
+    val code: String? = null,
+    val message: String? = null
+)
+
 
 // GET /users/me 응답
 data class UserProfileResponse(

@@ -1,5 +1,7 @@
 package com.swyp.brife.data.repository
 
+import com.google.gson.Gson
+import com.swyp.brife.data.model.ApiErrorResponse
 import com.swyp.brife.data.model.GoogleLoginRequest
 import com.swyp.brife.data.model.LoginResponse
 import com.swyp.brife.data.model.LogoutRequest
@@ -8,6 +10,7 @@ import com.swyp.brife.data.model.ReissueResponse
 import com.swyp.brife.data.model.SocialAccessTokenRequest
 import com.swyp.brife.data.model.TermsRequest
 import com.swyp.brife.data.remote.api.AuthApiService
+import retrofit2.Response
 
 class AuthRepository(
     private val api: AuthApiService
@@ -18,7 +21,7 @@ class AuthRepository(
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("카카오 로그인 실패: ${response.code()}"))
+                socialLoginFailure("카카오", response)
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -31,7 +34,7 @@ class AuthRepository(
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("네이버 로그인 실패: ${response.code()}"))
+                socialLoginFailure("네이버", response)
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -44,7 +47,7 @@ class AuthRepository(
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("구글 로그인 실패: ${response.code()}"))
+                socialLoginFailure("구글", response)
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -94,5 +97,25 @@ class AuthRepository(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private fun socialLoginFailure(
+        providerName: String,
+        response: Response<LoginResponse>
+    ): Result<LoginResponse> {
+        val apiError = runCatching {
+            response.errorBody()?.string()?.let {
+                Gson().fromJson(it, ApiErrorResponse::class.java)
+            }
+        }.getOrNull()
+
+        val message = if (apiError?.code == "ACCOUNT_WITHDRAWN") {
+            apiError.message?.takeIf { it.isNotBlank() }
+                ?: "탈퇴 후 30일 동안 로그인하거나 재가입할 수 없습니다."
+        } else {
+            "$providerName 로그인 실패: ${response.code()}"
+        }
+
+        return Result.failure(Exception(message))
     }
 }
