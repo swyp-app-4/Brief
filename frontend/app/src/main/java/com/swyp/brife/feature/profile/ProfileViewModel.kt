@@ -27,6 +27,9 @@ class ProfileViewModel(
             val localInterests = onboardingLocalStorage.getSelectedCategoryIds()
                 .mapNotNull { categoryItemFromId(it) }
 
+            // 서버 프로필 응답을 기다리지 않고 최신 로컬 관심사를 먼저 표시한다.
+            _uiState.value = _uiState.value.copy(interests = localInterests)
+
             // isLoggedIn은 API 성공 여부가 아니라 토큰 존재 여부로 판단
             val loggedIn = userRepository.isLoggedIn()
             Log.d("ProfileDebug", "loadProfile isLoggedIn=$loggedIn")
@@ -48,13 +51,12 @@ class ProfileViewModel(
                         "ProfileDebug",
                         "loadProfile success hasName=${profile.nickname.isNotBlank()}, hasProfileImage=${profile.profileImageUrl != null}"
                     )
-                    _uiState.value = ProfileUiState(
+                    _uiState.value = _uiState.value.copy(
                         isLoggedIn = true,
                         userName = profile.nickname,
                         userEmail = profile.email,
                         profileImageUrl = profile.profileImageUrl,
-                        profileImageRes = profileImageResFromUrl(profile.profileImageUrl),
-                        interests = localInterests
+                        profileImageRes = profileImageResFromUrl(profile.profileImageUrl)
                     )
                 }
                 .onFailure {
@@ -63,11 +65,7 @@ class ProfileViewModel(
                         "loadProfile failure message=${it.message}, keepLoggedIn=true"
                     )
                     // API 실패해도 토큰이 있으면 로그인 상태 유지
-                    _uiState.value = ProfileUiState(
-                        isLoggedIn = true,
-                        profileImageRes = R.drawable.img_profile_avatar,
-                        interests = localInterests
-                    )
+                    _uiState.value = _uiState.value.copy(isLoggedIn = true)
                 }
         }
     }

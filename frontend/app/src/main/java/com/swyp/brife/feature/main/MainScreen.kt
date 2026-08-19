@@ -390,6 +390,7 @@ fun MainScreen(
             composable(NavRoutes.HOME) {
                 HomeRoute(
                     isLoggedIn = isLoggedIn,
+                    sessionVersion = sessionVersion,
                     reloadVersion = homeReloadVersion,
                     initialPage = initialHomeIndex, // ★ 로그인 전 보던 인덱스로 복귀
                     forceResetToThirdPageKey = forceResetHomePagerKey,
