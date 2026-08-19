@@ -8,6 +8,7 @@ import com.swyp.brife.data.remote.api.UserApiService
 import android.util.Log
 import com.swyp.brife.data.remote.api.AuthApiService
 import com.swyp.brife.data.model.ReissueRequest
+import com.swyp.brife.data.model.WithdrawalRequest
 
 class UserRepository(
     private val api: UserApiService,
@@ -149,11 +150,18 @@ class UserRepository(
         }
     }
 
-    suspend fun deleteUser(): Result<Unit> {
+    suspend fun deleteUser(naverRefreshToken: String? = null): Result<Unit> {
         val token = bearerToken()
             ?: return Result.failure(Exception("로그인이 필요합니다."))
         return try {
-            val response = api.deleteUser(token)
+            val response = if (naverRefreshToken != null) {
+                api.deleteNaverUser(
+                    authorization = token,
+                    request = WithdrawalRequest(naverRefreshToken)
+                )
+            } else {
+                api.deleteUser(token)
+            }
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {

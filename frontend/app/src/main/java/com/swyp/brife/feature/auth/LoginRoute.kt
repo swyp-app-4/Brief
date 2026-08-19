@@ -112,7 +112,6 @@ private fun loginWithNaver(
     val oauthLoginCallback = object : OAuthLoginCallback {
         override fun onSuccess() {
             val accessToken = NaverIdLoginSDK.getAccessToken()
-            Log.d("NaverLogin", "accessToken: $accessToken")
 
             if (accessToken != null) {
                 viewModel.loginWithNaver(accessToken)

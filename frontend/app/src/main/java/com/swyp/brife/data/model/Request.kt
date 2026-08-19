@@ -51,3 +51,7 @@ data class ReissueRequest(
 data class LogoutRequest(
     val refreshToken: String
 )
+
+data class WithdrawalRequest(
+    val naverRefreshToken: String
+)

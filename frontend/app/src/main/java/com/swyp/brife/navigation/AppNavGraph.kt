@@ -30,6 +30,7 @@ import com.swyp.brife.feature.auth.kakaoUnlink
 import com.swyp.brife.feature.auth.googleClearCredentialState
 import com.swyp.brife.feature.auth.naverDisconnect
 import com.swyp.brife.feature.auth.naverLogout
+import com.navercorp.nid.NaverIdLoginSDK
 import com.swyp.brife.feature.main.MainScreen
 import com.swyp.brife.feature.onboarding.OnboardingGuideScreen
 import com.swyp.brife.feature.onboarding.OnboardingInterestRoute
@@ -441,8 +442,18 @@ fun AppNavGraph(
                         withdrawErrorMessage = null
 
                         val currentMethod = authLocalStorage.getLoginMethod()
+                        val naverRefreshToken = if (currentMethod == "naver") {
+                            NaverIdLoginSDK.getRefreshToken()?.takeIf { it.isNotBlank() }
+                                ?: run {
+                                    isWithdrawing = false
+                                    withdrawErrorMessage = "회원탈퇴에 실패했습니다.\n잠시 후 다시 시도해주세요."
+                                    return@launch
+                                }
+                        } else {
+                            null
+                        }
                         // 1. 백엔드 탈퇴 성공 여부를 회원탈퇴 성공의 기준으로 사용
-                        val deleteResult = userRepository.deleteUser()
+                        val deleteResult = userRepository.deleteUser(naverRefreshToken)
                         if (deleteResult.isFailure) {
                             isWithdrawing = false
                             withdrawErrorMessage = "회원탈퇴에 실패했습니다.\n잠시 후 다시 시도해주세요."

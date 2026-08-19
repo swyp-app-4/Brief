@@ -24,7 +24,7 @@ object NetworkModule {
     private const val BASE_URL = "https://api.briefnews.asia/api/v1/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = HttpLoggingInterceptor.Level.BASIC
     }
 
     // TODO: /auth/reissue 연동 후 OkHttp Authenticator에 토큰 갱신 로직 추가 예정
