@@ -2,6 +2,7 @@ package com.brife.notification;
 
 import com.brife.news.dto.WidgetNewsDto;
 import com.brife.news.service.NewsService;
+import com.brife.notification.dto.TopNewsNotificationItem;
 import com.brife.notification.entity.UserNotificationSetting;
 import com.brife.notification.repository.UserNotificationSettingRepository;
 import com.brife.notification.service.NotificationSettingService;
@@ -12,8 +13,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -22,46 +24,55 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class NotificationSchedulerTest {
 
-    @Mock
-    private UserNotificationSettingRepository settingRepository;
-
-    @Mock
-    private NewsService newsService;
-
-    @Mock
-    private RecommendedNewsSelector recommendedNewsSelector;
-
-    @Mock
-    private NotificationSettingService notificationSettingService;
+    @Mock private UserNotificationSettingRepository settingRepository;
+    @Mock private NewsService newsService;
+    @Mock private NotificationSettingService notificationSettingService;
 
     private NotificationScheduler scheduler;
 
     @BeforeEach
     void setUp() {
-        scheduler = new NotificationScheduler(
-                settingRepository,
-                newsService,
-                recommendedNewsSelector,
-                notificationSettingService
+        scheduler = new NotificationScheduler(settingRepository, newsService, notificationSettingService);
+    }
+
+    @Test
+    void sendsOrderedTop5NewsAtEnabledTime() {
+        UserNotificationSetting setting = enabledAt8am(7L);
+        List<WidgetNewsDto> recommendations = List.of(
+                news(31L, "첫 번째"), news(32L, "두 번째"), news(33L, "세 번째"),
+                news(34L, "네 번째"), news(35L, "다섯 번째"), news(36L, "여섯 번째")
+        );
+        when(settingRepository.findAll()).thenReturn(List.of(setting));
+        when(newsService.getRecommendedNews(7L)).thenReturn(recommendations);
+
+        scheduler.sendAt8am();
+
+        verify(notificationSettingService).sendTop5NewsNotification(
+                7L,
+                NewsNotificationSlot.MORNING,
+                List.of(
+                        new TopNewsNotificationItem(31L, "첫 번째"),
+                        new TopNewsNotificationItem(32L, "두 번째"),
+                        new TopNewsNotificationItem(33L, "세 번째"),
+                        new TopNewsNotificationItem(34L, "네 번째"),
+                        new TopNewsNotificationItem(35L, "다섯 번째")
+                )
         );
     }
 
     @Test
-    void sendsSelectedNewsTitleAndIdAtEnabledTime() {
-        UserNotificationSetting setting = enabledAt8am(7L);
-        WidgetNewsDto selected = WidgetNewsDto.builder().id(31L).title("추천 기사 제목").build();
-        List<WidgetNewsDto> recommendations = List.of(selected);
+    void usesLunchSlotAtNoon() {
+        UserNotificationSetting setting = new UserNotificationSetting(7L);
+        setting.update(true, false, true, false, false);
         when(settingRepository.findAll()).thenReturn(List.of(setting));
-        when(newsService.getRecommendedNews(7L)).thenReturn(recommendations);
-        when(recommendedNewsSelector.select(recommendations)).thenReturn(Optional.of(selected));
+        when(newsService.getRecommendedNews(7L)).thenReturn(List.of(news(31L, "점심 뉴스")));
 
-        scheduler.sendAt8am();
+        scheduler.sendAt12pm();
 
-        verify(notificationSettingService).sendPushNotification(
+        verify(notificationSettingService).sendTop5NewsNotification(
                 7L,
-                "추천 기사 제목",
-                "지금 추천 뉴스를 확인해보세요.",
-                31L
+                NewsNotificationSlot.LUNCH,
+                List.of(new TopNewsNotificationItem(31L, "점심 뉴스"))
         );
     }
 
@@ -70,39 +81,35 @@ class NotificationSchedulerTest {
         UserNotificationSetting setting = enabledAt8am(7L);
         when(settingRepository.findAll()).thenReturn(List.of(setting));
         when(newsService.getRecommendedNews(7L)).thenReturn(List.of());
-        when(recommendedNewsSelector.select(List.of())).thenReturn(Optional.empty());
 
         scheduler.sendAt8am();
 
         verify(notificationSettingService, never())
-                .sendPushNotification(org.mockito.ArgumentMatchers.anyLong(),
-                        org.mockito.ArgumentMatchers.anyString(),
-                        org.mockito.ArgumentMatchers.anyString(),
-                        org.mockito.ArgumentMatchers.anyLong());
+                .sendTop5NewsNotification(anyLong(), any(), any());
     }
 
     @Test
     void continuesWithNextUserWhenOnePushFails() {
         UserNotificationSetting firstSetting = enabledAt8am(7L);
         UserNotificationSetting secondSetting = enabledAt8am(8L);
-        WidgetNewsDto firstNews = WidgetNewsDto.builder().id(31L).title("첫 기사").build();
-        WidgetNewsDto secondNews = WidgetNewsDto.builder().id(32L).title("둘째 기사").build();
-        List<WidgetNewsDto> firstRecommendations = List.of(firstNews);
-        List<WidgetNewsDto> secondRecommendations = List.of(secondNews);
+        List<TopNewsNotificationItem> firstItems = List.of(new TopNewsNotificationItem(31L, "첫 기사"));
+        List<TopNewsNotificationItem> secondItems = List.of(new TopNewsNotificationItem(32L, "둘째 기사"));
 
         when(settingRepository.findAll()).thenReturn(List.of(firstSetting, secondSetting));
-        when(newsService.getRecommendedNews(7L)).thenReturn(firstRecommendations);
-        when(newsService.getRecommendedNews(8L)).thenReturn(secondRecommendations);
-        when(recommendedNewsSelector.select(firstRecommendations)).thenReturn(Optional.of(firstNews));
-        when(recommendedNewsSelector.select(secondRecommendations)).thenReturn(Optional.of(secondNews));
+        when(newsService.getRecommendedNews(7L)).thenReturn(List.of(news(31L, "첫 기사")));
+        when(newsService.getRecommendedNews(8L)).thenReturn(List.of(news(32L, "둘째 기사")));
         doThrow(new RuntimeException("FCM failure"))
                 .when(notificationSettingService)
-                .sendPushNotification(7L, "첫 기사", "지금 추천 뉴스를 확인해보세요.", 31L);
+                .sendTop5NewsNotification(7L, NewsNotificationSlot.MORNING, firstItems);
 
         scheduler.sendAt8am();
 
         verify(notificationSettingService)
-                .sendPushNotification(8L, "둘째 기사", "지금 추천 뉴스를 확인해보세요.", 32L);
+                .sendTop5NewsNotification(8L, NewsNotificationSlot.MORNING, secondItems);
+    }
+
+    private WidgetNewsDto news(Long id, String title) {
+        return WidgetNewsDto.builder().id(id).title(title).build();
     }
 
     private UserNotificationSetting enabledAt8am(Long userId) {

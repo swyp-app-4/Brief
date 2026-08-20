@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -21,10 +22,15 @@ public class HomeController {
 
     private final NewsService newsService;
 
-    @Operation(summary = "관심사 기반 추천 뉴스", description = "JWT로 인증된 유저의 관심 카테고리 기준 Top5 뉴스 반환")
+    @Operation(summary = "관심사 기반 추천 뉴스",
+            description = "JWT로 인증된 유저의 관심 카테고리 기준 Top5 뉴스를 반환합니다. "
+                    + "알림 클릭 시 anchorNewsId를 전달하면 해당 뉴스를 첫 번째로 반환합니다.")
     @GetMapping("/recommended")
-    public ResponseEntity<List<WidgetNewsDto>> getRecommendedNews(Authentication authentication) {
+    public ResponseEntity<List<WidgetNewsDto>> getRecommendedNews(
+            Authentication authentication,
+            @RequestParam(required = false) Long anchorNewsId) {
         Long userId = Long.parseLong(authentication.getName());
-        return ResponseEntity.ok(newsService.getRecommendedNews(userId));
+        List<WidgetNewsDto> recommendations = newsService.getRecommendedNews(userId);
+        return ResponseEntity.ok(newsService.prioritizeRecommendation(recommendations, anchorNewsId));
     }
 }

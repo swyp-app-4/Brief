@@ -98,6 +98,40 @@ class NewsServiceTest {
                 .containsExactly(1L, 3L, 4L, 5L, 6L);
     }
 
+    @Test
+    void movesAnchoredRecommendationToFirstWithoutDuplicatingIt() {
+        List<WidgetNewsDto> recommendations = List.of(
+                WidgetNewsDto.builder().id(1L).build(),
+                WidgetNewsDto.builder().id(2L).build(),
+                WidgetNewsDto.builder().id(3L).build()
+        );
+
+        List<WidgetNewsDto> result = newsService.prioritizeRecommendation(recommendations, 2L);
+
+        assertThat(result).extracting(WidgetNewsDto::getId)
+                .containsExactly(2L, 1L, 3L);
+    }
+
+    @Test
+    void loadsMissingAnchorAndKeepsRecommendationSizeAtFive() {
+        Category category = category(11L, "Culture", group(1L, "News"));
+        SummarizedNews anchor = news(9L, category);
+        when(anchor.isSummarized()).thenReturn(true);
+        when(summarizedNewsRepository.findWithCategoryById(9L)).thenReturn(java.util.Optional.of(anchor));
+        List<WidgetNewsDto> recommendations = List.of(
+                WidgetNewsDto.builder().id(1L).build(),
+                WidgetNewsDto.builder().id(2L).build(),
+                WidgetNewsDto.builder().id(3L).build(),
+                WidgetNewsDto.builder().id(4L).build(),
+                WidgetNewsDto.builder().id(5L).build()
+        );
+
+        List<WidgetNewsDto> result = newsService.prioritizeRecommendation(recommendations, 9L);
+
+        assertThat(result).extracting(WidgetNewsDto::getId)
+                .containsExactly(9L, 1L, 2L, 3L, 4L);
+    }
+
     private CategoryGroup group(Long id, String name) {
         CategoryGroup group = mock(CategoryGroup.class);
         lenient().when(group.getId()).thenReturn(id);

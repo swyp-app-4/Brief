@@ -108,6 +108,32 @@ public class NewsService {
         return getTop5News(categoryIds, groupIds);
     }
 
+    public List<WidgetNewsDto> prioritizeRecommendation(List<WidgetNewsDto> recommendations, Long anchorNewsId) {
+        List<WidgetNewsDto> currentRecommendations = recommendations == null ? List.of() : recommendations;
+        if (anchorNewsId == null) {
+            return currentRecommendations;
+        }
+
+        WidgetNewsDto anchor = currentRecommendations.stream()
+                .filter(news -> anchorNewsId.equals(news.getId()))
+                .findFirst()
+                .orElseGet(() -> summarizedNewsRepository.findWithCategoryById(anchorNewsId)
+                        .filter(SummarizedNews::isSummarized)
+                        .map(news -> WidgetNewsDto.from(news, extractBodyPreview(news.getBody())))
+                        .orElse(null));
+        if (anchor == null) {
+            return currentRecommendations;
+        }
+
+        List<WidgetNewsDto> prioritized = new ArrayList<>(RECOMMENDATION_SIZE);
+        prioritized.add(anchor);
+        currentRecommendations.stream()
+                .filter(news -> !anchorNewsId.equals(news.getId()))
+                .limit(RECOMMENDATION_SIZE - 1L)
+                .forEach(prioritized::add);
+        return List.copyOf(prioritized);
+    }
+
     public NewsDetailDto getNewsDetail(Long id) {
         SummarizedNews news = summarizedNewsRepository.findWithCategoryById(id)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 뉴스입니다. id=" + id));
