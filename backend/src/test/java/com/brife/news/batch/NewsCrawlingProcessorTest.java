@@ -80,8 +80,9 @@ class NewsCrawlingProcessorTest {
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
         when(rawNewsRepository.existsByNaverUrl("old")).thenReturn(true);
         when(summarizationService.synthesize(eq("경제"), eq("경제"), anyList())).thenReturn(synthesis);
-        when(groundingValidator.selectRelevantArticles(eq(synthesis), anyList()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
+        when(groundingValidator.ground(eq(synthesis), anyList()))
+                .thenAnswer(invocation -> new SynthesisGroundingValidator.GroundedSynthesis(
+                        synthesis, invocation.getArgument(1)));
         when(objectMapper.writeValueAsString(synthesis.getSections())).thenReturn("[]");
 
         ProcessedNewsDto result = processor.process(group);

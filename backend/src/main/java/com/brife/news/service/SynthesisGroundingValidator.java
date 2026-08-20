@@ -3,15 +3,19 @@ package com.brife.news.service;
 import com.brife.news.dto.RawArticleDto;
 import com.brife.news.dto.SectionDto;
 import com.brife.news.dto.SynthesisResult;
+import com.brife.news.exception.InvalidSynthesisResultException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 @Component
 public class SynthesisGroundingValidator {
@@ -62,6 +66,46 @@ public class SynthesisGroundingValidator {
 
     public List<RawArticleDto> selectRelevantArticles(SynthesisResult result, List<RawArticleDto> articles) {
         return selectArticles(articles, result.getRelevantArticleIndexes());
+    }
+
+    public GroundedSynthesis ground(SynthesisResult result, List<RawArticleDto> articles) {
+        String failureReason = findFailureReason(result, articles);
+        if (failureReason != null) {
+            throw new InvalidSynthesisResultException(failureReason);
+        }
+
+        List<Integer> originalIndexes = result.getRelevantArticleIndexes().stream()
+                .sorted()
+                .toList();
+        Map<Integer, Integer> remappedIndexes = new LinkedHashMap<>();
+        for (int i = 0; i < originalIndexes.size(); i++) {
+            remappedIndexes.put(originalIndexes.get(i), i + 1);
+        }
+
+        for (SectionDto section : result.getSections()) {
+            List<Integer> remappedSupports = section.getSupportingArticleIndexes().stream()
+                    .map(index -> {
+                        Integer remapped = remappedIndexes.get(index);
+                        if (remapped == null) {
+                            throw new InvalidSynthesisResultException(
+                                    "섹션 근거 기사가 relevantArticleIndexes에 포함되지 않습니다. index=" + index);
+                        }
+                        return remapped;
+                    })
+                    .toList();
+            section.setSupportingArticleIndexes(remappedSupports);
+        }
+
+        List<RawArticleDto> relevantArticles = selectArticles(articles, originalIndexes);
+        result.setRelevantArticleIndexes(
+                IntStream.rangeClosed(1, relevantArticles.size()).boxed().toList());
+
+        String remappedFailureReason = findFailureReason(result, relevantArticles);
+        if (remappedFailureReason != null) {
+            throw new InvalidSynthesisResultException(
+                    "근거 기사 인덱스 재매핑 후 검증 실패: " + remappedFailureReason);
+        }
+        return new GroundedSynthesis(result, relevantArticles);
     }
 
     private String validateIndexes(List<Integer> indexes, int articleCount, int minimum, String fieldName) {
@@ -129,5 +173,11 @@ public class SynthesisGroundingValidator {
 
     private String safe(String text) {
         return text == null ? "" : text;
+    }
+
+    public record GroundedSynthesis(
+            SynthesisResult result,
+            List<RawArticleDto> relevantArticles
+    ) {
     }
 }

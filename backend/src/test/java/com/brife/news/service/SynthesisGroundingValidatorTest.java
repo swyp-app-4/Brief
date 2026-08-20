@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SynthesisGroundingValidatorTest {
 
@@ -55,6 +56,52 @@ class SynthesisGroundingValidatorTest {
         assertThat(validator.findFailureReason(result, List.of(
                 article("하나", "내용"), article("둘", "내용"), article("셋", "내용"))))
                 .contains("relevantArticleIndexes에 포함되지 않습니다");
+    }
+
+    @Test
+    void remapsSupportingIndexesToStoredArticleOrder() {
+        List<RawArticleDto> articles = List.of(
+                article("기사 1", "공통 근거"),
+                article("기사 2", "공통 근거"),
+                article("기사 3", "공통 근거"),
+                article("기사 4", "공통 근거"),
+                article("기사 5", "공통 근거"),
+                article("기사 6", "공통 근거"),
+                article("기사 7", "공통 근거"),
+                article("기사 8", "공통 근거"),
+                article("기사 9", "공통 근거"),
+                article("기사 10", "공통 근거"));
+        SynthesisResult result = result("제목", "공통 근거", List.of(10, 2, 6, 5));
+        result.setSections(List.of(
+                section("핵심", "공통 근거", List.of(2, 5)),
+                section("영향", "공통 근거", List.of(5, 10)),
+                section("전망", "공통 근거", List.of(6))));
+
+        SynthesisGroundingValidator.GroundedSynthesis grounded = validator.ground(result, articles);
+
+        assertThat(grounded.relevantArticles())
+                .extracting(RawArticleDto::getTitle)
+                .containsExactly("기사 2", "기사 5", "기사 6", "기사 10");
+        assertThat(grounded.result().getRelevantArticleIndexes()).containsExactly(1, 2, 3, 4);
+        assertThat(grounded.result().getSections().get(0).getSupportingArticleIndexes())
+                .containsExactly(1, 2);
+        assertThat(grounded.result().getSections().get(1).getSupportingArticleIndexes())
+                .containsExactly(2, 4);
+        assertThat(grounded.result().getSections().get(2).getSupportingArticleIndexes())
+                .containsExactly(3);
+    }
+
+    @Test
+    void rejectsGroundingWhenSectionReferencesUnstoredArticle() {
+        SynthesisResult result = result("제목", "요약", List.of(1, 2));
+        result.setSections(List.of(
+                section("핵심", "내용", List.of(1)),
+                section("영향", "내용", List.of(3)),
+                section("전망", "내용", List.of(2))));
+
+        assertThatThrownBy(() -> validator.ground(result, List.of(
+                article("하나", "내용"), article("둘", "내용"), article("셋", "내용"))))
+                .hasMessageContaining("relevantArticleIndexes에 포함되지 않습니다");
     }
 
     private SynthesisResult result(String title, String summary, List<Integer> relevantIndexes) {

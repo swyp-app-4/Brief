@@ -76,11 +76,15 @@ public class ArticleClusteringService {
 
         Set<String> stopWords = new HashSet<>(BASE_STOP_WORDS);
         if (keyword != null && !keyword.isBlank()) {
-            stopWords.add(keyword.trim());
+            Arrays.stream(keyword.split("\\|"))
+                    .flatMap(part -> Arrays.stream(part.trim().split("\\s+")))
+                    .map(String::strip)
+                    .filter(token -> !token.isBlank())
+                    .forEach(stopWords::add);
         }
 
         List<Set<String>> eventWords = articles.stream()
-                .map(article -> eventTokens(article, stopWords))
+                .<Set<String>>map(article -> new HashSet<>(tokenize(article.getTitle(), stopWords)))
                 .toList();
 
         List<RawArticleDto> bestCluster = Collections.emptyList();
@@ -142,15 +146,6 @@ public class ArticleClusteringService {
         Set<String> intersection = new HashSet<>(left);
         intersection.retainAll(right);
         return intersection.size();
-    }
-
-    private Set<String> eventTokens(RawArticleDto article, Set<String> stopWords) {
-        Set<String> tokens = new HashSet<>(tokenize(article.getTitle(), stopWords));
-        String description = article.getDescription();
-        if (description != null && !description.isBlank()) {
-            tokens.addAll(tokenize(description.substring(0, Math.min(description.length(), 240)), stopWords));
-        }
-        return tokens;
     }
 
     private List<RawArticleDto> limitSources(List<RawArticleDto> cluster) {

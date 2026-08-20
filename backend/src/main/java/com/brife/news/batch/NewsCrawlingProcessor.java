@@ -65,12 +65,21 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
             batchMetrics.incrementSkippedClusterCount();
             return null;
         }
+        SynthesisGroundingValidator.GroundedSynthesis grounded;
+        try {
+            grounded = groundingValidator.ground(result, newArticles);
+        } catch (InvalidSynthesisResultException e) {
+            log.warn("[Processor] 스킵 - 근거 기사 정합성 검증 실패. category={}, reason={}",
+                    group.getCategoryName(), e.getMessage());
+            batchMetrics.incrementSkippedClusterCount();
+            return null;
+        }
+        result = grounded.result();
+        List<RawArticleDto> relevantArticles = grounded.relevantArticles();
         if (duplicateNewsDetectionService.isDuplicateWithoutNewInformation(result)) {
             batchMetrics.incrementSkippedClusterCount();
             return null;
         }
-
-        List<RawArticleDto> relevantArticles = groundingValidator.selectRelevantArticles(result, newArticles);
 
         String sectionsJson;
         try {

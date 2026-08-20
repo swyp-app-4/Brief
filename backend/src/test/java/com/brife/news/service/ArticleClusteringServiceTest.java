@@ -101,6 +101,31 @@ class ArticleClusteringServiceTest {
         assertThat(result).isEmpty();
     }
 
+    @Test
+    @DisplayName("복합 검색어는 각 단어를 개별 불용어로 처리")
+    void cluster_ignores_each_composite_keyword_token() {
+        List<RawArticleDto> articles = List.of(
+                article("국방부 외교부 예산 협의"),
+                article("국방부 외교부 장관 회의"),
+                article("국방부 외교부 해외 공관"));
+
+        List<RawArticleDto> result = clusteringService.cluster(articles, "국방부|외교부", 3);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("본문의 일반 표현만 같은 서로 다른 사건은 하나로 묶지 않음")
+    void cluster_does_not_use_description_to_merge_unrelated_events() {
+        String genericBody = "정부가 시장 안정을 위해 지원 정책을 확대할 예정입니다";
+        List<RawArticleDto> articles = List.of(
+                articleWithDescription("원달러 환율 하락", genericBody),
+                articleWithDescription("지역화폐 인센티브 지급", genericBody),
+                articleWithDescription("장기요양보험료 인상", genericBody));
+
+        assertThat(clusteringService.cluster(articles, "경제", 3)).isEmpty();
+    }
+
     // ── cluster() 미달 케이스 ────────────────────────────────────────────────────
 
     @Test
