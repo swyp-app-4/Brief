@@ -5,16 +5,23 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.brife.user.domain.AppUser;
 
+import jakarta.persistence.LockModeType;
+
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     Optional<AppUser> findByProviderAndProviderId(String provider, String providerId);
     boolean existsByProviderAndProviderId(String provider, String providerId);
     List<AppUser> findByDeletedAtIsNotNullAndDeletedAtBefore(LocalDateTime cutoff);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM AppUser u WHERE u.id = :userId")
+    Optional<AppUser> findByIdForUpdate(@Param("userId") Long userId);
 
     @Query("""
             SELECT u.id FROM AppUser u

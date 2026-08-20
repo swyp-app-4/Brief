@@ -22,7 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,27 +66,13 @@ public class ProfileService {
     @Transactional
     @CacheEvict(value = "top5News", key = "#userId")
     public void saveInterests(Long userId, InterestRequest request) {
-        if (userInterestRepository.existsByUserId(userId)) {
-            throw new IllegalStateException("이미 관심사가 설정되어 있습니다. 재설정은 PUT을 사용하세요.");
-        }
-
-        AppUser user = appUserRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
-
-        List<UserInterest> interests = buildInterests(user, request);
-        userInterestRepository.saveAll(interests);
+        replaceInterests(userId, request);
     }
 
     @Transactional
     @CacheEvict(value = "top5News", key = "#userId")
     public void resetInterests(Long userId, InterestRequest request) {
-        AppUser user = appUserRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
-
-        userInterestRepository.deleteByUserId(userId);
-
-        List<UserInterest> interests = buildInterests(user, request);
-        userInterestRepository.saveAll(interests);
+        replaceInterests(userId, request);
     }
 
     @Transactional
@@ -110,25 +101,112 @@ public class ProfileService {
         }
     }
 
-    private List<UserInterest> buildInterests(AppUser user, InterestRequest request) {
-        List<UserInterest> result = new ArrayList<>();
-
-        if (request.getCategoryIds() != null) {
-            request.getCategoryIds().forEach(categoryId -> {
-                Category category = categoryRepository.findById(categoryId)
-                        .orElseThrow(() -> new RuntimeException("카테고리 없음: " + categoryId));
-                result.add(UserInterest.builder().user(user).category(category).build());
-            });
+    private void replaceInterests(Long userId, InterestRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("관심사 요청이 필요합니다.");
         }
 
-        if (request.getGroupIds() != null) {
-            request.getGroupIds().forEach(groupId -> {
-                CategoryGroup group = categoryGroupRepository.findById(groupId)
-                        .orElseThrow(() -> new RuntimeException("대분류 없음: " + groupId));
-                result.add(UserInterest.builder().user(user).categoryGroup(group).build());
-            });
+        AppUser user = appUserRepository.findByIdForUpdate(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+        Set<Long> requestedCategoryIds = normalizeIds(request.getCategoryIds(), "카테고리");
+        Set<Long> requestedGroupIds = normalizeIds(request.getGroupIds(), "대분류");
+        Map<Long, Category> categories = loadCategories(requestedCategoryIds);
+        Map<Long, CategoryGroup> groups = loadCategoryGroups(requestedGroupIds);
+
+        List<UserInterest> existingInterests = userInterestRepository.findByUserId(userId);
+        Set<Long> retainedCategoryIds = new LinkedHashSet<>();
+        Set<Long> retainedGroupIds = new LinkedHashSet<>();
+        List<UserInterest> interestsToDelete = existingInterests.stream()
+                .filter(interest -> shouldDelete(
+                        interest,
+                        requestedCategoryIds,
+                        requestedGroupIds,
+                        retainedCategoryIds,
+                        retainedGroupIds))
+                .toList();
+
+        if (!interestsToDelete.isEmpty()) {
+            userInterestRepository.deleteAllInBatch(interestsToDelete);
         }
 
-        return result;
+        List<UserInterest> interestsToAdd = buildMissingInterests(
+                user,
+                requestedCategoryIds,
+                requestedGroupIds,
+                retainedCategoryIds,
+                retainedGroupIds,
+                categories,
+                groups);
+        if (!interestsToAdd.isEmpty()) {
+            userInterestRepository.saveAll(interestsToAdd);
+        }
+    }
+
+    private Set<Long> normalizeIds(List<Long> ids, String type) {
+        if (ids == null) {
+            return Set.of();
+        }
+        if (ids.stream().anyMatch(java.util.Objects::isNull)) {
+            throw new IllegalArgumentException(type + " ID에 null을 포함할 수 없습니다.");
+        }
+        return new LinkedHashSet<>(ids);
+    }
+
+    private Map<Long, Category> loadCategories(Set<Long> requestedIds) {
+        Map<Long, Category> categories = categoryRepository.findAllById(requestedIds).stream()
+                .collect(Collectors.toMap(Category::getId, Function.identity()));
+        validateIds(requestedIds, categories, "카테고리");
+        return categories;
+    }
+
+    private Map<Long, CategoryGroup> loadCategoryGroups(Set<Long> requestedIds) {
+        Map<Long, CategoryGroup> groups = categoryGroupRepository.findAllById(requestedIds).stream()
+                .collect(Collectors.toMap(CategoryGroup::getId, Function.identity()));
+        validateIds(requestedIds, groups, "대분류");
+        return groups;
+    }
+
+    private void validateIds(Set<Long> requestedIds, Map<Long, ?> entities, String type) {
+        if (entities.size() == requestedIds.size()) {
+            return;
+        }
+        Set<Long> missingIds = new LinkedHashSet<>(requestedIds);
+        missingIds.removeAll(entities.keySet());
+        throw new IllegalArgumentException("존재하지 않는 " + type + " ID: " + missingIds);
+    }
+
+    private boolean shouldDelete(UserInterest interest,
+                                 Set<Long> requestedCategoryIds,
+                                 Set<Long> requestedGroupIds,
+                                 Set<Long> retainedCategoryIds,
+                                 Set<Long> retainedGroupIds) {
+        if (interest.getCategory() != null) {
+            Long categoryId = interest.getCategory().getId();
+            return !requestedCategoryIds.contains(categoryId) || !retainedCategoryIds.add(categoryId);
+        }
+        if (interest.getCategoryGroup() != null) {
+            Long groupId = interest.getCategoryGroup().getId();
+            return !requestedGroupIds.contains(groupId) || !retainedGroupIds.add(groupId);
+        }
+        return true;
+    }
+
+    private List<UserInterest> buildMissingInterests(AppUser user,
+                                                     Set<Long> requestedCategoryIds,
+                                                     Set<Long> requestedGroupIds,
+                                                     Set<Long> retainedCategoryIds,
+                                                     Set<Long> retainedGroupIds,
+                                                     Map<Long, Category> categories,
+                                                     Map<Long, CategoryGroup> groups) {
+        List<UserInterest> interests = new ArrayList<>();
+        requestedCategoryIds.stream()
+                .filter(id -> !retainedCategoryIds.contains(id))
+                .forEach(id -> interests.add(
+                        UserInterest.builder().user(user).category(categories.get(id)).build()));
+        requestedGroupIds.stream()
+                .filter(id -> !retainedGroupIds.contains(id))
+                .forEach(id -> interests.add(
+                        UserInterest.builder().user(user).categoryGroup(groups.get(id)).build()));
+        return List.copyOf(interests);
     }
 }
