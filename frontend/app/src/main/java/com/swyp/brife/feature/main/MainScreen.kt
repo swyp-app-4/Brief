@@ -24,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -64,6 +65,8 @@ import com.swyp.brife.feature.widget.WidgetRefreshHelper
 import com.swyp.brife.feature.widget.WidgetActionReceiver
 
 import kotlinx.coroutines.launch
+
+private val GuestArchivePreviewBlurRadius = 12.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -796,7 +799,11 @@ private fun GuestLoginPreviewOverlay(
     Box(modifier = Modifier.fillMaxSize()) {
         when (previewRoute) {
             NavRoutes.ARCHIVE -> {
-                Column(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .blur(GuestArchivePreviewBlurRadius)
+                ) {
                     ArchivePreviewTopBar()
 
                     ArchiveScreen(
