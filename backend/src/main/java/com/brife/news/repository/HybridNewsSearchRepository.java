@@ -19,6 +19,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HybridNewsSearchRepository {
 
+    private static final int MIN_CANDIDATE_LIMIT = 100;
+    private static final int MAX_CANDIDATE_LIMIT = 300;
+    private static final int KEYWORD_BRANCH_LIMIT = 300;
+
     private final NamedParameterJdbcTemplate namedJdbc;
     private final JdbcTemplate jdbc;
 
@@ -31,17 +35,41 @@ public class HybridNewsSearchRepository {
                 ORDER BY ne.embedding <=> :queryVector::vector
                 LIMIT :semanticLimit
             ),
+            keyword_candidate_ids AS MATERIALIZED (
+                (SELECT sn.id AS news_id
+                 FROM summarized_news sn
+                 WHERE sn.is_summarized = true
+                   AND sn.title % :keyword
+                 ORDER BY similarity(sn.title, :keyword) DESC,
+                          COALESCE(sn.published_at, sn.published_date::timestamp) DESC,
+                          sn.id DESC
+                 LIMIT :keywordBranchLimit)
+                UNION
+                (SELECT sn.id AS news_id
+                 FROM summarized_news sn
+                 WHERE sn.is_summarized = true
+                   AND sn.title ILIKE '%' || :keyword || '%'
+                 ORDER BY COALESCE(sn.published_at, sn.published_date::timestamp) DESC,
+                          sn.id DESC
+                 LIMIT :keywordBranchLimit)
+                UNION
+                (SELECT sn.id AS news_id
+                 FROM summarized_news sn
+                 WHERE sn.is_summarized = true
+                   AND sn.summary ILIKE '%' || :keyword || '%'
+                 ORDER BY COALESCE(sn.published_at, sn.published_date::timestamp) DESC,
+                          sn.id DESC
+                 LIMIT :keywordBranchLimit)
+            ),
             keyword_candidates AS (
                 SELECT sn.id AS news_id,
                        GREATEST(
                            similarity(sn.title, :keyword),
                            CASE WHEN sn.summary ILIKE '%' || :keyword || '%' THEN 0.4 ELSE 0.0 END
                        ) AS keyword_score
-                FROM summarized_news sn
+                FROM keyword_candidate_ids candidate
+                JOIN summarized_news sn ON sn.id = candidate.news_id
                 WHERE sn.is_summarized = true
-                  AND (sn.title % :keyword
-                       OR sn.title ILIKE '%' || :keyword || '%'
-                       OR sn.summary ILIKE '%' || :keyword || '%')
                 ORDER BY keyword_score DESC, sn.published_date DESC, sn.id DESC
                 LIMIT :keywordLimit
             ),
@@ -80,17 +108,23 @@ public class HybridNewsSearchRepository {
         int fetchSize = pageable.getPageSize() + 1;
         int offset = (int) pageable.getOffset();
         // 깊은 페이지에서 후보가 잘리지 않도록 동적으로 계산 (최소 100, 최대 300)
-        int semanticLimit = Math.min(Math.max(offset + pageable.getPageSize() + 1, 100), 300);
-        int keywordLimit  = Math.min(Math.max(offset + pageable.getPageSize() + 1, 100), 300);
+        int semanticLimit = Math.min(
+                Math.max(offset + pageable.getPageSize() + 1, MIN_CANDIDATE_LIMIT),
+                MAX_CANDIDATE_LIMIT);
+        int keywordLimit = Math.min(
+                Math.max(offset + pageable.getPageSize() + 1, MIN_CANDIDATE_LIMIT),
+                MAX_CANDIDATE_LIMIT);
 
-        // SET LOCAL은 현재 트랜잭션 내 커넥션에만 적용 → % 연산자 GIN 인덱스 필터 임계값 설정
+        // SET LOCAL은 현재 트랜잭션에 바인딩된 커넥션에만 적용됩니다.
         jdbc.execute("SET LOCAL pg_trgm.similarity_threshold = 0.25");
+        jdbc.execute("SET LOCAL hnsw.ef_search = " + semanticLimit);
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("queryVector", toVectorString(queryVector))
                 .addValue("keyword", keyword)
                 .addValue("semanticLimit", semanticLimit)
                 .addValue("keywordLimit", keywordLimit)
+                .addValue("keywordBranchLimit", KEYWORD_BRANCH_LIMIT)
                 .addValue("limit", fetchSize)
                 .addValue("offset", offset);
 

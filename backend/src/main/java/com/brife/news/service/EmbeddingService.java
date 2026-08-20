@@ -33,15 +33,18 @@ public class EmbeddingService {
     private final ObjectMapper objectMapper;
     private final String apiKey;
     private final RateLimiter embeddingRateLimiter;
+    private final SearchMetrics searchMetrics;
 
     public EmbeddingService(@Qualifier("vertexAiRestTemplate") RestTemplate restTemplate,
                             ObjectMapper objectMapper,
                             @Value("${gemini.api.key}") String apiKey,
-                            RateLimiterRegistry rateLimiterRegistry) {
+                            RateLimiterRegistry rateLimiterRegistry,
+                            SearchMetrics searchMetrics) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.apiKey = apiKey;
         this.embeddingRateLimiter = rateLimiterRegistry.rateLimiter("embedding");
+        this.searchMetrics = searchMetrics;
     }
 
     public float[] embed(String text) throws Exception {
@@ -56,12 +59,15 @@ public class EmbeddingService {
         return embedInternal(text, "RETRIEVAL_QUERY");
     }
 
-    @Cacheable(value = "queryEmbeddings", key = "#text")
+    @Cacheable(value = "queryEmbeddings", key = "#text", sync = true)
     public float[] embedQueryCached(String text) {
+        long startedAt = System.nanoTime();
         try {
             return embedForQuery(text);
         } catch (Exception e) {
             throw new RuntimeException("검색어 임베딩 생성 실패: " + e.getMessage(), e);
+        } finally {
+            searchMetrics.recordEmbeddingApi(startedAt);
         }
     }
 

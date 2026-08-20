@@ -16,30 +16,65 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class SearchService {
+    private static final int MAX_KEYWORD_LENGTH = 100;
+
     private final SummarizedNewsRepository summarizedNewsRepository;
     private final HybridNewsSearchRepository hybridSearchRepository;
     private final EmbeddingService embeddingService;
+    private final SearchMetrics searchMetrics;
 
     @Transactional(readOnly = true)
     public Slice<NewsSearchResponse> getSummarizedNewsByKeyword(String keyword, Pageable pageable) {
-        keyword = keyword.trim();
-        if (keyword.isBlank()) {
+        long totalStartedAt = System.nanoTime();
+        try {
+            keyword = normalizeAndValidate(keyword);
+
+            try {
+                long embeddingStartedAt = System.nanoTime();
+                float[] queryVector;
+                try {
+                    queryVector = embeddingService.embedQueryCached(keyword);
+                } finally {
+                    searchMetrics.recordEmbeddingLookup(embeddingStartedAt);
+                }
+
+                long databaseStartedAt = System.nanoTime();
+                try {
+                    return hybridSearchRepository.search(keyword, queryVector, pageable);
+                } finally {
+                    searchMetrics.recordHybridDatabase(databaseStartedAt);
+                }
+            } catch (Exception e) {
+                searchMetrics.incrementFallback();
+                log.warn("[Search] hybrid search failed, fallback to keyword search - keyword={}, error={}",
+                        keyword, e.getMessage());
+                long fallbackStartedAt = System.nanoTime();
+                try {
+                    return summarizedNewsRepository.searchByKeyword(keyword,
+                                    PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()))
+                            .map(NewsSearchResponse::from);
+                } finally {
+                    searchMetrics.recordFallbackDatabase(fallbackStartedAt);
+                }
+            }
+        } finally {
+            searchMetrics.recordTotal(totalStartedAt);
+        }
+    }
+
+    private String normalizeAndValidate(String keyword) {
+        if (keyword == null || keyword.trim().isBlank()) {
             throw new InvalidSearchKeywordException("검색어를 입력해주세요.");
         }
-        if (!keyword.matches("[가-힣a-zA-Z0-9 ]+")) {
+
+        String normalized = keyword.trim().replaceAll("\\s+", " ");
+        if (normalized.length() > MAX_KEYWORD_LENGTH) {
+            throw new InvalidSearchKeywordException("검색어는 100자 이하로 입력해주세요.");
+        }
+        if (!normalized.matches("[가-힣a-zA-Z0-9 ]+")) {
             throw new InvalidSearchKeywordException("특수문자를 제외한 검색어를 입력해주세요.");
         }
-
-        try {
-            float[] queryVector = embeddingService.embedQueryCached(keyword);
-            return hybridSearchRepository.search(keyword, queryVector, pageable);
-        } catch (Exception e) {
-            log.warn("[Search] hybrid search failed, fallback to keyword search - keyword={}, error={}",
-                    keyword, e.getMessage());
-            return summarizedNewsRepository.searchByKeyword(keyword,
-                    PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()))
-                    .map(NewsSearchResponse::from);
-        }
+        return normalized;
     }
 
     @Transactional(readOnly = true)
