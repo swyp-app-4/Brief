@@ -870,8 +870,21 @@ fun ArchiveFolderCard(
         }
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            content = content
-        )
+            modifier = Modifier.fillMaxSize()
+        ) {
+            content()
+
+            if (selected) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_aftercheck),
+                    contentDescription = "선택됨",
+                    tint = Color.Unspecified,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .size(24.dp)
+                )
+            }
+        }
     }
 }
