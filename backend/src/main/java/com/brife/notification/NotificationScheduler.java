@@ -1,6 +1,7 @@
 package com.brife.notification;
 
 import com.brife.news.dto.WidgetNewsDto;
+import com.brife.news.batch.BatchMetadataHolder;
 import com.brife.news.service.NewsService;
 import com.brife.notification.dto.TopNewsNotificationItem;
 import com.brife.notification.entity.UserNotificationSetting;
@@ -11,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -19,9 +22,12 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 public class NotificationScheduler {
 
+    private static final Duration MAX_EXPECTED_BATCH_AGE = Duration.ofHours(4);
+
     private final UserNotificationSettingRepository userNotificationSettingRepository;
     private final NewsService newsService;
     private final NotificationSettingService notificationSettingService;
+    private final BatchMetadataHolder batchMetadataHolder;
 
     @Scheduled(cron = "0 0 8 * * *", zone = "Asia/Seoul")
     public void sendAt8am() {
@@ -44,6 +50,7 @@ public class NotificationScheduler {
     }
 
     private void sendToUsers(Predicate<UserNotificationSetting> filter, NewsNotificationSlot slot) {
+        logBatchFreshness(slot);
         List<UserNotificationSetting> settings = userNotificationSettingRepository.findAll();
         for (UserNotificationSetting setting : settings) {
             if (!filter.test(setting)) {
@@ -68,6 +75,25 @@ public class NotificationScheduler {
                 log.error("Push notification failed. userId={}", userId, e);
             }
         }
+    }
+
+    private void logBatchFreshness(NewsNotificationSlot slot) {
+        if (batchMetadataHolder.isBatchRunning()) {
+            log.warn("News batch is still running at notification time. Existing cached recommendations " +
+                            "will remain available until completion. slot={}, startedAt={}",
+                    slot, batchMetadataHolder.getLastBatchStartedAt().orElse(null));
+        }
+
+        batchMetadataHolder.getLastBatchCompletedAt().ifPresentOrElse(completedAt -> {
+            Duration age = Duration.between(completedAt, LocalDateTime.now());
+            if (age.compareTo(MAX_EXPECTED_BATCH_AGE) > 0) {
+                log.warn("Latest completed news batch is stale at notification time. slot={}, completedAt={}, ageMinutes={}",
+                        slot, completedAt, age.toMinutes());
+            } else {
+                log.info("News notification uses data from a recent completed batch. slot={}, completedAt={}, ageMinutes={}",
+                        slot, completedAt, age.toMinutes());
+            }
+        }, () -> log.warn("Completed news batch metadata is unavailable. The application may have restarted. slot={}", slot));
     }
 
     private TopNewsNotificationItem toNotificationItem(WidgetNewsDto news) {

@@ -1,6 +1,7 @@
 package com.brife.notification;
 
 import com.brife.news.dto.WidgetNewsDto;
+import com.brife.news.batch.BatchMetadataHolder;
 import com.brife.news.service.NewsService;
 import com.brife.notification.dto.TopNewsNotificationItem;
 import com.brife.notification.entity.UserNotificationSetting;
@@ -27,12 +28,14 @@ class NotificationSchedulerTest {
     @Mock private UserNotificationSettingRepository settingRepository;
     @Mock private NewsService newsService;
     @Mock private NotificationSettingService notificationSettingService;
+    @Mock private BatchMetadataHolder batchMetadataHolder;
 
     private NotificationScheduler scheduler;
 
     @BeforeEach
     void setUp() {
-        scheduler = new NotificationScheduler(settingRepository, newsService, notificationSettingService);
+        scheduler = new NotificationScheduler(
+                settingRepository, newsService, notificationSettingService, batchMetadataHolder);
     }
 
     @Test

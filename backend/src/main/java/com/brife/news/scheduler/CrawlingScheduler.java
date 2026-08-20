@@ -13,7 +13,7 @@ public class CrawlingScheduler {
 
     private final NewsBatchExecutionService newsBatchExecutionService;
 
-    @Scheduled(cron = "0 0 0/6 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 30 5,9,15,19 * * *", zone = "Asia/Seoul")
     public void runCrawling() {
         try {
             log.info("[Scheduler] Starting news crawling job");

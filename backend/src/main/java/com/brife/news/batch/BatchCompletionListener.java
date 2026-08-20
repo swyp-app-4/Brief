@@ -32,12 +32,16 @@ public class BatchCompletionListener implements JobExecutionListener {
 
     @Override
     public void afterJob(JobExecution jobExecution) {
+        batchMetadataHolder.markFinished();
+
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
+            LocalDateTime completedAt = LocalDateTime.now();
+            batchMetadataHolder.updateCompletedAt(completedAt);
             Cache top5NewsCache = cacheManager.getCache("top5News");
             if (top5NewsCache != null) top5NewsCache.clear();
             Cache searchSuggestionsCache = cacheManager.getCache("searchSuggestions");
             if (searchSuggestionsCache != null) searchSuggestionsCache.clear();
-            log.info("[배치] 완료 → Top5 캐시, 검색어 자동완성 캐시 초기화");
+            log.info("[배치] 완료 → Top5 캐시, 검색어 자동완성 캐시 초기화. completedAt={}", completedAt);
         } else {
             log.warn("[배치] 비정상 종료 (status={}) → 캐시 유지", jobExecution.getStatus());
         }
