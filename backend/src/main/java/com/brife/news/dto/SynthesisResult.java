@@ -14,5 +14,6 @@ public class SynthesisResult {
     private String categoryReason;
     private String title;
     private String summary;
+    private List<Integer> relevantArticleIndexes;
     private List<SectionDto> sections;
 }

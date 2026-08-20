@@ -43,10 +43,11 @@ public class SummarizationService {
               "categoryReason": "...",
               "title": "...",
               "summary": "...",
+              "relevantArticleIndexes": [1, 2],
               "sections": [
-                { "heading": "...", "content": "..." },
-                { "heading": "...", "content": "..." },
-                { "heading": "...", "content": "..." }
+                { "heading": "...", "content": "...", "supportingArticleIndexes": [1] },
+                { "heading": "...", "content": "...", "supportingArticleIndexes": [1, 2] },
+                { "heading": "...", "content": "...", "supportingArticleIndexes": [2] }
               ]
             }
 
@@ -62,7 +63,11 @@ public class SummarizationService {
                - 어미는 친절한 경어체(~됩니다, ~했습니다, ~예정입니다). 명사형 종결('~함', '~됨') 및 평어체('~했다') 금지.
                - 국내 파급 효과가 있으면 반드시 1줄 포함.
 
-            4. sections (본문 단락 - 반드시 3개):
+            4. relevantArticleIndexes:
+               - 제목·요약·본문 작성에 실제로 사용한 기사 번호를 1부터 시작하는 정수로 작성.
+               - 최소 2개 이상의 서로 다른 기사를 포함하고 관련 없는 기사는 제외.
+
+            5. sections (본문 단락 - 반드시 3개):
                - 섹션 1 [핵심 상황과 배경] (고정): 이 뉴스의 핵심 팩트·배경·경위를 상세히 서술. 독자가 맥락 없이도 사건 전체를 파악할 수 있도록 육하원칙(누가·언제·어디서·무엇을·어떻게·왜)에 따라 빠짐없이 서술.
                - 섹션 2, 3 (자율 선택): 아래 7가지 앵글 중 이 뉴스 성격에 가장 잘 맞는 2가지를 골라 작성.
                  * [숨은 맥락]: 정치·사회 뉴스 - 왜 이런 일이 일어났나?
@@ -78,6 +83,7 @@ public class SummarizationService {
                - content: 7~9문장. 각 문장은 '\\n'으로 구분.
                  어투는 친절한 에디터 톤(~어요, ~됩니다, ~했습니다)으로 작성. 보고서체('~함', '~임') 금지.
                  뉴스 원문에 없는 내용을 지어내거나 추측하지 말 것.
+               - supportingArticleIndexes: 해당 섹션의 사실을 직접 뒷받침하는 기사 번호를 1부터 시작하는 정수로 작성.
             """;
 
     private final VertexAiProperties vertexAiProperties;
@@ -86,19 +92,22 @@ public class SummarizationService {
     private final ObjectMapper objectMapper;
     private final RateLimiter rateLimiter;
     private final NewsBatchMetrics batchMetrics;
+    private final SynthesisGroundingValidator groundingValidator;
 
     public SummarizationService(VertexAiProperties vertexAiProperties,
                                 VertexAiTokenService vertexAiTokenService,
                                 @Qualifier("vertexAiRestTemplate") RestTemplate restTemplate,
                                 ObjectMapper objectMapper,
                                 RateLimiterRegistry rateLimiterRegistry,
-                                NewsBatchMetrics batchMetrics) {
+                                NewsBatchMetrics batchMetrics,
+                                SynthesisGroundingValidator groundingValidator) {
         this.vertexAiProperties = vertexAiProperties;
         this.vertexAiTokenService = vertexAiTokenService;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.rateLimiter = rateLimiterRegistry.rateLimiter("gemini");
         this.batchMetrics = batchMetrics;
+        this.groundingValidator = groundingValidator;
     }
 
     public SynthesisResult synthesize(String keyword, List<RawArticleDto> articles) throws Exception {
@@ -113,7 +122,7 @@ public class SummarizationService {
 
             if (result != null && !result.isCategoryRelevant()) return result;
 
-            String reason = findQualityFailureReason(result);
+            String reason = findQualityFailureReason(result, articles);
             if (reason != null) {
                 log.warn("[Summarization] 품질 미달 - 1회 재시도. reason={}, keyword={}", reason, keyword);
                 batchMetrics.incrementVertexRetryCount();
@@ -127,7 +136,7 @@ public class SummarizationService {
 
                 if (result != null && !result.isCategoryRelevant()) return result;
 
-                String retryFailureReason = findQualityFailureReason(result);
+                String retryFailureReason = findQualityFailureReason(result, articles);
                 if (retryFailureReason != null) {
                     throw new InvalidSynthesisResultException("요약 품질 기준 재시도 실패 - keyword=" + keyword
                             + ", reason=" + retryFailureReason);
@@ -269,6 +278,14 @@ public class SummarizationService {
         return null;
     }
 
+    private String findQualityFailureReason(SynthesisResult result, List<RawArticleDto> articles) {
+        String formatFailure = findQualityFailureReason(result);
+        if (formatFailure != null || result == null || !result.isCategoryRelevant()) {
+            return formatFailure;
+        }
+        return groundingValidator.findFailureReason(result, articles);
+    }
+
     private int totalSectionContentLength(SynthesisResult result) {
         List<SectionDto> sections = result.getSections();
         if (sections == null) return 0;
@@ -280,22 +297,31 @@ public class SummarizationService {
     private Map<String, Object> buildResponseSchema() {
         return Map.of(
                 "type", "OBJECT",
-                "required", List.of("categoryRelevant", "categoryReason", "title", "summary", "sections"),
+                "required", List.of("categoryRelevant", "categoryReason", "title", "summary",
+                        "relevantArticleIndexes", "sections"),
                 "properties", Map.of(
                         "categoryRelevant", Map.of("type", "BOOLEAN"),
                         "categoryReason", Map.of("type", "STRING"),
                         "title",   Map.of("type", "STRING"),
                         "summary", Map.of("type", "STRING"),
+                        "relevantArticleIndexes", Map.of(
+                                "type", "ARRAY",
+                                "items", Map.of("type", "INTEGER")
+                        ),
                         "sections", Map.of(
                                 "type", "ARRAY",
                                 "minItems", 3,
                                 "maxItems", 3,
                                 "items", Map.of(
                                         "type", "OBJECT",
-                                        "required", List.of("heading", "content"),
+                                        "required", List.of("heading", "content", "supportingArticleIndexes"),
                                         "properties", Map.of(
                                                 "heading", Map.of("type", "STRING"),
-                                                "content", Map.of("type", "STRING")
+                                                "content", Map.of("type", "STRING"),
+                                                "supportingArticleIndexes", Map.of(
+                                                        "type", "ARRAY",
+                                                        "items", Map.of("type", "INTEGER")
+                                                )
                                         )
                                 )
                         )

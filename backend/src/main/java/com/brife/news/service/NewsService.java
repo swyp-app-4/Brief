@@ -8,6 +8,7 @@ import com.brife.news.dto.SectionResponseDto;
 import com.brife.news.dto.WidgetNewsDto;
 import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.RawNewsRepository;
+import com.brife.news.repository.NewsEmbeddingRepository;
 import com.brife.news.repository.SummarizedNewsRepository;
 import com.brife.user.domain.UserInterest;
 import com.brife.user.repository.UserInterestRepository;
@@ -46,6 +47,7 @@ public class NewsService {
     private final CategoryRepository categoryRepository;
     private final UserInterestRepository userInterestRepository;
     private final RawNewsRepository rawNewsRepository;
+    private final NewsEmbeddingRepository newsEmbeddingRepository;
     private final ObjectMapper objectMapper;
     private final DuplicateNewsDetectionService duplicateNewsDetectionService;
 
@@ -73,17 +75,18 @@ public class NewsService {
         List<SummarizedNews> selected = new ArrayList<>();
         Set<Long> usedIds = new LinkedHashSet<>();
         Map<Long, Integer> categoryCounts = new HashMap<>();
+        Map<Long, float[]> embeddingCache = new HashMap<>();
 
         if (!selectedCategoryIds.isEmpty()) {
-            appendCandidates(selected, usedIds, categoryCounts,
+            appendCandidates(selected, usedIds, categoryCounts, embeddingCache,
                     summarizedNewsRepository.findRecommendationCandidates(selectedCategoryIds, since, page));
         }
         if (selected.size() < RECOMMENDATION_SIZE && !parentCategoryIds.isEmpty()) {
-            appendCandidates(selected, usedIds, categoryCounts,
+            appendCandidates(selected, usedIds, categoryCounts, embeddingCache,
                     summarizedNewsRepository.findRecommendationCandidates(parentCategoryIds, since, page));
         }
         if (selected.size() < RECOMMENDATION_SIZE) {
-            appendCandidates(selected, usedIds, categoryCounts,
+            appendCandidates(selected, usedIds, categoryCounts, embeddingCache,
                     summarizedNewsRepository.findLatestRecommendationCandidates(page));
         }
 
@@ -150,7 +153,14 @@ public class NewsService {
     private void appendCandidates(List<SummarizedNews> selected,
                                   Set<Long> usedIds,
                                   Map<Long, Integer> categoryCounts,
+                                  Map<Long, float[]> embeddingCache,
                                   List<SummarizedNews> candidates) {
+        List<Long> missingEmbeddingIds = candidates.stream()
+                .map(SummarizedNews::getId)
+                .filter(id -> !embeddingCache.containsKey(id))
+                .toList();
+        embeddingCache.putAll(newsEmbeddingRepository.findEmbeddingsByNewsIds(missingEmbeddingIds));
+
         for (SummarizedNews candidate : candidates) {
             if (selected.size() >= RECOMMENDATION_SIZE) return;
             Long categoryId = candidate.getCategory().getId();
@@ -159,7 +169,7 @@ public class NewsService {
             boolean sameEvent = selected.stream().anyMatch(existing ->
                     duplicateNewsDetectionService.representsSameEvent(
                             candidate.getId(), candidate.getTitle(), candidate.getSummary(),
-                            existing.getId(), existing.getTitle(), existing.getSummary()));
+                            existing.getId(), existing.getTitle(), existing.getSummary(), embeddingCache));
             if (sameEvent) continue;
 
             selected.add(candidate);

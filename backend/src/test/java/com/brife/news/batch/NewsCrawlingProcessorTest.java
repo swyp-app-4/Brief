@@ -11,6 +11,7 @@ import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.RawNewsRepository;
 import com.brife.news.service.DuplicateNewsDetectionService;
 import com.brife.news.service.SummarizationService;
+import com.brife.news.service.SynthesisGroundingValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,8 @@ class NewsCrawlingProcessorTest {
     @Mock
     private DuplicateNewsDetectionService duplicateNewsDetectionService;
     @Mock
+    private SynthesisGroundingValidator groundingValidator;
+    @Mock
     private NewsBatchMetrics batchMetrics;
     @InjectMocks
     private NewsCrawlingProcessor processor;
@@ -77,6 +80,8 @@ class NewsCrawlingProcessorTest {
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
         when(rawNewsRepository.existsByNaverUrl("old")).thenReturn(true);
         when(summarizationService.synthesize(eq("경제"), eq("경제"), anyList())).thenReturn(synthesis);
+        when(groundingValidator.selectRelevantArticles(eq(synthesis), anyList()))
+                .thenAnswer(invocation -> invocation.getArgument(1));
         when(objectMapper.writeValueAsString(synthesis.getSections())).thenReturn("[]");
 
         ProcessedNewsDto result = processor.process(group);

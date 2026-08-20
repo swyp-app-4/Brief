@@ -6,6 +6,7 @@ import com.brife.news.domain.SummarizedNews;
 import com.brife.news.dto.WidgetNewsDto;
 import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.RawNewsRepository;
+import com.brife.news.repository.NewsEmbeddingRepository;
 import com.brife.news.repository.SummarizedNewsRepository;
 import com.brife.user.repository.UserInterestRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +24,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
@@ -34,6 +36,7 @@ class NewsServiceTest {
     @Mock private CategoryRepository categoryRepository;
     @Mock private UserInterestRepository userInterestRepository;
     @Mock private RawNewsRepository rawNewsRepository;
+    @Mock private NewsEmbeddingRepository newsEmbeddingRepository;
     @Mock private ObjectMapper objectMapper;
     @Mock private DuplicateNewsDetectionService duplicateNewsDetectionService;
     @InjectMocks private NewsService newsService;
@@ -87,9 +90,15 @@ class NewsServiceTest {
 
         when(summarizedNewsRepository.findLatestRecommendationCandidates(any(Pageable.class)))
                 .thenReturn(List.of(first, duplicate, third, fourth, fifth, refill));
+        Long duplicateId = duplicate.getId();
+        String duplicateTitle = duplicate.getTitle();
+        String duplicateSummary = duplicate.getSummary();
+        Long firstId = first.getId();
+        String firstTitle = first.getTitle();
+        String firstSummary = first.getSummary();
         when(duplicateNewsDetectionService.representsSameEvent(
-                duplicate.getId(), duplicate.getTitle(), duplicate.getSummary(),
-                first.getId(), first.getTitle(), first.getSummary()))
+                eq(duplicateId), eq(duplicateTitle), eq(duplicateSummary),
+                eq(firstId), eq(firstTitle), eq(firstSummary), anyMap()))
                 .thenReturn(true);
 
         List<WidgetNewsDto> result = newsService.getTop5News(List.of(), List.of());

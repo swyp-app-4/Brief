@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -95,6 +96,13 @@ public class DuplicateNewsDetectionService {
 
     public boolean representsSameEvent(Long leftNewsId, String leftTitle, String leftSummary,
                                        Long rightNewsId, String rightTitle, String rightSummary) {
+        return representsSameEvent(leftNewsId, leftTitle, leftSummary,
+                rightNewsId, rightTitle, rightSummary, null);
+    }
+
+    public boolean representsSameEvent(Long leftNewsId, String leftTitle, String leftSummary,
+                                       Long rightNewsId, String rightTitle, String rightSummary,
+                                       Map<Long, float[]> embeddingCache) {
         if (isBlank(leftTitle) || isBlank(rightTitle)) return false;
 
         Set<String> leftTokens = extractCoreTokens(leftTitle);
@@ -115,9 +123,27 @@ public class DuplicateNewsDetectionService {
             return false;
         }
 
-        Double embeddingSimilarity = newsEmbeddingRepository.findCosineSimilarity(leftNewsId, rightNewsId);
+        Double embeddingSimilarity = embeddingCache == null
+                ? newsEmbeddingRepository.findCosineSimilarity(leftNewsId, rightNewsId)
+                : cosineSimilarity(embeddingCache.get(leftNewsId), embeddingCache.get(rightNewsId));
         return embeddingSimilarity != null
                 && embeddingSimilarity >= RECOMMENDATION_EMBEDDING_SIMILARITY;
+    }
+
+    private Double cosineSimilarity(float[] left, float[] right) {
+        if (left == null || right == null || left.length != right.length || left.length == 0) {
+            return null;
+        }
+        double dot = 0.0;
+        double leftNorm = 0.0;
+        double rightNorm = 0.0;
+        for (int i = 0; i < left.length; i++) {
+            dot += left[i] * right[i];
+            leftNorm += left[i] * left[i];
+            rightNorm += right[i] * right[i];
+        }
+        if (leftNorm == 0.0 || rightNorm == 0.0) return null;
+        return dot / (Math.sqrt(leftNorm) * Math.sqrt(rightNorm));
     }
 
     private int sharedTokenCount(Set<String> left, Set<String> right) {
@@ -130,16 +156,18 @@ public class DuplicateNewsDetectionService {
                                        String existingTitle, String existingSummary,
                                        double overallSimilarity, double titleSimilarity,
                                        double summarySimilarity) {
-        Set<String> newNumbers = extractNumbers(newTitle + " " + newSummary);
-        Set<String> existingNumbers = extractNumbers(existingTitle + " " + existingSummary);
-        Set<String> newStates = extractStateWords(newTitle + " " + newSummary);
-        Set<String> existingStates = extractStateWords(existingTitle + " " + existingSummary);
-        if (!newNumbers.equals(existingNumbers) || !newStates.equals(existingStates)) {
+        if (hasMaterialNumberChange(newTitle, newSummary, existingTitle, existingSummary)
+                || hasMaterialStateChange(newTitle, newSummary, existingTitle, existingSummary)) {
             return false;
         }
 
         double coreTokenOverlap = overlapCoefficient(
                 extractCoreTokens(newTitle), extractCoreTokens(existingTitle));
+
+        if (normalizeTitle(newTitle).equals(normalizeTitle(existingTitle))
+                && summarySimilarity >= TITLE_LED_SUMMARY_SIMILARITY) {
+            return true;
+        }
 
         if (overallSimilarity >= DUPLICATE_SIMILARITY) {
             return (titleSimilarity >= MIN_TITLE_SIMILARITY
@@ -157,6 +185,40 @@ public class DuplicateNewsDetectionService {
         return titleSimilarity >= TITLE_LED_SIMILARITY
                 && summarySimilarity >= TITLE_LED_SUMMARY_SIMILARITY
                 && coreTokenOverlap >= TITLE_LED_CORE_TOKEN_OVERLAP;
+    }
+
+    private boolean hasMaterialNumberChange(String newTitle, String newSummary,
+                                            String existingTitle, String existingSummary) {
+        Set<String> newTitleNumbers = extractNumbers(newTitle);
+        Set<String> existingTitleNumbers = extractNumbers(existingTitle);
+        if (hasNewDistinctSignal(newTitleNumbers, existingTitleNumbers)) {
+            return true;
+        }
+
+        Set<String> newNumbers = extractNumbers(newTitle + " " + newSummary);
+        Set<String> existingNumbers = extractNumbers(existingTitle + " " + existingSummary);
+        return hasNewDistinctSignal(newNumbers, existingNumbers);
+    }
+
+    private boolean hasMaterialStateChange(String newTitle, String newSummary,
+                                           String existingTitle, String existingSummary) {
+        Set<String> newStates = extractStateWords(newTitle + " " + newSummary);
+        Set<String> existingStates = extractStateWords(existingTitle + " " + existingSummary);
+        return hasNewDistinctSignal(newStates, existingStates);
+    }
+
+    private boolean hasNewDistinctSignal(Set<String> newSignals, Set<String> existingSignals) {
+        if (newSignals.isEmpty()) return false;
+        if (existingSignals.isEmpty()) return true;
+        return newSignals.stream().noneMatch(existingSignals::contains);
+    }
+
+    private String normalizeTitle(String title) {
+        return safe(title).toLowerCase(Locale.ROOT)
+                .replaceAll("<[^>]+>", " ")
+                .replaceAll("[^\\p{L}\\p{N}]+", " ")
+                .strip()
+                .replaceAll("\\s+", " ");
     }
 
     private Set<String> extractNumbers(String text) {

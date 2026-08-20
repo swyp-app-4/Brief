@@ -119,6 +119,50 @@ class DuplicateNewsDetectionServiceTest {
     }
 
     @Test
+    void blocksRewordedDuplicateWhenOneSummaryAlsoMentionsPreviousNumber() {
+        SynthesisResult result = result(
+                "9월 국제선 유류할증료 7단계 인상",
+                "유류할증료가 6단계에서 7단계로 상승했습니다.");
+        DuplicateNewsCandidate candidate = candidate(
+                0.96, 0.94, 0.90,
+                "9월 국제선 유류할증료 7단계 인상",
+                "9월 국제선 유류할증료가 7단계로 오릅니다.");
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(result.getTitle()), eq(result.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of(candidate));
+
+        assertThat(service.isDuplicateWithoutNewInformation(result)).isTrue();
+    }
+
+    @Test
+    void keepsFollowUpWithSameGenericTitleWhenStateMateriallyChanged() {
+        SynthesisResult result = result("정부 주택 정책 진행 상황", "정부가 주택 공급 정책을 확정했습니다.");
+        DuplicateNewsCandidate candidate = candidate(
+                0.98, 1.0, 0.93,
+                "정부 주택 정책 진행 상황",
+                "정부가 주택 공급 정책을 검토하고 있습니다.");
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(result.getTitle()), eq(result.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of(candidate));
+
+        assertThat(service.isDuplicateWithoutNewInformation(result)).isFalse();
+    }
+
+    @Test
+    void keepsFollowUpWhenNewReportIntroducesFirstConfirmedNumber() {
+        SynthesisResult result = result("태풍으로 항공편 결항", "제주공항에서 항공편 180편이 결항됐습니다.");
+        DuplicateNewsCandidate candidate = candidate(
+                0.96, 0.95, 0.92,
+                "태풍으로 항공편 결항",
+                "제주공항에서 다수의 항공편이 결항됐습니다.");
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(result.getTitle()), eq(result.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of(candidate));
+
+        assertThat(service.isDuplicateWithoutNewInformation(result)).isFalse();
+    }
+
+    @Test
     void blocksDuplicateGeneratedEarlierInSameBatch() {
         SynthesisResult first = result("AI 반도체 수출 120억 달러 기록",
                 "AI 반도체 수출이 120억 달러를 기록했습니다.");
@@ -160,6 +204,24 @@ class DuplicateNewsDetectionServiceTest {
         );
 
         assertThat(sameEvent).isTrue();
+    }
+
+    @Test
+    void usesPreloadedEmbeddingCacheForRecommendationComparison() {
+        float[] first = new float[] {1.0f, 0.0f, 1.0f};
+        float[] second = new float[] {0.98f, 0.0f, 1.0f};
+
+        boolean sameEvent = service.representsSameEvent(
+                10L,
+                "거제 통영 폭우 도로 마비",
+                "거제와 통영에 폭우 피해가 발생했습니다.",
+                11L,
+                "거제 통영 기록적 폭우 피해",
+                "거제와 통영에 많은 비가 내렸습니다.",
+                java.util.Map.of(10L, first, 11L, second));
+
+        assertThat(sameEvent).isTrue();
+        org.mockito.Mockito.verifyNoInteractions(newsEmbeddingRepository);
     }
 
     @Test

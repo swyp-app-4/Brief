@@ -44,7 +44,8 @@ class SummarizationServiceTest {
                 restTemplate,
                 objectMapper,
                 RateLimiterRegistry.ofDefaults(),
-                new NewsBatchMetrics());
+                new NewsBatchMetrics(),
+                new SynthesisGroundingValidator());
     }
 
     @Test
@@ -93,10 +94,12 @@ class SummarizationServiceTest {
         result.setCategoryReason("경제 정책이 중심입니다.");
         result.setTitle("한국은행 기준금리 동결 결정");
         result.setSummary("첫 번째 핵심입니다.\n두 번째 핵심입니다.\n세 번째 핵심입니다.\n네 번째 핵심입니다.");
+        result.setRelevantArticleIndexes(List.of(1));
         result.setSections(List.of(
                 new SectionDto("핵심 상황을 살펴보다", content),
                 new SectionDto("시장 영향을 분석하다", content),
                 new SectionDto("향후 전망은 어떨까?", content)));
+        result.getSections().forEach(section -> section.setSupportingArticleIndexes(List.of(1)));
         return result;
     }
 

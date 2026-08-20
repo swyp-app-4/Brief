@@ -11,6 +11,7 @@ import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.RawNewsRepository;
 import com.brife.news.service.DuplicateNewsDetectionService;
 import com.brife.news.service.SummarizationService;
+import com.brife.news.service.SynthesisGroundingValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.infrastructure.item.ItemProcessor;
@@ -29,6 +30,7 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
     private final RawNewsRepository rawNewsRepository;
     private final ObjectMapper objectMapper;
     private final DuplicateNewsDetectionService duplicateNewsDetectionService;
+    private final SynthesisGroundingValidator groundingValidator;
     private final NewsBatchMetrics batchMetrics;
 
     @Override
@@ -68,6 +70,8 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
             return null;
         }
 
+        List<RawArticleDto> relevantArticles = groundingValidator.selectRelevantArticles(result, newArticles);
+
         String sectionsJson;
         try {
             sectionsJson = objectMapper.writeValueAsString(result.getSections());
@@ -75,16 +79,16 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
             throw new RuntimeException("sections JSON 직렬화 실패 - keyword=" + group.getKeyword(), e);
         }
 
-        LocalDateTime publishedAt = newArticles.get(0).getPubDate() != null
-                ? newArticles.get(0).getPubDate()
+        LocalDateTime publishedAt = relevantArticles.get(0).getPubDate() != null
+                ? relevantArticles.get(0).getPubDate()
                 : LocalDateTime.now();
 
         return ProcessedNewsDto.builder()
                 .category(category)
-                .newArticles(newArticles)
+                .newArticles(relevantArticles)
                 .synthesisResult(result)
                 .sectionsJson(sectionsJson)
-                .totalArticleCount(newArticles.size())
+                .totalArticleCount(relevantArticles.size())
                 .publishedDate(publishedAt.toLocalDate())
                 .publishedAt(publishedAt)
                 .build();

@@ -283,6 +283,17 @@ class ArticleClusteringServiceTest {
         assertThat(result.stream().filter(a -> a.getPressName().equals("언론A"))).hasSize(2);
     }
 
+    @Test
+    @DisplayName("pivot과만 연결된 서로 다른 사건은 하나의 클러스터로 묶지 않음")
+    void cluster_rejects_pivot_only_chain() {
+        List<RawArticleDto> articles = List.of(
+                articleWithDescription("추석 할인 상품권 정책", "정부가 소비 할인과 상품권 정책을 소개했다"),
+                articleWithDescription("추석 할인 상품권 순천", "순천 시장이 할인 상품권 행사를 연다"),
+                articleWithDescription("추석 상품권 정책 장흥", "장흥군이 지역 상품권 발행 정책을 펼친다"));
+
+        assertThat(clusteringService.cluster(articles, "추석", 3)).isEmpty();
+    }
+
     private RawArticleDto articleFromPress(String title, String pressName) {
         return RawArticleDto.builder()
                 .title(title)
@@ -290,6 +301,16 @@ class ArticleClusteringServiceTest {
                 .sourceUrl("https://" + pressName + ".example.com")
                 .naverUrl("https://n.news.naver.com/" + title.hashCode())
                 .pressName(pressName)
+                .build();
+    }
+
+    private RawArticleDto articleWithDescription(String title, String description) {
+        return RawArticleDto.builder()
+                .title(title)
+                .description(description)
+                .sourceUrl("https://example.com/" + title.hashCode())
+                .naverUrl("https://n.news.naver.com/" + title.hashCode())
+                .pressName(title)
                 .build();
     }
 }

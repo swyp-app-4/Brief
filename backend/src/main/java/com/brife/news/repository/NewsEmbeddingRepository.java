@@ -7,6 +7,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Slf4j
 @Repository
@@ -77,6 +79,28 @@ public class NewsEmbeddingRepository {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    public Map<Long, float[]> findEmbeddingsByNewsIds(List<Long> newsIds) {
+        if (newsIds == null || newsIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> distinctIds = newsIds.stream().distinct().toList();
+        String placeholders = String.join(",", java.util.Collections.nCopies(distinctIds.size(), "?"));
+        String sql = "SELECT news_id, embedding::text FROM news_embedding WHERE news_id IN ("
+                + placeholders + ")";
+        Map<Long, float[]> embeddings = new LinkedHashMap<>();
+        jdbcTemplate.query(sql, rs -> {
+            embeddings.put(rs.getLong("news_id"), parseVector(rs.getString("embedding")));
+        }, distinctIds.toArray());
+        return embeddings;
+    }
+
+    private float[] parseVector(String vector) {
+        String[] values = vector.substring(1, vector.length() - 1).split(",");
+        float[] result = new float[values.length];
+        for (int i = 0; i < values.length; i++) result[i] = Float.parseFloat(values[i]);
+        return result;
     }
 
     private String toVectorString(float[] embedding) {
