@@ -48,7 +48,9 @@ public class BatchCompletionListener implements JobExecutionListener {
 
         log.info("[BatchMetrics] status={}, naverCalls={}, fetchedArticles={}, clusters={}, skippedClusters={}, " +
                  "vertexCalls={}, vertexRetries={}, generatedNews={}, extractSuccessRate={}, " +
-                 "avgOriginalTextLength={}, embeddingSuccess={}, embeddingFail={}",
+                 "avgOriginalTextLength={}, embeddingSuccess={}, embeddingFail={}, " +
+                 "shadowEvaluatedClusters={}, shadowWouldRejectClusters={}, " +
+                 "shadowEvaluatedArticles={}, shadowRejectedArticles={}",
                 jobExecution.getStatus(),
                 batchMetrics.getNaverApiCallCount(),
                 batchMetrics.getFetchedArticleCount(),
@@ -60,7 +62,11 @@ public class BatchCompletionListener implements JobExecutionListener {
                 String.format("%.1f%%", batchMetrics.getExtractSuccessRate() * 100),
                 batchMetrics.getAvgOriginalTextLength(),
                 batchMetrics.getEmbeddingSuccessCount(),
-                batchMetrics.getEmbeddingFailCount());
+                batchMetrics.getEmbeddingFailCount(),
+                batchMetrics.getShadowEvaluatedClusterCount(),
+                batchMetrics.getShadowRejectedClusterCount(),
+                batchMetrics.getShadowEvaluatedArticleCount(),
+                batchMetrics.getShadowRejectedArticleCount());
 
         batchMetrics.reset();
     }

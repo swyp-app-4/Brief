@@ -25,6 +25,10 @@ public class NewsBatchMetrics {
     private final AtomicInteger generatedNewsCount         = new AtomicInteger();
     private final AtomicInteger embeddingSuccessCount      = new AtomicInteger();
     private final AtomicInteger embeddingFailCount         = new AtomicInteger();
+    private final AtomicInteger shadowEvaluatedClusterCount = new AtomicInteger();
+    private final AtomicInteger shadowRejectedClusterCount = new AtomicInteger();
+    private final AtomicInteger shadowEvaluatedArticleCount = new AtomicInteger();
+    private final AtomicInteger shadowRejectedArticleCount = new AtomicInteger();
 
     // ── increment ─────────────────────────────────────────────────────────
     public void incrementNaverApiCallCount()           { naverApiCallCount.incrementAndGet(); }
@@ -39,6 +43,12 @@ public class NewsBatchMetrics {
     public void incrementGeneratedNewsCount()          { generatedNewsCount.incrementAndGet(); }
     public void incrementEmbeddingSuccessCount()       { embeddingSuccessCount.incrementAndGet(); }
     public void incrementEmbeddingFailCount()          { embeddingFailCount.incrementAndGet(); }
+    public void recordClusterShadowEvaluation(int articleCount, int rejectedArticles, boolean wouldAccept) {
+        shadowEvaluatedClusterCount.incrementAndGet();
+        shadowEvaluatedArticleCount.addAndGet(articleCount);
+        shadowRejectedArticleCount.addAndGet(rejectedArticles);
+        if (!wouldAccept) shadowRejectedClusterCount.incrementAndGet();
+    }
 
     // ── get ───────────────────────────────────────────────────────────────
     public int  getNaverApiCallCount()           { return naverApiCallCount.get(); }
@@ -53,6 +63,10 @@ public class NewsBatchMetrics {
     public int  getGeneratedNewsCount()          { return generatedNewsCount.get(); }
     public int  getEmbeddingSuccessCount()       { return embeddingSuccessCount.get(); }
     public int  getEmbeddingFailCount()          { return embeddingFailCount.get(); }
+    public int  getShadowEvaluatedClusterCount() { return shadowEvaluatedClusterCount.get(); }
+    public int  getShadowRejectedClusterCount()  { return shadowRejectedClusterCount.get(); }
+    public int  getShadowEvaluatedArticleCount() { return shadowEvaluatedArticleCount.get(); }
+    public int  getShadowRejectedArticleCount()  { return shadowRejectedArticleCount.get(); }
 
     // ── summary helpers ───────────────────────────────────────────────────
     /** 원문 추출 성공률 (0 ~ 1.0). 분모가 0이면 0.0 반환. */
@@ -81,5 +95,9 @@ public class NewsBatchMetrics {
         generatedNewsCount.set(0);
         embeddingSuccessCount.set(0);
         embeddingFailCount.set(0);
+        shadowEvaluatedClusterCount.set(0);
+        shadowRejectedClusterCount.set(0);
+        shadowEvaluatedArticleCount.set(0);
+        shadowRejectedArticleCount.set(0);
     }
 }

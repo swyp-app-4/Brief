@@ -1,6 +1,7 @@
 package com.brife.news.service;
 
 import com.brife.news.dto.RawArticleDto;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ArticleClusteringService {
 
     private static final int MIN_WORD_LENGTH = 2;
@@ -18,6 +20,8 @@ public class ArticleClusteringService {
     private static final int MAX_TOPICS_PER_BATCH = 3;
     private static final int MAX_ARTICLES_PER_CLUSTER = 10;
     private static final int MAX_ARTICLES_PER_PRESS = 2;
+
+    private final ClusterQualityShadowEvaluator shadowEvaluator;
 
     private static final Set<String> BASE_STOP_WORDS = Set.of(
             "것", "수", "등", "및", "에서", "으로", "에게", "이번", "지난", "올해",
@@ -37,6 +41,7 @@ public class ArticleClusteringService {
             remaining.removeAll(fullCluster);
             List<RawArticleDto> selected = limitSources(fullCluster);
             if (selected.size() >= minClusterSize) {
+                shadowEvaluator.evaluate(selected, keyword);
                 result.add(selected);
             } else {
                 log.info("[Clustering] 언론사 중복 제거 후 기사 부족 ({}개 < 최소 {}개) - keyword={}",
@@ -66,6 +71,8 @@ public class ArticleClusteringService {
                     selected.size(), minClusterSize, keyword);
             return Collections.emptyList();
         }
+
+        shadowEvaluator.evaluate(selected, keyword);
 
         log.info("[Clustering] {}건 → {}건 (동일 토픽, keyword={})",
                 articles.size(), selected.size(), keyword);
@@ -150,10 +157,12 @@ public class ArticleClusteringService {
 
     private List<RawArticleDto> limitSources(List<RawArticleDto> cluster) {
         Map<String, Integer> pressCounts = new HashMap<>();
+        Set<String> normalizedTitles = new HashSet<>();
         return cluster.stream()
                 .sorted(Comparator.comparing(
                         RawArticleDto::getPubDate,
                         Comparator.nullsLast(Comparator.reverseOrder())))
+                .filter(article -> normalizedTitles.add(normalizeTitle(article.getTitle())))
                 .filter(article -> {
                     String pressKey = resolvePressKey(article);
                     int count = pressCounts.getOrDefault(pressKey, 0);
@@ -163,6 +172,15 @@ public class ArticleClusteringService {
                 })
                 .limit(MAX_ARTICLES_PER_CLUSTER)
                 .toList();
+    }
+
+    private String normalizeTitle(String title) {
+        if (title == null) return "";
+        return title.toLowerCase(Locale.ROOT)
+                .replaceAll("<[^>]+>", " ")
+                .replaceAll("[^\\p{L}\\p{N}]+", " ")
+                .strip()
+                .replaceAll("\\s+", " ");
     }
 
     private String resolvePressKey(RawArticleDto article) {

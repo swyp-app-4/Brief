@@ -177,6 +177,41 @@ class DuplicateNewsDetectionServiceTest {
     }
 
     @Test
+    void blocksSameBatchEventEvenWhenIncidentalNumbersDiffer() {
+        SynthesisResult first = result(
+                "삼성·SK하이닉스, 100조 주주환원…코스피 6800선 급반등",
+                "코스피가 5.8% 상승했고 두 기업이 100조원대 주주환원을 발표했습니다.");
+        SynthesisResult duplicate = result(
+                "삼성·SK하이닉스 100조원대 주주환원…코스피 급등 견인",
+                "코스피가 5.9% 오르며 삼성전자와 SK하이닉스의 환원책이 주목받았습니다.");
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(first.getTitle()), eq(first.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+
+        assertThat(service.isDuplicateWithoutNewInformation(first)).isFalse();
+        assertThat(service.isDuplicateWithoutNewInformation(duplicate)).isTrue();
+    }
+
+    @Test
+    void keepsSameBatchFollowUpWhenEventStateChanged() {
+        SynthesisResult first = result(
+                "정부 주택 공급 정책 검토",
+                "정부가 주택 공급 정책을 검토하고 있습니다.");
+        SynthesisResult followUp = result(
+                "정부 주택 공급 정책 확정",
+                "정부가 주택 공급 정책을 확정했습니다.");
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(first.getTitle()), eq(first.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(followUp.getTitle()), eq(followUp.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+
+        assertThat(service.isDuplicateWithoutNewInformation(first)).isFalse();
+        assertThat(service.isDuplicateWithoutNewInformation(followUp)).isFalse();
+    }
+
+    @Test
     void treatsRewordedTitlesAsSameRecommendationEvent() {
         boolean sameEvent = service.representsSameEvent(
                 49407L,

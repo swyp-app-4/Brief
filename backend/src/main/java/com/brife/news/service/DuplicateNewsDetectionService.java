@@ -38,6 +38,9 @@ public class DuplicateNewsDetectionService {
     private static final double TITLE_LED_SIMILARITY = 0.55;
     private static final double TITLE_LED_SUMMARY_SIMILARITY = 0.30;
     private static final double TITLE_LED_CORE_TOKEN_OVERLAP = 0.70;
+    private static final double SAME_BATCH_TITLE_SIMILARITY = 0.55;
+    private static final double SAME_BATCH_CORE_TOKEN_OVERLAP = 0.55;
+    private static final int SAME_BATCH_MIN_SHARED_TOKENS = 2;
     private static final double RECOMMENDATION_TITLE_SIMILARITY = 0.72;
     private static final double RECOMMENDATION_OVERALL_SIMILARITY = 0.68;
     private static final double RECOMMENDATION_TOKEN_OVERLAP = 0.45;
@@ -61,7 +64,10 @@ public class DuplicateNewsDetectionService {
         if (result == null || isBlank(result.getTitle()) || isBlank(result.getSummary())) return false;
 
         for (AcceptedNews accepted : acceptedInCurrentBatch) {
-            if (isDuplicateContent(
+            boolean stateChanged = hasMaterialStateChange(
+                    result.getTitle(), result.getSummary(), accepted.title(), accepted.summary());
+            if ((!stateChanged && isSameBatchHeadlineDuplicate(result.getTitle(), accepted.title()))
+                    || isDuplicateContent(
                     result.getTitle(), result.getSummary(), accepted.title(), accepted.summary(),
                     trigramSimilarity(result.getTitle() + " " + result.getSummary(),
                             accepted.title() + " " + accepted.summary()),
@@ -88,6 +94,20 @@ public class DuplicateNewsDetectionService {
 
         acceptedInCurrentBatch.add(new AcceptedNews(result.getTitle(), result.getSummary()));
         return false;
+    }
+
+    private boolean isSameBatchHeadlineDuplicate(String newTitle, String acceptedTitle) {
+        String normalizedNewTitle = normalizeTitle(newTitle);
+        String normalizedAcceptedTitle = normalizeTitle(acceptedTitle);
+        if (!normalizedNewTitle.isBlank() && normalizedNewTitle.equals(normalizedAcceptedTitle)) {
+            return true;
+        }
+
+        Set<String> newTokens = extractCoreTokens(newTitle);
+        Set<String> acceptedTokens = extractCoreTokens(acceptedTitle);
+        return trigramSimilarity(newTitle, acceptedTitle) >= SAME_BATCH_TITLE_SIMILARITY
+                && sharedTokenCount(newTokens, acceptedTokens) >= SAME_BATCH_MIN_SHARED_TOKENS
+                && overlapCoefficient(newTokens, acceptedTokens) >= SAME_BATCH_CORE_TOKEN_OVERLAP;
     }
 
     public synchronized void resetBatchCandidates() {

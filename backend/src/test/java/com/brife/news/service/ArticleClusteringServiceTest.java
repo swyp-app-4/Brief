@@ -1,5 +1,6 @@
 package com.brife.news.service;
 
+import com.brife.news.batch.NewsBatchMetrics;
 import com.brife.news.dto.RawArticleDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,10 +15,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ArticleClusteringServiceTest {
 
     private ArticleClusteringService clusteringService;
+    private NewsBatchMetrics batchMetrics;
 
     @BeforeEach
     void setUp() {
-        clusteringService = new ArticleClusteringService();
+        batchMetrics = new NewsBatchMetrics();
+        clusteringService = new ArticleClusteringService(new ClusterQualityShadowEvaluator(batchMetrics));
     }
 
     private RawArticleDto article(String title) {
@@ -306,6 +309,37 @@ class ArticleClusteringServiceTest {
 
         assertThat(result).hasSize(4);
         assertThat(result.stream().filter(a -> a.getPressName().equals("언론A"))).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("기호·공백만 다른 동일 원문 제목은 한 건만 사용")
+    void cluster_removes_normalized_duplicate_source_titles() {
+        List<RawArticleDto> articles = List.of(
+                articleFromPress("한국은행, 기준금리 동결 결정", "언론A"),
+                articleFromPress("한국은행 기준금리 동결 결정", "언론B"),
+                articleFromPress("한국은행 기준금리 동결 유지", "언론C"),
+                articleFromPress("기준금리 동결 한국은행 영향", "언론D"));
+
+        List<RawArticleDto> result = clusteringService.cluster(articles, "금리", 3);
+
+        assertThat(result).hasSize(3);
+        assertThat(result.stream().map(RawArticleDto::getTitle))
+                .containsOnlyOnce("한국은행, 기준금리 동결 결정");
+    }
+
+    @Test
+    @DisplayName("shadow 판정이 거부여도 기존 클러스터 결과는 유지")
+    void cluster_shadow_mode_does_not_filter_result() {
+        List<RawArticleDto> articles = List.of(
+                articleWithDescription("서울 시민 환율 급등", "정부가 시장 안정 정책을 추진한다"),
+                articleWithDescription("서울 시민 지역화폐 지급", "정부가 시장 안정 정책을 추진한다"),
+                articleWithDescription("서울 시민 요양보험 인상", "정부가 시장 안정 정책을 추진한다"));
+
+        List<RawArticleDto> result = clusteringService.cluster(articles, "경제", 3);
+
+        assertThat(result).hasSize(3);
+        assertThat(batchMetrics.getShadowEvaluatedClusterCount()).isEqualTo(1);
+        assertThat(batchMetrics.getShadowRejectedClusterCount()).isEqualTo(1);
     }
 
     @Test

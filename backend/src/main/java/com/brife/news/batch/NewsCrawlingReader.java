@@ -9,6 +9,7 @@ import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.RawNewsRepository;
 import com.brife.news.service.ArticleClusteringService;
 import com.brife.news.service.ArticleExtractorService;
+import com.brife.news.service.SparseCategoryQueryPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -49,6 +50,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
     private final Executor crawlingExecutor;
     private final Retry naverRetry;
     private final NewsBatchMetrics batchMetrics;
+    private final SparseCategoryQueryPolicy sparseCategoryQueryPolicy;
 
     private final Queue<KeywordGroupDto> queue = new ConcurrentLinkedQueue<>();
     private final Map<String, RawArticleDto> extractedArticleCache = new ConcurrentHashMap<>();
@@ -63,7 +65,8 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
                               RawNewsRepository rawNewsRepository,
                               @Qualifier("crawlingExecutor") Executor crawlingExecutor,
                               RetryRegistry retryRegistry,
-                              NewsBatchMetrics batchMetrics) {
+                              NewsBatchMetrics batchMetrics,
+                              SparseCategoryQueryPolicy sparseCategoryQueryPolicy) {
         this.properties = properties;
         this.restTemplate = restTemplate;
         this.articleExtractor = articleExtractor;
@@ -73,6 +76,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         this.crawlingExecutor = crawlingExecutor;
         this.naverRetry = retryRegistry.retry("naver");
         this.batchMetrics = batchMetrics;
+        this.sparseCategoryQueryPolicy = sparseCategoryQueryPolicy;
     }
 
     @Override
@@ -93,10 +97,11 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (Category category : categories) {
-            String keyword = category.getEffectiveQuery();
+            String keyword = sparseCategoryQueryPolicy.resolve(category);
             int minClusterSize = resolveMinClusterSize(category.getName());
             CompletableFuture<Void> future = CompletableFuture
-                    .supplyAsync(() -> clusteringService.clusterAll(fetchMerged(keyword), keyword, minClusterSize), crawlingExecutor)
+                    .supplyAsync(() -> clusteringService.clusterAll(
+                            fetchMerged(category.getName(), keyword), keyword, minClusterSize), crawlingExecutor)
                     .thenAccept(clusters -> {
                         batchMetrics.addClusterCount(clusters.size());
                         for (List<RawArticleDto> articles : clusters) {
@@ -136,11 +141,14 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
     }
 
     // 날짜·DB 중복을 먼저 제거한 뒤 남은 기사만 원문을 요청합니다.
-    private List<RawArticleDto> fetchMerged(String query) {
+    private List<RawArticleDto> fetchMerged(String categoryName, String query) {
         String[] keywords = query.split("\\|");
         Map<String, PendingArticle> merged = new LinkedHashMap<>();
+        int recentCandidateCount = 0;
         for (String kw : keywords) {
-            for (PendingArticle article : fetchFromNaver(kw.trim())) {
+            List<PendingArticle> candidates = fetchFromNaver(kw.trim());
+            recentCandidateCount += candidates.size();
+            for (PendingArticle article : candidates) {
                 merged.putIfAbsent(article.sourceUrl(), article);
             }
         }
@@ -158,13 +166,20 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
                 ? Set.of()
                 : rawNewsRepository.findExistingSourceUrls(sourceUrls);
 
-        return merged.values().stream()
+        List<PendingArticle> newArticles = merged.values().stream()
                 .filter(article -> article.item().getLink() != null)
                 .filter(article -> !existingUrls.contains(article.item().getLink()))
                 .filter(article -> !existingSourceUrls.contains(article.sourceUrl()))
+                .toList();
+        List<RawArticleDto> extractedArticles = newArticles.stream()
                 .map(this::extractCached)
                 .filter(Objects::nonNull)
                 .toList();
+        log.info("[ReaderPipeline] category={}, queryCount={}, recentCandidates={}, mergedUrls={}, "
+                        + "newUrls={}, extractedArticles={}",
+                categoryName, keywords.length, recentCandidateCount, merged.size(),
+                newArticles.size(), extractedArticles.size());
+        return extractedArticles;
     }
 
     private RawArticleDto extractCached(PendingArticle pending) {

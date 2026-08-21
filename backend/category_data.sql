@@ -1,6 +1,6 @@
 -- category 초기 데이터 (앱 첫 실행 후 한 번만 실행)
 -- 대분류 6개 고정: 시사/정치, 경제/재테크, IT/테크, 문화/예술, 엔터/스포츠, 라이프/성장
--- 원칙: 띄어쓰기=AND(교집합)이므로 강력한 단일 키워드 1개만 사용. query=null이면 name을 검색어로 사용.
+-- 원칙: 띄어쓰기는 AND, |는 개별 API 검색 후 병합. query=null이면 name을 검색어로 사용.
 
 -- =============================================
 -- 1. 대분류 (category_group)
@@ -20,7 +20,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO category (category_group_id, name, query) VALUES
 
   -- 시사/정치 (16개)
-  ((SELECT id FROM category_group WHERE name = '시사/정치'), '청와대',       '대통령실|대통령|용산'),
+  ((SELECT id FROM category_group WHERE name = '시사/정치'), '청와대',       '대통령실 브리핑|대통령 국무회의|대통령 정상회담|대통령 인사 발표'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '국회/정당',    '국회|더불어민주당|국민의힘'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '북한',         '북한|김정은'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '행정',         '행정안전부|정부부처'),
@@ -33,9 +33,9 @@ INSERT INTO category (category_group_id, name, query) VALUES
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '환경',         '기후위기|환경부'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '인권/복지',    '보건복지부|인권위'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '식품/의료',    '식약처|의료계'),
-  ((SELECT id FROM category_group WHERE name = '시사/정치'), '지역',         '지자체|지방의회'),
+  ((SELECT id FROM category_group WHERE name = '시사/정치'), '지역',         '지자체 정책 발표|지방의회 조례 의결|지역 축제 개막|지역 재난 사고'),
   ((SELECT id FROM category_group WHERE name = '시사/정치'), '사회일반',     '저출산|고령화|인구감소'),
-  ((SELECT id FROM category_group WHERE name = '시사/정치'), '세계일반',     '외신|특파원|유엔|UN'),
+  ((SELECT id FROM category_group WHERE name = '시사/정치'), '세계일반',     '국제 정상회담|유엔 결의|해외 분쟁 발생|해외 재난 발생'),
 
   -- 경제/재테크 (8개)
   ((SELECT id FROM category_group WHERE name = '경제/재테크'), '금융',       '금리|금융권|시중은행|대출'),
@@ -51,7 +51,7 @@ INSERT INTO category (category_group_id, name, query) VALUES
   ((SELECT id FROM category_group WHERE name = 'IT/테크'), '모바일',         '스마트폰|갤럭시|아이폰'),
   ((SELECT id FROM category_group WHERE name = 'IT/테크'), '인터넷/SNS',     '포털|카카오|네이버'),
   ((SELECT id FROM category_group WHERE name = 'IT/테크'), '통신/뉴미디어',  '이동통신|OTT'),
-  ((SELECT id FROM category_group WHERE name = 'IT/테크'), 'IT일반',         '인공지능|AI|빅데이터'),
+  ((SELECT id FROM category_group WHERE name = 'IT/테크'), 'IT일반',         'AI 신제품 출시|AI 서비스 공개|빅테크 기술 발표|과기정통부 AI 정책'),
   ((SELECT id FROM category_group WHERE name = 'IT/테크'), '보안/해킹',      '해킹|랜섬웨어|정보유출'),
   ((SELECT id FROM category_group WHERE name = 'IT/테크'), '컴퓨터',         '클라우드|소프트웨어|반도체'),
   ((SELECT id FROM category_group WHERE name = 'IT/테크'), '게임/리뷰',      '신작 게임|모바일게임'),
