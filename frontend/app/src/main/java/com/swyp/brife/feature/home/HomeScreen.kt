@@ -209,7 +209,9 @@ fun HomeScreen(
                                 0f to DarkBackground,
                                 0.38f to DarkBackground,
                                 1f to MaterialTheme.brifeColors.homeAccent
-                            )
+                            ),
+                            startY = Float.POSITIVE_INFINITY,
+                            endY = 0f
                         )
                     )
             )
