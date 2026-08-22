@@ -17,6 +17,7 @@ import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import androidx.compose.foundation.background
 import com.swyp.brife.R
+import com.swyp.brife.ui.theme.brifeColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +45,7 @@ fun HomeToLoginBottomSheet(
                     .fillMaxWidth()
                     .padding(top = 80.dp) // 일러스트 크기(160dp)의 절반만큼 아래로 내려서 배치
                     .background(
-                        color = Color.White,
+                        color = MaterialTheme.brifeColors.backgroundDefault,
                         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                     )
                     .padding(horizontal = 24.dp)
@@ -81,7 +82,7 @@ fun HomeToLoginBottomSheet(
                         .heightIn(min = 50.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = CtaDisabled,
+                        containerColor = MaterialTheme.brifeColors.ctaDisabled,
                         contentColor = Color.White
                     )
                 ) {

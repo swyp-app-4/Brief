@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.TextTitle
+import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.R
 
 /**
@@ -37,7 +38,7 @@ fun AppTopBar2(
             .fillMaxWidth()
             .statusBarsPadding()
             .height(56.dp)
-            .background(Color.White)
+            .background(MaterialTheme.brifeColors.backgroundDefault)
             .padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -57,7 +58,7 @@ fun AppTopBar2(
         AppText(
             text = title,
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-            color = TextTitle,
+            color = MaterialTheme.brifeColors.textTitle,
             modifier = Modifier.weight(1f)
         )
 

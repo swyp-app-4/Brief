@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.swyp.brife.ui.theme.brifeColors
 import androidx.compose.ui.unit.sp
 import com.swyp.brife.R
 import com.swyp.brife.ui.component.CategoryChip
@@ -112,7 +113,7 @@ fun HomeNewsCardContent(
         Text(
             text = item.title,
             style = titleStyle,
-            color = Color.Black,
+            color = MaterialTheme.brifeColors.textTitle,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
@@ -180,7 +181,7 @@ private fun SummaryInsightBox(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFF5F9FF))
+            .background(MaterialTheme.brifeColors.backgroundSub)
             .wrapContentHeight()
             .padding(vertical = verticalPadding)
     ) {
@@ -254,7 +255,7 @@ private fun SummarySection(
             Text(
                 text = title,
                 style = titleStyle,
-                color = Color.Black
+                color = MaterialTheme.brifeColors.textTitle
             )
         }
 
@@ -321,7 +322,7 @@ private fun HomeNewsCardPreviewContent() {
             .fillMaxWidth()
             .wrapContentHeight(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.brifeColors.componentDefault),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         HomeNewsCardContent(

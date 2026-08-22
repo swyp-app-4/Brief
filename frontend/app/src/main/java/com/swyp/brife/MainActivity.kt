@@ -19,12 +19,18 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
+import com.swyp.brife.data.local.ThemeModeLocalStorage
 import com.swyp.brife.navigation.AppNavGraph
 import com.swyp.brife.feature.notification.BriefNotificationHelper
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.ThemeMode
 
 class MainActivity : ComponentActivity() {
 
@@ -86,7 +92,23 @@ class MainActivity : ComponentActivity() {
         notificationPrimaryNewsId = extractPrimaryNewsIdFromIntent(intent)
 
         setContent {
-            BrifeTheme {
+            val themeStorage = remember { ThemeModeLocalStorage(applicationContext) }
+            var themeMode by remember { mutableStateOf(themeStorage.getThemeMode()) }
+            val systemDarkTheme = isSystemInDarkTheme()
+            val darkTheme = when (themeMode) {
+                ThemeMode.SYSTEM -> systemDarkTheme
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+
+            SideEffect {
+                WindowCompat.getInsetsController(window, window.decorView).apply {
+                    isAppearanceLightStatusBars = !darkTheme
+                    isAppearanceLightNavigationBars = !darkTheme
+                }
+            }
+
+            BrifeTheme(darkTheme = darkTheme) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -100,7 +122,14 @@ class MainActivity : ComponentActivity() {
                         deepLinkVersion = deepLinkVersion,
                         notificationPrimaryNewsId = notificationPrimaryNewsId,
                         notificationAnchorVersion = notificationAnchorVersion,
-                        onNotificationAnchorConsumed = ::consumeNotificationAnchor
+                        onNotificationAnchorConsumed = ::consumeNotificationAnchor,
+                        themeMode = themeMode,
+                        isDarkTheme = darkTheme,
+                        onThemeToggle = {
+                            val nextMode = if (darkTheme) ThemeMode.LIGHT else ThemeMode.DARK
+                            themeStorage.saveThemeMode(nextMode)
+                            themeMode = nextMode
+                        }
                     )
                 }
             }

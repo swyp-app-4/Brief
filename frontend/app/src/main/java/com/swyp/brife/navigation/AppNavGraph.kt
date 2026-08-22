@@ -50,6 +50,7 @@ import com.swyp.brife.feature.notification.FcmTokenRegistrar
 import com.swyp.brife.feature.setting.OneToOneInquiryRoute
 import android.widget.Toast
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.swyp.brife.ui.theme.ThemeMode
 
 
 @Composable
@@ -59,7 +60,10 @@ fun AppNavGraph(
     deepLinkVersion: Int = 0,
     notificationPrimaryNewsId: Long? = null,
     notificationAnchorVersion: Int = 0,
-    onNotificationAnchorConsumed: () -> Unit = {}
+    onNotificationAnchorConsumed: () -> Unit = {},
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    isDarkTheme: Boolean = false,
+    onThemeToggle: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -424,6 +428,9 @@ fun AppNavGraph(
                 },
                 onAlarmSettingClick = { navController.navigate(NavRoutes.ALARM_SETTING) },
                 onWidgetSettingClick = { navController.navigate(NavRoutes.WIDGET_INSTALL_GUIDE) },
+                themeMode = themeMode,
+                isDarkTheme = isDarkTheme,
+                onThemeToggle = onThemeToggle,
                 onInquiryClick = { navController.navigate(NavRoutes.INQUIRY) },
                 onTermsClick = {
                     CustomTabsIntent.Builder().setShowTitle(true).build()

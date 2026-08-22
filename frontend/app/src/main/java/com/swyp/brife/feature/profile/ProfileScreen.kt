@@ -44,6 +44,7 @@ import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextSubtitle
+import com.swyp.brife.ui.theme.brifeColors
 
 @Composable
 fun ProfileScreen(
@@ -56,7 +57,7 @@ fun ProfileScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.brifeColors.backgroundDefault)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -137,7 +138,7 @@ private fun GuestContent(
             .width(80.dp),
         shape = RoundedCornerShape(30.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White,
+            containerColor = MaterialTheme.brifeColors.backgroundDefault,
             contentColor = PrimaryNormal
         ),
         border = BorderStroke(1.dp, PrimaryNormal),
@@ -146,7 +147,7 @@ private fun GuestContent(
         AppText(
             text = "로그인",
             style = MaterialTheme.typography.labelSmall,
-            color = TextBody
+            color = MaterialTheme.brifeColors.textBody
         )
     }
 
@@ -195,9 +196,9 @@ private fun InterestBox(interests: List<ProfileCategoryItem>) {
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .border(1.dp, BorderDefault, RoundedCornerShape(16.dp))
+            .border(1.dp, MaterialTheme.brifeColors.borderDefault, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White),
+            .background(MaterialTheme.brifeColors.backgroundDefault),
         verticalAlignment = Alignment.CenterVertically
     ) {
         interests.forEachIndexed { index, item ->
@@ -217,7 +218,7 @@ private fun InterestBox(interests: List<ProfileCategoryItem>) {
                 AppText(
                     text = item.name,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextBody,
+                    color = MaterialTheme.brifeColors.textBody,
                     textAlign = TextAlign.Center
                 )
             }
@@ -228,7 +229,7 @@ private fun InterestBox(interests: List<ProfileCategoryItem>) {
                         .width(1.dp)
                         .fillMaxHeight()
                         .padding(vertical = 12.dp)
-                        .background(BorderDefault)
+                        .background(MaterialTheme.brifeColors.borderDefault)
                 )
             }
         }
@@ -243,15 +244,15 @@ private fun MemberInfoBox(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderDefault, RoundedCornerShape(16.dp))
+            .border(1.dp, MaterialTheme.brifeColors.borderDefault, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
+            .background(MaterialTheme.brifeColors.backgroundDefault)
             .padding(horizontal = 20.dp, vertical = 20.dp)
     ) {
         AppText(
             text = "회원정보",
             style = MaterialTheme.typography.titleSmall,
-            color = TextSubtitle
+            color = MaterialTheme.brifeColors.textSubtitle
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -264,12 +265,12 @@ private fun MemberInfoBox(
             AppText(
                 text = "이름",
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSubtitle
+                color = MaterialTheme.brifeColors.textSubtitle
             )
             AppText(
                 text = userName,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextBody
+                color = MaterialTheme.brifeColors.textBody
             )
         }
 
@@ -283,12 +284,12 @@ private fun MemberInfoBox(
             AppText(
                 text = "계정 이메일",
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSubtitle
+                color = MaterialTheme.brifeColors.textSubtitle
             )
             AppText(
                 text = userEmail,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextBody
+                color = MaterialTheme.brifeColors.textBody
             )
         }
     }
@@ -299,9 +300,9 @@ private fun ResetInterestBox(onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderDefault, RoundedCornerShape(16.dp))
+            .border(1.dp, MaterialTheme.brifeColors.borderDefault, RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
+            .background(MaterialTheme.brifeColors.backgroundDefault)
             .clickable { onClick() }
             .padding(horizontal = 20.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -310,7 +311,7 @@ private fun ResetInterestBox(onClick: () -> Unit) {
         AppText(
             text = "관심사 재설정",
             style = MaterialTheme.typography.labelMedium,
-            color = TextSubtitle
+            color = MaterialTheme.brifeColors.textSubtitle
         )
         Image(
             painter = painterResource(id = R.drawable.ic_next),

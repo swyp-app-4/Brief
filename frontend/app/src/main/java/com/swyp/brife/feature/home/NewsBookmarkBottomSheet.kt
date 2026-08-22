@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.R
 import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.ui.component.AppText
@@ -59,8 +60,8 @@ fun NewsBookmarkBottomSheet(
         },
         sheetState = sheetState,
         dragHandle = null,
-        containerColor = Color.White,
-        contentColor = Color.Black
+        containerColor = MaterialTheme.brifeColors.backgroundDefault,
+        contentColor = MaterialTheme.brifeColors.textTitle
     ) {
         Column(
             modifier = Modifier

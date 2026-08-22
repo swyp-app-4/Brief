@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
@@ -65,6 +66,7 @@ import com.swyp.brife.feature.widget.WidgetRefreshHelper
 import com.swyp.brife.feature.widget.WidgetActionReceiver
 
 import kotlinx.coroutines.launch
+import com.swyp.brife.ui.theme.brifeColors
 
 private val GuestArchivePreviewBlurRadius = 12.dp
 
@@ -119,7 +121,8 @@ fun MainScreen(
     val isProfileEditRoute = currentRoute == NavRoutes.PROFILE_EDIT
 
     val backgroundColor =
-        if (currentRoute == NavRoutes.HOME) Color.Transparent else Color.White
+        if (currentRoute == NavRoutes.HOME) Color.Transparent
+        else MaterialTheme.brifeColors.backgroundDefault
 
     // remember {} 없이 직접 읽어 항상 최신 로그인 상태 반영
     // SharedPreferences는 메모리 캐시 기반이므로 재구성 시 호출해도 부담 없음
@@ -294,7 +297,7 @@ fun MainScreen(
 //            .background(Color.White)
 //    ) {
         Scaffold(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.brifeColors.backgroundDefault,
         topBar = {
             // 보관함 게스트 프리뷰 오버레이 활성 중에는 Scaffold topBar를 렌더링하지 않음.
             // 오버레이의 ArchivePreviewTopBar가 "보관함" 텍스트만 표시하므로
@@ -855,7 +858,7 @@ private fun ArchivePreviewTopBar() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(MaterialTheme.brifeColors.backgroundDefault)
             .statusBarsPadding()
             .height(56.dp),
         contentAlignment = Alignment.Center

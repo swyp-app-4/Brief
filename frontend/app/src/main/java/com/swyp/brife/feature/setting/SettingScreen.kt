@@ -2,6 +2,7 @@ package com.swyp.brife.feature.setting
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,8 @@ import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.TextTitle
+import com.swyp.brife.ui.theme.ThemeMode
+import com.swyp.brife.ui.theme.brifeColors
 
 
 @Composable
@@ -64,6 +67,9 @@ fun SettingScreen(
     onLoginClick: () -> Unit = {},
     onAlarmSettingClick: () -> Unit = {},
     onWidgetSettingClick: () -> Unit = {},
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    isDarkTheme: Boolean = false,
+    onThemeToggle: () -> Unit = {},
     onTermsClick: () -> Unit = {},
     onPrivacyClick: () -> Unit = {},
     onInquiryClick: () -> Unit = {},
@@ -84,7 +90,7 @@ fun SettingScreen(
     }
 
     Scaffold(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.brifeColors.backgroundDefault,
         topBar = {
             AppTopBar2(
                 title = "설정",
@@ -104,7 +110,11 @@ fun SettingScreen(
             SettingSection(title = "앱 설정") {
                 SettingNavItem(label = "알림 설정", onClick = onAlarmSettingClick)
                 SettingNavItem(label = "위젯 설정", onClick = onWidgetSettingClick)
-//                SettingNavItem(label = "테마", 라디오버튼)
+                SettingThemeItem(
+                    isDarkTheme = isDarkTheme,
+                    themeMode = themeMode,
+                    onClick = onThemeToggle
+                )
             }
 
             SettingSection(title = "정보") {
@@ -123,7 +133,7 @@ fun SettingScreen(
                     SettingTextItem(
                         label = "로그아웃",
                         onClick = { showLogoutSheet = true },
-                        color = TextSubtitle
+                        color = MaterialTheme.brifeColors.textSubtitle
                     )
                     SettingTextItem(
                         label = if (isWithdrawing) "탈퇴 처리 중..." else "회원탈퇴",
@@ -132,7 +142,7 @@ fun SettingScreen(
                                 showWithdrawConfirmDialog = true
                             }
                         },
-                        color = TextCaption
+                        color = MaterialTheme.brifeColors.textCaption
                     )
                 } else {
                     SettingTextItem(
@@ -192,14 +202,14 @@ fun SettingScreen(
                     AppText(
                         text = "회원탈퇴 실패",
                         style = MaterialTheme.typography.titleSmall,
-                        color = TextTitle
+                        color = MaterialTheme.brifeColors.textTitle
                     )
                 },
                 text = {
                     AppText(
                         text = withdrawErrorMessage,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSubtitle
+                        color = MaterialTheme.brifeColors.textSubtitle
                     )
                 },
                 confirmButton = {
@@ -211,7 +221,7 @@ fun SettingScreen(
                         )
                     }
                 },
-                containerColor = Color.White
+                containerColor = MaterialTheme.brifeColors.backgroundDefault
             )
         }
     }
@@ -225,13 +235,13 @@ private fun WithdrawConfirmDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.brifeColors.backgroundDefault,
         shape = RoundedCornerShape(24.dp),
         title = {
             AppText(
                 text = "정말로 탈퇴하시겠습니까?",
                 style = MaterialTheme.typography.titleSmall,
-                color = TextTitle,
+                color = MaterialTheme.brifeColors.textTitle,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -242,7 +252,7 @@ private fun WithdrawConfirmDialog(
                     "30일 동안 같은 소셜 계정으로 로그인하거나 재가입할 수 없고, " +
                     "탈퇴 완료 후에는 취소하거나 계정을 복구할 수 없습니다.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextSubtitle,
+                color = MaterialTheme.brifeColors.textSubtitle,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -252,7 +262,7 @@ private fun WithdrawConfirmDialog(
                 AppText(
                     text = "확인",
                     style = PrimaryButtonTextStyle,
-                    color = TextCaption
+                    color = MaterialTheme.brifeColors.textCaption
                 )
             }
         },
@@ -275,8 +285,8 @@ private fun SettingSection(
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, BorderDefault),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.brifeColors.backgroundDefault),
+        border = BorderStroke(1.dp, MaterialTheme.brifeColors.borderDefault),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -287,7 +297,7 @@ private fun SettingSection(
             AppText(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                color = TextBody,
+                color = MaterialTheme.brifeColors.textBody,
                 modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)
             )
             content()
@@ -308,13 +318,46 @@ private fun SettingNavItem(label: String, onClick: () -> Unit) {
         AppText(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSubtitle
+            color = MaterialTheme.brifeColors.textSubtitle
         )
         Icon(
             painter = painterResource(id = R.drawable.ic_next),
             contentDescription = null,
             tint = Color.Unspecified,
             modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+@Composable
+private fun SettingThemeItem(
+    isDarkTheme: Boolean,
+    themeMode: ThemeMode,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .clickable(onClick = onClick),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AppText(
+            text = "테마",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.brifeColors.textSubtitle
+        )
+        Image(
+            painter = painterResource(
+                id = if (isDarkTheme) R.drawable.theme_dark else R.drawable.theme_light
+            ),
+            contentDescription = when (themeMode) {
+                ThemeMode.SYSTEM -> "시스템 테마 사용 중"
+                ThemeMode.LIGHT -> "라이트 테마 사용 중"
+                ThemeMode.DARK -> "다크 테마 사용 중"
+            },
+            modifier = Modifier.size(36.dp)
         )
     }
 }
@@ -331,12 +374,12 @@ private fun SettingInfoItem(label: String, trailingText: String) {
         AppText(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextSubtitle
+            color = MaterialTheme.brifeColors.textSubtitle
         )
         AppText(
             text = trailingText,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextCaption
+            color = MaterialTheme.brifeColors.textCaption
         )
     }
 }

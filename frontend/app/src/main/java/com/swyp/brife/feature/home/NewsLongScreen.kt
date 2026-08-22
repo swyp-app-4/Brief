@@ -80,6 +80,8 @@ import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.brifeColors
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -192,6 +194,8 @@ fun NewsLongScreen(
     }
 
     val window = (view.context as? Activity)?.window
+    val screenBackground = MaterialTheme.brifeColors.backgroundDefault
+    val useDarkSystemBarIcons = screenBackground != DarkBackground
 
     DisposableEffect(view) {
         val effectWindow = window
@@ -212,8 +216,9 @@ fun NewsLongScreen(
     SideEffect {
         val window = (view.context as? Activity)?.window
         if (window != null) {
-            window.statusBarColor = Color.White.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+            window.statusBarColor = screenBackground.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
+                useDarkSystemBarIcons
         }
     }
 
@@ -264,7 +269,7 @@ fun NewsLongScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.brifeColors.backgroundDefault)
     ) {
         Column(
             modifier = Modifier
@@ -322,7 +327,7 @@ fun NewsLongScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .background(Color.White)
+                .background(MaterialTheme.brifeColors.backgroundDefault)
                 .navigationBarsPadding()
                 .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
@@ -431,7 +436,7 @@ private fun NewsLongContent(
                         topEnd = 24.dp
                     )
                 )
-                .background(Color.White)
+                .background(MaterialTheme.brifeColors.backgroundDefault)
                 .padding(horizontal = 24.dp, vertical = 24.dp)
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -446,7 +451,7 @@ private fun NewsLongContent(
             AppText(
                 text = item.title,
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color.Black,
+                color = MaterialTheme.brifeColors.textTitle,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
@@ -456,7 +461,7 @@ private fun NewsLongContent(
             AppText(
                 text = formatLongFormPublishedDate(item.updatedAt),
                 style = MaterialTheme.typography.bodySmall,
-                color = TextCaption
+                color = MaterialTheme.brifeColors.textCaption
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -470,14 +475,14 @@ private fun NewsLongContent(
                         color = Color(0xFFE7EBF0),
                         shape = RoundedCornerShape(14.dp)
                     )
-                    .background(Color.White)
+                    .background(MaterialTheme.brifeColors.backgroundDefault)
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 AppText(
                     text = "본 요약은 ${item.articleCount}개 언론사의 보도를\n교차 검증해 AI가 재구성한 내용입니다.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextCaption,
+                    color = MaterialTheme.brifeColors.textCaption,
                     textAlign = TextAlign.Center
                 )
             }
@@ -508,7 +513,7 @@ private fun NewsLongContent(
                         AppText(
                             text = "내용을 불러오지 못했어요.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextCaption
+                            color = MaterialTheme.brifeColors.textCaption
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         TextButton(onClick = onRetryLoadSections) {
@@ -535,7 +540,7 @@ private fun NewsLongContent(
                     AppText(
                         text = "인사이트",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color.Black
+                        color = MaterialTheme.brifeColors.textTitle
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     AppText(
@@ -567,7 +572,7 @@ private fun SimilarNewsSection(
         AppText(
             text = "브리프가 만든 추천 요약 기사예요.",
             style = MaterialTheme.typography.titleMedium,
-            color = Color.Black,
+            color = MaterialTheme.brifeColors.textTitle,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
 
@@ -655,7 +660,7 @@ private fun SimilarNewsCard(
         AppText(
             text = news.title,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-            color = Color.Black,
+            color = MaterialTheme.brifeColors.textTitle,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
@@ -816,7 +821,7 @@ private fun SummaryCard(
                 AppText(
                     text = "네줄 간편요약",
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color.Black
+                    color = MaterialTheme.brifeColors.textTitle
                 )
             }
 
@@ -868,7 +873,7 @@ private fun LongFormSectionBlock(
             AppText(
                 text = section.heading,
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = TextSubtitle
+                color = MaterialTheme.brifeColors.textSubtitle
             )
         }
 
@@ -878,7 +883,7 @@ private fun LongFormSectionBlock(
             AppText(
                 text = line,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextBody,
+                color = MaterialTheme.brifeColors.textBody,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
         }
@@ -895,7 +900,7 @@ private fun NewsLongTopBar(
 ) {
     TopAppBar(
         modifier = Modifier
-            .background(Color.White)
+            .background(MaterialTheme.brifeColors.backgroundDefault)
             .statusBarsPadding()
             .height(NewsLongTopBarContentHeight),
         title = {},
@@ -936,8 +941,8 @@ private fun NewsLongTopBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.White,
-            scrolledContainerColor = Color.White
+            containerColor = MaterialTheme.brifeColors.backgroundDefault,
+            scrolledContainerColor = MaterialTheme.brifeColors.backgroundDefault
         ),
         windowInsets = WindowInsets(0, 0, 0, 0)
     )
@@ -975,7 +980,7 @@ private fun NewsSourcesBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.brifeColors.backgroundDefault,
         dragHandle = null
     ) {
         Column(
@@ -987,7 +992,7 @@ private fun NewsSourcesBottomSheet(
             AppText(
                 text = "관련 뉴스기사",
                 style = MaterialTheme.typography.titleMedium,
-                color = Color.Black,
+                color = MaterialTheme.brifeColors.textTitle,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -1015,7 +1020,7 @@ private fun NewsSourcesBottomSheet(
                         AppText(
                             text = "기사를 불러오지 못했어요.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextCaption
+                            color = MaterialTheme.brifeColors.textCaption
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         TextButton(onClick = onRetry) {
@@ -1038,7 +1043,7 @@ private fun NewsSourcesBottomSheet(
                         AppText(
                             text = "관련 뉴스기사가 없습니다.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = TextCaption
+                            color = MaterialTheme.brifeColors.textCaption
                         )
                     }
                 }
@@ -1096,7 +1101,7 @@ private fun NewsSourceCard(
             AppText(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Black,
+                color = MaterialTheme.brifeColors.textTitle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -1105,7 +1110,7 @@ private fun NewsSourceCard(
                 AppText(
                     text = metaText,
                     style = MaterialTheme.typography.bodySmall,
-                    color = TextCaption
+                    color = MaterialTheme.brifeColors.textCaption
                 )
             }
         }

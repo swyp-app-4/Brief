@@ -72,6 +72,7 @@ import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
+import com.swyp.brife.ui.theme.brifeColors
 
 private const val SPECIAL_CHAR_ONLY_ERROR = "SPECIAL_CHAR_ONLY"
 private const val SEARCH_QUERY_MAX_LENGTH = 20
@@ -138,7 +139,7 @@ fun ArchiveScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White)
+                    .background(MaterialTheme.brifeColors.backgroundDefault)
             ) {
                 ArchiveSearchTopBar(
                     searchQuery = searchQuery,
@@ -216,7 +217,7 @@ fun ArchiveScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White)
+                    .background(MaterialTheme.brifeColors.backgroundDefault)
                     .padding(horizontal = 24.dp)
                     .verticalScroll(rememberScrollState())
             ) {
@@ -250,7 +251,7 @@ fun ArchiveScreen(
                     append("개")
                 },
                 style = MaterialTheme.typography.titleSmall,
-                color = Color.Black,
+                color = MaterialTheme.brifeColors.textTitle,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -301,7 +302,7 @@ fun ArchiveScreen(
                             AppText(
                                 text = "${favoriteItemCount}개",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = TextBody
+                                color = MaterialTheme.brifeColors.textBody
                             )
                         }
                         Image(
@@ -354,7 +355,7 @@ fun ArchiveScreen(
                                     AppText(
                                         text = "${folder.itemCount}개",
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = TextBody
+                                        color = MaterialTheme.brifeColors.textBody
                                     )
                                 }
 
@@ -388,7 +389,7 @@ fun ArchiveScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(MaterialTheme.brifeColors.backgroundDefault)
                     .navigationBarsPadding()
                     .padding(horizontal = 24.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -501,12 +502,12 @@ private fun ArchiveSearchTopBar(
             modifier = Modifier
                 .weight(1f)
                 .background(
-                    color = ComponentDefault,
+                    color = MaterialTheme.brifeColors.componentDefault,
                     shape = RoundedCornerShape(999.dp)
                 )
                 .border(
                     width = 1.6.dp,
-                    color = TextCaption,
+                    color = MaterialTheme.brifeColors.textCaption,
                     shape = RoundedCornerShape(999.dp)
                 )
                 .padding(horizontal = 14.dp, vertical = 12.dp),
@@ -515,7 +516,7 @@ private fun ArchiveSearchTopBar(
             Icon(
                 painter = painterResource(id = R.drawable.ic_explore_search),
                 contentDescription = null,
-                tint = TextCaption,
+                tint = MaterialTheme.brifeColors.textCaption,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -530,7 +531,7 @@ private fun ArchiveSearchTopBar(
                 modifier = Modifier
                     .weight(1f)
                     .focusRequester(focusRequester),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextSubtitle),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.brifeColors.textSubtitle),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { onSearchSubmit() }),
                 singleLine = true,
@@ -541,7 +542,7 @@ private fun ArchiveSearchTopBar(
                             AppText(
                                 text = "저장한 기사 제목을 입력해주세요",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = TextCaption
+                                color = MaterialTheme.brifeColors.textCaption
                             )
                         }
                         innerTextField()
@@ -608,7 +609,7 @@ private fun ArchiveSearchResultsBody(
                 append(" 관련 뉴스")
             },
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = TextSubtitle,
+            color = MaterialTheme.brifeColors.textSubtitle,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, top = 16.dp, bottom = 4.dp)
@@ -633,7 +634,7 @@ private fun ArchiveSearchFilterChip(
     AppText(
         text = text,
         style = MaterialTheme.typography.bodySmall,
-        color = TextBody,
+        color = MaterialTheme.brifeColors.textBody,
         modifier = modifier
             .background(
                 color = if (selected) InterestSelectedLight else ComponentDefault,
@@ -700,7 +701,7 @@ private fun ArchiveSearchStateBody(
         AppText(
             text = text,
             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-            color = TextCaption,
+            color = MaterialTheme.brifeColors.textCaption,
             textAlign = TextAlign.Center
         )
     }
@@ -729,12 +730,12 @@ private fun ArchiveRecentSearches(
             AppText(
                 text = "최근 검색어",
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = TextSubtitle
+                color = MaterialTheme.brifeColors.textSubtitle
             )
             AppText(
                 text = "전체 삭제",
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = TextCaption,
+                color = MaterialTheme.brifeColors.textCaption,
                 modifier = Modifier.clickable { onClearAllRecentQueries() }
             )
         }
@@ -757,7 +758,7 @@ private fun ArchiveRecentSearches(
                 AppText(
                     text = query,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextCaption,
+                    color = MaterialTheme.brifeColors.textCaption,
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
@@ -783,12 +784,12 @@ private fun ArchiveSearchBar(
         modifier = modifier
             .clickable { onClick() }
             .background(
-                color = ComponentDefault,
+                color = MaterialTheme.brifeColors.componentDefault,
                 shape = RoundedCornerShape(999.dp)
             )
             .border(
                 width = 1.6.dp,
-                color = TextCaption,
+                color = MaterialTheme.brifeColors.textCaption,
                 shape = RoundedCornerShape(999.dp)
             )
             .padding(horizontal = 14.dp, vertical = 12.dp),
@@ -797,14 +798,14 @@ private fun ArchiveSearchBar(
         Icon(
             painter = painterResource(id = R.drawable.ic_explore_search),
             contentDescription = null,
-            tint = TextCaption,
+            tint = MaterialTheme.brifeColors.textCaption,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         AppText(
             text = "저장한 기사 제목을 입력해주세요",
             style = MaterialTheme.typography.bodyMedium,
-            color = TextCaption,
+            color = MaterialTheme.brifeColors.textCaption,
             modifier = Modifier.weight(1f)
         )
     }
@@ -829,7 +830,7 @@ private fun ArchiveSelectionModeBanner(
         AppText(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Black,
+            color = MaterialTheme.brifeColors.textTitle,
             modifier = Modifier.weight(1f)
         )
         TextButton(onClick = onCancelClick) {
@@ -859,13 +860,13 @@ fun ArchiveFolderCard(
         colors = CardDefaults.cardColors(
             containerColor = when {
                 selected -> InterestSelectedLight
-                isSelectionMode -> ComponentDefault.copy(alpha = 0.95f)
-                else -> ComponentDefault
+                isSelectionMode -> MaterialTheme.brifeColors.componentDefault.copy(alpha = 0.95f)
+                else -> MaterialTheme.brifeColors.componentDefault
             }
         ),
         border = when {
             selected -> BorderStroke(1.dp, PrimaryNormal)
-            isSelectionMode -> BorderStroke(1.dp, BorderDefault)
+            isSelectionMode -> BorderStroke(1.dp, MaterialTheme.brifeColors.borderDefault)
             else -> null
         }
     ) {

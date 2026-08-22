@@ -27,7 +27,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -59,6 +58,7 @@ import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
+import com.swyp.brife.ui.theme.brifeColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -88,7 +88,7 @@ fun ExploreScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.brifeColors.backgroundDefault)
     ) {
         ExploreTopBar(
             isSearchActive = isSearchActive,
@@ -194,7 +194,7 @@ private fun ExploreTopBar(
             modifier = Modifier
                 .weight(1f)
                 .clip(RoundedCornerShape(10.dp))
-                .background(ComponentDefault)
+                .background(MaterialTheme.brifeColors.componentDefault)
                 .padding(horizontal = 14.dp, vertical = 12.dp)
                 .then(
                     if (!isSearchActive) Modifier.clickable { onSearchBarClick() }
@@ -205,7 +205,7 @@ private fun ExploreTopBar(
             Icon(
                 painter = painterResource(id = R.drawable.ic_explore_search),
                 contentDescription = null,
-                tint = TextCaption,
+                tint = MaterialTheme.brifeColors.textCaption,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -221,7 +221,7 @@ private fun ExploreTopBar(
                     modifier = Modifier
                         .weight(1f)
                         .focusRequester(focusRequester),
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextSubtitle),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.brifeColors.textSubtitle),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { onSearch(searchQuery) }),
                     singleLine = true,
@@ -232,7 +232,7 @@ private fun ExploreTopBar(
                                 AppText(
                                     text = "검색어를 입력해주세요",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = TextCaption
+                                    color = MaterialTheme.brifeColors.textCaption
                                 )
                             }
                             innerTextField()
@@ -255,7 +255,7 @@ private fun ExploreTopBar(
                 AppText(
                     text = "검색어를 입력해주세요",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextCaption,
+                    color = MaterialTheme.brifeColors.textCaption,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -350,14 +350,14 @@ private fun RecentNewsHeader(lastUpdatedTime: String, modifier: Modifier = Modif
                 append("뉴스")
             },
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = TextSubtitle
+            color = MaterialTheme.brifeColors.textSubtitle
         )
 
         if (lastUpdatedTime.isNotBlank()) {
             AppText(
                 text = "$lastUpdatedTime 기준",
                 style = MaterialTheme.typography.labelSmall,
-                color = TextCaption
+                color = MaterialTheme.brifeColors.textCaption
             )
         }
     }
@@ -387,12 +387,12 @@ private fun ExploreSearchingBody(
             AppText(
                 text = "최근 검색어",
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = TextSubtitle
+                color = MaterialTheme.brifeColors.textSubtitle
             )
             AppText(
                 text = "전체 삭제",
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = TextCaption,
+                color = MaterialTheme.brifeColors.textCaption,
                 modifier = Modifier.clickable { onClearAllRecentQueries() }
             )
         }
@@ -415,7 +415,7 @@ private fun ExploreSearchingBody(
                 AppText(
                     text = query,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextCaption,
+                    color = MaterialTheme.brifeColors.textCaption,
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
@@ -477,7 +477,7 @@ private fun ExploreResultsBody(
                     append(" 관련 뉴스")
                 },
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = TextSubtitle,
+                color = MaterialTheme.brifeColors.textSubtitle,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, bottom = 4.dp)
@@ -516,11 +516,7 @@ private fun ExploreScrollTopButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (isSystemInDarkTheme()) {
-        Color(0xFF212328).copy(alpha = 0.9f)
-    } else {
-        BgDefault.copy(alpha = 0.9f)
-    }
+    val backgroundColor = MaterialTheme.brifeColors.componentDefault.copy(alpha = 0.9f)
 
     Box(
         modifier = modifier
@@ -597,7 +593,7 @@ private fun ExploreStateBody(
         AppText(
             text = text,
             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-            color = TextCaption,
+            color = MaterialTheme.brifeColors.textCaption,
             textAlign = TextAlign.Center
         )
     }

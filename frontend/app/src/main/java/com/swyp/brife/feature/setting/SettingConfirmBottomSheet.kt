@@ -16,6 +16,7 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
+import com.swyp.brife.ui.theme.brifeColors
 
 // HomeToLoginBottomSheet와 동일한 구조 — 일러스트·텍스트·버튼 텍스트만 파라미터로 분리
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,7 +44,7 @@ internal fun SettingConfirmBottomSheet(
                     .fillMaxWidth()
                     .padding(top = 80.dp)
                     .background(
-                        color = Color.White,
+                        color = MaterialTheme.brifeColors.backgroundDefault,
                         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                     )
                     .padding(horizontal = 24.dp)
@@ -77,7 +78,7 @@ internal fun SettingConfirmBottomSheet(
                         .heightIn(min = 50.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = CtaDisabled,
+                        containerColor = MaterialTheme.brifeColors.ctaDisabled,
                         contentColor = Color.White
                     )
                 ) {

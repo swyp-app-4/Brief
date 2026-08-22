@@ -1,6 +1,7 @@
 package com.swyp.brife.feature.home
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -32,6 +33,8 @@ import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
 import kotlin.math.absoluteValue
 import com.swyp.brife.R
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.brifeColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -196,12 +199,24 @@ fun HomeScreen(
             (maxCardHeight - minCardHeight).value).coerceIn(0f, 1f)
         val pagerHeight = cardHeight + pagerCardHeightDifference
 
-        Image(
-            painter = painterResource(id = R.drawable.homescreen_bg),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
+        if (MaterialTheme.colorScheme.background == DarkBackground) {
+            val accentColor = MaterialTheme.brifeColors.homeAccent
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawRect(DarkBackground)
+                drawCircle(
+                    color = accentColor,
+                    radius = size.minDimension * 0.72f,
+                    center = Offset(size.width / 2f, size.height * 0.18f)
+                )
+            }
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.homescreen_bg),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
 
         Column(
             modifier = Modifier
@@ -282,7 +297,9 @@ fun HomeScreen(
                                 },
                             shape = RoundedCornerShape(20.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.brifeColors.componentDefault
+                            )
                         ) {
                             if (isLoading) {
                                 HomeNewsCardSkeleton()

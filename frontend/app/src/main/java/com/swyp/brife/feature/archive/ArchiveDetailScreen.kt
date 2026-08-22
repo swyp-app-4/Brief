@@ -28,6 +28,7 @@ import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextTitle
+import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.R
 
 
@@ -93,7 +94,7 @@ fun ArchiveDetailScreen(
                 onMoreClick = { showMoreSheet = true }
             )
         },
-        containerColor = Color.White
+        containerColor = MaterialTheme.brifeColors.backgroundDefault
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -116,7 +117,7 @@ fun ArchiveDetailScreen(
                             AppText(
                                 text = "총 ${sortedItems.size}개",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = TextCaption
+                                color = MaterialTheme.brifeColors.textCaption
                             )
                             Row(
                                 modifier = Modifier.clickable { showFilterSheet = true },
@@ -132,7 +133,7 @@ fun ArchiveDetailScreen(
                                 AppText(
                                     text = sortType.label,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = TextCaption
+                                    color = MaterialTheme.brifeColors.textCaption
                                 )
                             }
                         }
@@ -248,7 +249,7 @@ private fun ArchiveEmptyState(modifier: Modifier = Modifier) {
         AppText(
             text = "뉴스를 추가하여\n보고싶은 소식을 모아보세요",
             style = MaterialTheme.typography.bodyMedium,
-            color = TextCaption,
+            color = MaterialTheme.brifeColors.textCaption,
             textAlign = TextAlign.Center
         )
     }
@@ -287,7 +288,7 @@ private fun ArchiveDetailMoreBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.brifeColors.backgroundDefault,
         dragHandle = null
     ) {
         Column(
@@ -307,7 +308,7 @@ private fun ArchiveDetailMoreBottomSheet(
                 AppText(
                     text = "목록 편집",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextTitle
+                    color = MaterialTheme.brifeColors.textTitle
                 )
             }
 
@@ -346,7 +347,7 @@ private fun SortFilterBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.brifeColors.backgroundDefault,
         dragHandle = null
     ) {
         Column(
@@ -366,7 +367,7 @@ private fun SortFilterBottomSheet(
                     AppText(
                         text = type.label,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (type == currentSort) PrimaryNormal else TextTitle
+                        color = if (type == currentSort) PrimaryNormal else MaterialTheme.brifeColors.textTitle
                     )
                 }
                 if (index < SortType.entries.lastIndex) {
@@ -448,7 +449,7 @@ fun ArchiveNewsCard(
             .height(110.dp)
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.brifeColors.backgroundDefault),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -467,7 +468,7 @@ fun ArchiveNewsCard(
                 AppText(
                     text = item.title,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black,
+                    color = MaterialTheme.brifeColors.textTitle,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -478,7 +479,7 @@ fun ArchiveNewsCard(
                     AppText(
                         text = item.time,
                         style = MaterialTheme.typography.labelSmall,
-                        color = TextCaption
+                        color = MaterialTheme.brifeColors.textCaption
                     )
 
                 }
