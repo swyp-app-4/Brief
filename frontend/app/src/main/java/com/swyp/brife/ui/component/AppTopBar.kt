@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swyp.brife.R
+import com.swyp.brife.ui.theme.brifeColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +53,7 @@ fun AppTopBar(
                             painter = painterResource(id = R.drawable.ic_next),
                             contentDescription = "뒤로가기",
                             modifier = Modifier.rotate(180f),
-                            tint = Color.Unspecified
+                            tint = MaterialTheme.brifeColors.topBarIcon
                         )
                     }
                 }
@@ -72,7 +73,11 @@ fun AppTopBar(
         actions = {
             if (showSearch) {
                 IconButton(onClick = { /* 검색 로직 */ }) {
-                    Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "Search")
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_search),
+                        contentDescription = "Search",
+                        tint = MaterialTheme.brifeColors.topBarIcon
+                    )
                 }
             }
 
@@ -81,7 +86,7 @@ fun AppTopBar(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_archive_more),
                         contentDescription = "더보기",
-                        tint = Color.Unspecified
+                        tint = MaterialTheme.brifeColors.topBarIcon
                     )
                 }
             }
@@ -90,7 +95,8 @@ fun AppTopBar(
                 IconButton(onClick = onSettingClick) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_setting),
-                        contentDescription = "Settings"
+                        contentDescription = "Settings",
+                        tint = MaterialTheme.brifeColors.topBarIcon
                     )
                 }
             } else if (centerTitle && !showMore) {

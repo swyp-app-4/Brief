@@ -1,7 +1,6 @@
 package com.swyp.brife.feature.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -18,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.geometry.Offset
@@ -200,15 +200,19 @@ fun HomeScreen(
         val pagerHeight = cardHeight + pagerCardHeightDifference
 
         if (MaterialTheme.colorScheme.background == DarkBackground) {
-            val accentColor = MaterialTheme.brifeColors.homeAccent
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawRect(DarkBackground)
-                drawCircle(
-                    color = accentColor,
-                    radius = size.minDimension * 0.72f,
-                    center = Offset(size.width / 2f, size.height * 0.18f)
-                )
-            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colorStops = arrayOf(
+                                0f to DarkBackground,
+                                0.38f to DarkBackground,
+                                1f to MaterialTheme.brifeColors.homeAccent
+                            )
+                        )
+                    )
+            )
         } else {
             Image(
                 painter = painterResource(id = R.drawable.homescreen_bg),

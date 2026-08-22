@@ -50,7 +50,7 @@ fun AppTopBar2(
             Icon(
                 painter = painterResource(id = R.drawable.ic_back),
                 contentDescription = "뒤로가기",
-                tint = Color.Unspecified
+                tint = MaterialTheme.brifeColors.topBarIcon
             )
         }
 

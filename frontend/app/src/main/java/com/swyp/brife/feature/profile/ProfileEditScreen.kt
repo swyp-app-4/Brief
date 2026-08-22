@@ -51,6 +51,7 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextTitle
+import com.swyp.brife.ui.theme.brifeColors
 
 private data class ProfileImageOption(
     @DrawableRes val fullImageRes: Int,
@@ -198,7 +199,7 @@ private fun ProfileEditTopBar(
             Icon(
                 painter = painterResource(id = R.drawable.ic_back),
                 contentDescription = "뒤로가기",
-                tint = Color.Unspecified
+                tint = MaterialTheme.brifeColors.topBarIcon
             )
         }
 

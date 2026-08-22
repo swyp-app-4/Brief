@@ -910,7 +910,7 @@ private fun NewsLongTopBar(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = "뒤로가기",
-                        tint = Color.Unspecified
+                        tint = MaterialTheme.brifeColors.topBarIcon
                     )
                 }
             }
@@ -935,7 +935,7 @@ private fun NewsLongTopBar(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_upload),
                         contentDescription = "공유",
-                        tint = Color.Unspecified
+                        tint = MaterialTheme.brifeColors.topBarIcon
                     )
                 }
             }

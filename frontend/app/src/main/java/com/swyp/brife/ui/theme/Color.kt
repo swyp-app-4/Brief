@@ -69,7 +69,7 @@ val Gray900 = Color(0xFF1E1F24)
 
 // Dark mode tokens
 val DarkTextTitle = Color(0xFFFFFFFF)
-val DarkTextSubtitle = Color(0xFF212225)
+val DarkTextSubtitle = Color(0xFFFFFFFF)
 val DarkBackground = Color(0xFF111113)
 val DarkBorderDefault = Color(0xFF292A2D)
 val DarkBorderStrong = Color(0xFF6C6E79)
