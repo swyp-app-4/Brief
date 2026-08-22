@@ -7,20 +7,23 @@ import com.brife.notification.dto.TopNewsNotificationItem;
 import com.brife.notification.entity.UserNotificationSetting;
 import com.brife.notification.repository.UserNotificationSettingRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.brife.notification.dto.request.FcmTokenRequest;
 import com.brife.notification.entity.UserFcmToken;
 import com.brife.notification.repository.UserFcmTokenRepository;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.AndroidConfig;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
 
 import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class NotificationSettingService {
@@ -28,11 +31,12 @@ public class NotificationSettingService {
     private final UserNotificationSettingRepository userNotificationSettingRepository;
     private final UserFcmTokenRepository userFcmTokenRepository;
     private final TopNewsNotificationPayloadFactory topNewsNotificationPayloadFactory;
+    private final FirebaseMessageSender firebaseMessageSender;
 
     @Transactional(readOnly = true)
     public NotificationSettingResponse getSettings(Long userId) {
         UserNotificationSetting setting = userNotificationSettingRepository.findByUserId(userId)
-                .orElseGet(() -> userNotificationSettingRepository.save(new UserNotificationSetting(userId)));
+                .orElseGet(() -> new UserNotificationSetting(userId));
         return new NotificationSettingResponse(setting);
     }
 
@@ -71,18 +75,16 @@ public class NotificationSettingService {
             messageBuilder.putData("newsId", String.valueOf(newsId));
         }
 
-        try {
-            FirebaseMessaging.getInstance().send(messageBuilder.build());
-        } catch (Exception e) {
-            throw new RuntimeException("푸시 알림 전송 실패: " + e.getMessage());
-        }
+        deliver(userId, fcmToken.getFcmToken(), messageBuilder.build());
     }
 
-    public void sendTop5NewsNotification(Long userId,
-                                         NewsNotificationSlot slot,
-                                         List<TopNewsNotificationItem> newsItems) {
-        UserFcmToken fcmToken = userFcmTokenRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("FCM 토큰이 없습니다."));
+    public PushDeliveryResult sendTop5NewsNotification(Long userId,
+                                                       NewsNotificationSlot slot,
+                                                       List<TopNewsNotificationItem> newsItems) {
+        UserFcmToken fcmToken = userFcmTokenRepository.findByUserId(userId).orElse(null);
+        if (fcmToken == null) {
+            return PushDeliveryResult.SKIPPED_NO_TOKEN;
+        }
         Map<String, String> payload = topNewsNotificationPayloadFactory.create(slot, newsItems);
 
         Message message = Message.builder()
@@ -93,9 +95,19 @@ public class NotificationSettingService {
                 .putAllData(payload)
                 .build();
 
+        return deliver(userId, fcmToken.getFcmToken(), message);
+    }
+
+    private PushDeliveryResult deliver(Long userId, String failedToken, Message message) {
         try {
-            FirebaseMessaging.getInstance().send(message);
-        } catch (Exception e) {
+            firebaseMessageSender.send(message);
+            return PushDeliveryResult.SENT;
+        } catch (FirebaseMessagingException e) {
+            if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED) {
+                int deleted = userFcmTokenRepository.deleteByUserIdAndFcmToken(userId, failedToken);
+                log.warn("Invalid FCM token handled. userId={}, removed={}", userId, deleted == 1);
+                return PushDeliveryResult.INVALID_TOKEN_REMOVED;
+            }
             throw new RuntimeException("푸시 알림 전송 실패: " + e.getMessage(), e);
         }
     }

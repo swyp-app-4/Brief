@@ -7,6 +7,7 @@ import com.brife.notification.dto.TopNewsNotificationItem;
 import com.brife.notification.entity.UserNotificationSetting;
 import com.brife.notification.repository.UserNotificationSettingRepository;
 import com.brife.notification.service.NotificationSettingService;
+import com.brife.notification.service.PushDeliveryResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -68,9 +69,14 @@ public class NotificationScheduler {
                     continue;
                 }
 
-                notificationSettingService.sendTop5NewsNotification(userId, slot, newsItems);
-                log.info("Top5 push notification sent. userId={}, slot={}, primaryNewsId={}, newsCount={}",
-                        userId, slot, newsItems.getFirst().newsId(), newsItems.size());
+                PushDeliveryResult result = notificationSettingService
+                        .sendTop5NewsNotification(userId, slot, newsItems);
+                if (result == PushDeliveryResult.SENT) {
+                    log.info("Top5 push notification sent. userId={}, slot={}, primaryNewsId={}, newsCount={}",
+                            userId, slot, newsItems.getFirst().newsId(), newsItems.size());
+                } else if (result == PushDeliveryResult.SKIPPED_NO_TOKEN) {
+                    log.debug("Push notification skipped because no FCM token exists. userId={}", userId);
+                }
             } catch (Exception e) {
                 log.error("Push notification failed. userId={}", userId, e);
             }
