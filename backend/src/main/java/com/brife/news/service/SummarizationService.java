@@ -28,7 +28,9 @@ public class SummarizationService {
 
     private static final int MAX_CHARS_PER_ARTICLE  = 8_000;
     private static final int MAX_CHARS_PER_CLUSTER  = 30_000;
-    private static final int MIN_TOTAL_SECTION_LENGTH   = 1200;
+    private static final int MIN_TOTAL_SECTION_LENGTH   = 900;
+    private static final int MAX_TOTAL_SECTION_LENGTH   = 1200;
+    private static final int LENGTH_INCREMENT_PER_SOURCE = 50;
     private static final int MIN_SECTION_CONTENT_LENGTH = 280;
 
     private static final String SYSTEM_PROMPT = """
@@ -267,8 +269,10 @@ public class SummarizationService {
         }
 
         int totalLen = totalSectionContentLength(result);
-        if (totalLen < MIN_TOTAL_SECTION_LENGTH)
-            return String.format("전체 섹션 길이(%d자)가 최소 기준(%d자)에 미달합니다.", totalLen, MIN_TOTAL_SECTION_LENGTH);
+        int minimumTotalLength = minimumTotalSectionLength(result);
+        if (totalLen < minimumTotalLength)
+            return String.format("전체 섹션 길이(%d자)가 근거 기사 수 기준 최소 길이(%d자)에 미달합니다.",
+                    totalLen, minimumTotalLength);
         for (int i = 0; i < sections.size(); i++) {
             String content = sections.get(i).getContent();
             int len = content == null ? 0 : content.length();
@@ -276,6 +280,18 @@ public class SummarizationService {
                 return String.format("섹션 %d의 내용 길이(%d자)가 최소 기준(%d자)에 미달합니다.", i + 1, len, MIN_SECTION_CONTENT_LENGTH);
         }
         return null;
+    }
+
+    int minimumTotalSectionLength(SynthesisResult result) {
+        int relevantSourceCount = result == null || result.getRelevantArticleIndexes() == null
+                ? 0
+                : (int) result.getRelevantArticleIndexes().stream()
+                        .filter(java.util.Objects::nonNull)
+                        .distinct()
+                        .count();
+        int normalizedSourceCount = Math.max(2, Math.min(8, relevantSourceCount));
+        return Math.min(MAX_TOTAL_SECTION_LENGTH,
+                MIN_TOTAL_SECTION_LENGTH + (normalizedSourceCount - 2) * LENGTH_INCREMENT_PER_SOURCE);
     }
 
     private String findQualityFailureReason(SynthesisResult result, List<RawArticleDto> articles) {

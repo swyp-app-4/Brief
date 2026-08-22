@@ -67,6 +67,10 @@ resilience4j:
         limit-for-period: 60
         limit-refresh-period: 60s
         timeout-duration: 3s
+      naver:
+        limit-for-period: 5
+        limit-refresh-period: 1s
+        timeout-duration: 60s
   retry:
     instances:
       naver:
@@ -75,8 +79,7 @@ resilience4j:
         retry-exceptions:
           - org.springframework.web.client.ResourceAccessException
           - org.springframework.web.client.HttpServerErrorException
-        ignore-exceptions:
-          - org.springframework.web.client.HttpClientErrorException
+          - org.springframework.web.client.HttpClientErrorException$TooManyRequests
 
 logging:
   level:

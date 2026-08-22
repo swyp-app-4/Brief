@@ -79,6 +79,36 @@ class SummarizationServiceTest {
                 .hasMessageContaining("요약 품질 기준 재시도 실패");
     }
 
+    @Test
+    void scalesMinimumBodyLengthFrom900To1200ByRelevantSourceCount() {
+        SynthesisResult result = validResult();
+        result.setRelevantArticleIndexes(List.of(1, 2));
+        assertThat(service.minimumTotalSectionLength(result)).isEqualTo(900);
+
+        result.setRelevantArticleIndexes(List.of(1, 2, 3, 4, 5, 6));
+        assertThat(service.minimumTotalSectionLength(result)).isEqualTo(1100);
+
+        result.setRelevantArticleIndexes(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+        assertThat(service.minimumTotalSectionLength(result)).isEqualTo(1200);
+    }
+
+    @Test
+    void appliesDynamicBodyLengthToQualityValidation() {
+        SynthesisResult result = validResult();
+        result.setSections(List.of(
+                new SectionDto("핵심 상황을 살펴보다", "가".repeat(300)),
+                new SectionDto("시장 영향을 분석하다", "나".repeat(300)),
+                new SectionDto("향후 전망은 어떨까?", "다".repeat(300))));
+        result.setRelevantArticleIndexes(List.of(1, 2));
+
+        assertThat(service.findQualityFailureReason(result)).isNull();
+
+        result.setRelevantArticleIndexes(List.of(1, 2, 3, 4, 5, 6, 7, 8));
+        assertThat(service.findQualityFailureReason(result))
+                .contains("900자")
+                .contains("1200자");
+    }
+
     private ResponseEntity<String> vertexResponse(SynthesisResult result) throws Exception {
         String generatedJson = objectMapper.writeValueAsString(result);
         String responseJson = objectMapper.writeValueAsString(Map.of(

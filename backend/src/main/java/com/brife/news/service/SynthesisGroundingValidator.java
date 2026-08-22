@@ -166,9 +166,29 @@ public class SynthesisGroundingValidator {
 
     private String joinedArticleText(List<RawArticleDto> articles) {
         return articles.stream()
-                .map(article -> safe(article.getTitle()) + " " + safe(article.getDescription()))
+                .map(this::articleEvidenceText)
                 .reduce((left, right) -> left + " " + right)
                 .orElse("");
+    }
+
+    private String articleEvidenceText(RawArticleDto article) {
+        StringBuilder evidence = new StringBuilder()
+                .append(safe(article.getTitle()))
+                .append(' ')
+                .append(safe(article.getDescription()));
+        if (article.getPubDate() != null) {
+            int year = article.getPubDate().getYear();
+            int month = article.getPubDate().getMonthValue();
+            int day = article.getPubDate().getDayOfMonth();
+            evidence.append(' ')
+                    .append(article.getPubDate().toLocalDate())
+                    .append(' ')
+                    .append(year).append("년 ")
+                    .append(month).append("월 ")
+                    .append(day).append("일 ")
+                    .append(month).append("월 ").append(day).append("일");
+        }
+        return evidence.toString();
     }
 
     private String safe(String text) {

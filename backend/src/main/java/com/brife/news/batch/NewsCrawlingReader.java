@@ -21,6 +21,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryRegistry;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -49,6 +51,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
     private final RawNewsRepository rawNewsRepository;
     private final Executor crawlingExecutor;
     private final Retry naverRetry;
+    private final RateLimiter naverRateLimiter;
     private final NewsBatchMetrics batchMetrics;
     private final SparseCategoryQueryPolicy sparseCategoryQueryPolicy;
 
@@ -65,6 +68,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
                               RawNewsRepository rawNewsRepository,
                               @Qualifier("crawlingExecutor") Executor crawlingExecutor,
                               RetryRegistry retryRegistry,
+                              RateLimiterRegistry rateLimiterRegistry,
                               NewsBatchMetrics batchMetrics,
                               SparseCategoryQueryPolicy sparseCategoryQueryPolicy) {
         this.properties = properties;
@@ -75,6 +79,7 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
         this.rawNewsRepository = rawNewsRepository;
         this.crawlingExecutor = crawlingExecutor;
         this.naverRetry = retryRegistry.retry("naver");
+        this.naverRateLimiter = rateLimiterRegistry.rateLimiter("naver");
         this.batchMetrics = batchMetrics;
         this.sparseCategoryQueryPolicy = sparseCategoryQueryPolicy;
     }
@@ -198,7 +203,9 @@ public class NewsCrawlingReader implements ItemReader<KeywordGroupDto> {
 
     private List<PendingArticle> fetchFromNaver(String keyword) {
         try {
-            return Retry.decorateCheckedSupplier(naverRetry, () -> doFetchFromNaver(keyword)).get();
+            return Retry.decorateCheckedSupplier(naverRetry,
+                    () -> RateLimiter.decorateCheckedSupplier(
+                            naverRateLimiter, () -> doFetchFromNaver(keyword)).get()).get();
         } catch (Throwable e) {
             log.warn("[Naver API] 재시도 후 최종 실패 - keyword={}, error={}", keyword, e.getMessage());
             return Collections.emptyList();

@@ -5,6 +5,7 @@ import com.brife.news.dto.SectionDto;
 import com.brife.news.dto.SynthesisResult;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +44,36 @@ class SynthesisGroundingValidatorTest {
         assertThat(validator.findFailureReason(result, articles))
                 .contains("숫자가 근거 기사에 없습니다")
                 .contains("180편");
+    }
+
+    @Test
+    void acceptsPublicationDateAsGroundingEvidence() {
+        SynthesisResult result = result("8월 22일 주요 발표", "2026년 8월 22일 발표됐습니다.", List.of(1, 2));
+        result.setSections(List.of(
+                section("핵심", "8월 22일 발표됐습니다.", List.of(1)),
+                section("영향", "발표 내용이 확정됐습니다.", List.of(1)),
+                section("전망", "후속 일정은 아직 정해지지 않았습니다.", List.of(2))));
+        List<RawArticleDto> articles = List.of(
+                article("주요 발표", "발표 내용이 확정됐습니다.", LocalDateTime.of(2026, 8, 22, 10, 0)),
+                article("후속 일정", "후속 일정은 아직 정해지지 않았습니다.", LocalDateTime.of(2026, 8, 22, 11, 0)));
+
+        assertThat(validator.findFailureReason(result, articles)).isNull();
+    }
+
+    @Test
+    void rejectsDateThatIsNeitherInArticleTextNorPublicationMetadata() {
+        SynthesisResult result = result("8월 23일 주요 발표", "2026년 8월 23일 발표됐습니다.", List.of(1, 2));
+        result.setSections(List.of(
+                section("핵심", "8월 23일 발표됐습니다.", List.of(1)),
+                section("영향", "발표 내용이 확정됐습니다.", List.of(1)),
+                section("전망", "후속 일정은 아직 정해지지 않았습니다.", List.of(2))));
+        List<RawArticleDto> articles = List.of(
+                article("주요 발표", "발표 내용이 확정됐습니다.", LocalDateTime.of(2026, 8, 22, 10, 0)),
+                article("후속 일정", "후속 일정은 아직 정해지지 않았습니다.", LocalDateTime.of(2026, 8, 22, 11, 0)));
+
+        assertThat(validator.findFailureReason(result, articles))
+                .contains("숫자가 근거 기사에 없습니다")
+                .contains("23일");
     }
 
     @Test
@@ -121,5 +152,13 @@ class SynthesisGroundingValidatorTest {
 
     private RawArticleDto article(String title, String description) {
         return RawArticleDto.builder().title(title).description(description).build();
+    }
+
+    private RawArticleDto article(String title, String description, LocalDateTime pubDate) {
+        return RawArticleDto.builder()
+                .title(title)
+                .description(description)
+                .pubDate(pubDate)
+                .build();
     }
 }
