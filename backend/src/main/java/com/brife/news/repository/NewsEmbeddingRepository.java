@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Repository
@@ -58,6 +59,31 @@ public class NewsEmbeddingRepository {
                 "SELECT COUNT(1) FROM news_embedding WHERE news_id = ?",
                 Integer.class, newsId);
         return count != null && count > 0;
+    }
+
+    public List<SemanticDuplicateCandidate> findRecentDuplicateCandidatesByVector(
+            float[] embedding, LocalDateTime since, double minSimilarity, int limit) {
+        String vector = toVectorString(embedding);
+        String sql = """
+                SELECT sn.id,
+                       sn.title,
+                       sn.summary,
+                       1.0 - (ne.embedding <=> ?::vector) AS similarity
+                FROM news_embedding ne
+                JOIN summarized_news sn ON sn.id = ne.news_id
+                WHERE sn.is_summarized = true
+                  AND sn.created_at >= ?
+                  AND 1.0 - (ne.embedding <=> ?::vector) >= ?
+                ORDER BY ne.embedding <=> ?::vector
+                LIMIT ?
+                """;
+        return jdbcTemplate.query(sql,
+                (rs, rowNum) -> new SemanticDuplicateCandidate(
+                        rs.getLong("id"),
+                        rs.getString("title"),
+                        rs.getString("summary"),
+                        rs.getDouble("similarity")),
+                vector, since, vector, minSimilarity, vector, limit);
     }
 
     public Double findCosineSimilarity(Long firstNewsId, Long secondNewsId) {

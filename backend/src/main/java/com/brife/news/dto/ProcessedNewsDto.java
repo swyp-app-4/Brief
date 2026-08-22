@@ -18,4 +18,5 @@ public class ProcessedNewsDto {
     private int totalArticleCount;
     private LocalDate publishedDate;
     private LocalDateTime publishedAt;
+    private float[] documentEmbedding;
 }

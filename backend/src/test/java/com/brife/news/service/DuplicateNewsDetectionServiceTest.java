@@ -1,8 +1,10 @@
 package com.brife.news.service;
 
 import com.brife.news.dto.SynthesisResult;
+import com.brife.news.batch.NewsBatchMetrics;
 import com.brife.news.repository.DuplicateNewsCandidate;
 import com.brife.news.repository.NewsEmbeddingRepository;
+import com.brife.news.repository.SemanticDuplicateCandidate;
 import com.brife.news.repository.SummarizedNewsRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +21,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class DuplicateNewsDetectionServiceTest {
@@ -27,6 +30,10 @@ class DuplicateNewsDetectionServiceTest {
     private SummarizedNewsRepository summarizedNewsRepository;
     @Mock
     private NewsEmbeddingRepository newsEmbeddingRepository;
+    @Mock
+    private SemanticDuplicatePolicy semanticDuplicatePolicy;
+    @Mock
+    private NewsBatchMetrics batchMetrics;
     @InjectMocks
     private DuplicateNewsDetectionService service;
 
@@ -303,6 +310,179 @@ class DuplicateNewsDetectionServiceTest {
         );
 
         assertThat(sameEvent).isFalse();
+    }
+
+    @Test
+    void reportsCrossCategoryRewordingAsSemanticDuplicateInShadowMode() {
+        SynthesisResult result = result(
+                "카카오, AI·투자 두 축으로 인적분할…성장 재설계 승부수",
+                "카카오가 AI 사업과 투자 사업을 분리합니다.");
+        float[] embedding = new float[] {1.0f, 0.0f};
+        when(semanticDuplicatePolicy.isEnabled()).thenReturn(true);
+        when(semanticDuplicatePolicy.isBlockingEnabled()).thenReturn(false);
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(result.getTitle()), eq(result.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+        when(newsEmbeddingRepository.findRecentDuplicateCandidatesByVector(
+                eq(embedding), any(LocalDateTime.class), eq(0.85), eq(10)))
+                .thenReturn(List.of(new SemanticDuplicateCandidate(
+                        50768L,
+                        "카카오, AI·투자 '두 개의 엔진'으로 분할…성장 가속화",
+                        "카카오가 AI와 투자 부문을 분리합니다.",
+                        0.964)));
+
+        boolean duplicate = service.isDuplicateWithoutNewInformation(result, embedding);
+
+        assertThat(duplicate).isFalse();
+        verify(batchMetrics).recordSemanticDuplicateEvaluation(true, false, false);
+    }
+
+    @Test
+    void blocksSemanticDuplicateOnlyWhenBlockingFlagIsEnabled() {
+        SynthesisResult result = result(
+                "컴투스, 컴프야V26 첫 클럽 챔피언십 결선 개최",
+                "컴투스가 첫 클럽 챔피언십 결선을 개최합니다.");
+        float[] embedding = new float[] {1.0f, 0.0f};
+        when(semanticDuplicatePolicy.isEnabled()).thenReturn(true);
+        when(semanticDuplicatePolicy.isBlockingEnabled()).thenReturn(true);
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(result.getTitle()), eq(result.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+        when(newsEmbeddingRepository.findRecentDuplicateCandidatesByVector(
+                eq(embedding), any(LocalDateTime.class), eq(0.85), eq(10)))
+                .thenReturn(List.of(new SemanticDuplicateCandidate(
+                        50839L,
+                        "컴프야V26, 첫 클럽 챔피언십 결선…최강 클럽은?",
+                        "컴프야V26의 첫 클럽 챔피언십 결선이 열립니다.",
+                        0.988)));
+
+        boolean duplicate = service.isDuplicateWithoutNewInformation(result, embedding);
+
+        assertThat(duplicate).isTrue();
+        verify(batchMetrics).recordSemanticDuplicateEvaluation(true, true, false);
+    }
+
+    @Test
+    void keepsHighSimilarityFollowUpWhenConfirmedNumberChanges() {
+        SynthesisResult result = result(
+                "태풍으로 항공편 180편 결항",
+                "태풍으로 결항한 항공편이 180편으로 늘었습니다.");
+        float[] embedding = new float[] {1.0f, 0.0f};
+        when(semanticDuplicatePolicy.isEnabled()).thenReturn(true);
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(result.getTitle()), eq(result.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+        when(newsEmbeddingRepository.findRecentDuplicateCandidatesByVector(
+                eq(embedding), any(LocalDateTime.class), eq(0.85), eq(10)))
+                .thenReturn(List.of(new SemanticDuplicateCandidate(
+                        10L,
+                        "태풍으로 항공편 120편 결항",
+                        "태풍으로 항공편 120편이 결항했습니다.",
+                        0.98)));
+
+        boolean duplicate = service.isDuplicateWithoutNewInformation(result, embedding);
+
+        assertThat(duplicate).isFalse();
+        verify(batchMetrics).recordSemanticDuplicateEvaluation(false, false, true);
+    }
+
+    @Test
+    void doesNotTreatCalendarDateChangeAsMaterialUpdate() {
+        SynthesisResult result = result(
+                "8월 22일 카카오 인적분할 계획 발표",
+                "카카오가 인적분할 계획을 발표했습니다.");
+        float[] embedding = new float[] {1.0f, 0.0f};
+        when(semanticDuplicatePolicy.isEnabled()).thenReturn(true);
+        when(semanticDuplicatePolicy.isBlockingEnabled()).thenReturn(false);
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(result.getTitle()), eq(result.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+        when(newsEmbeddingRepository.findRecentDuplicateCandidatesByVector(
+                eq(embedding), any(LocalDateTime.class), eq(0.85), eq(10)))
+                .thenReturn(List.of(new SemanticDuplicateCandidate(
+                        10L,
+                        "8월 21일 카카오 인적분할 계획 발표",
+                        "카카오가 인적분할 계획을 발표했습니다.",
+                        0.99)));
+
+        boolean duplicate = service.isDuplicateWithoutNewInformation(result, embedding);
+
+        assertThat(duplicate).isFalse();
+        verify(batchMetrics).recordSemanticDuplicateEvaluation(true, false, false);
+    }
+
+    @Test
+    void keepsDifferentReactionAngleDespiteHighSemanticSimilarity() {
+        SynthesisResult result = result(
+                "카카오, 인적분할 강행에 노조 반발…공동행동 예고",
+                "카카오 노조가 인적분할에 반발해 공동행동을 예고했습니다.");
+        float[] embedding = new float[] {1.0f, 0.0f};
+        when(semanticDuplicatePolicy.isEnabled()).thenReturn(true);
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(result.getTitle()), eq(result.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+        when(newsEmbeddingRepository.findRecentDuplicateCandidatesByVector(
+                eq(embedding), any(LocalDateTime.class), eq(0.85), eq(10)))
+                .thenReturn(List.of(new SemanticDuplicateCandidate(
+                        50802L,
+                        "카카오, AI·투자 두 축으로 인적분할…성장 재설계 승부수",
+                        "카카오가 AI와 투자 사업을 두 회사로 분리합니다.",
+                        0.96)));
+
+        boolean duplicate = service.isDuplicateWithoutNewInformation(result, embedding);
+
+        assertThat(duplicate).isFalse();
+        verify(batchMetrics).recordSemanticDuplicateEvaluation(false, false, false);
+    }
+
+    @Test
+    void detectsSemanticDuplicateGeneratedEarlierInSameBatch() {
+        SynthesisResult first = result(
+                "카카오, AI·투자 '두 개의 엔진'으로 분할…성장 가속화",
+                "카카오가 AI 사업과 투자 사업을 분리합니다.");
+        SynthesisResult duplicate = result(
+                "카카오, AI·투자 두 축으로 인적분할…성장 재설계 승부수",
+                "카카오가 AI와 투자 부문을 별도 회사로 분리합니다.");
+        float[] firstEmbedding = new float[] {1.0f, 0.0f};
+        float[] duplicateEmbedding = new float[] {0.99f, 0.01f};
+        when(semanticDuplicatePolicy.isEnabled()).thenReturn(true);
+        when(semanticDuplicatePolicy.isBlockingEnabled()).thenReturn(false);
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                any(String.class), any(String.class), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+        when(newsEmbeddingRepository.findRecentDuplicateCandidatesByVector(
+                any(float[].class), any(LocalDateTime.class), eq(0.85), eq(10)))
+                .thenReturn(List.of());
+
+        assertThat(service.isDuplicateWithoutNewInformation(first, firstEmbedding)).isFalse();
+        assertThat(service.isDuplicateWithoutNewInformation(duplicate, duplicateEmbedding)).isFalse();
+
+        verify(batchMetrics).recordSemanticDuplicateEvaluation(false, false, false);
+        verify(batchMetrics).recordSemanticDuplicateEvaluation(true, false, false);
+    }
+
+    @Test
+    void keepsSemanticFollowUpWhenTentativePlanBecomesFinal() {
+        SynthesisResult result = result(
+                "정부, 주택 공급 정책 확정",
+                "정부가 검토하던 주택 공급 정책을 확정했습니다.");
+        float[] embedding = new float[] {1.0f, 0.0f};
+        when(semanticDuplicatePolicy.isEnabled()).thenReturn(true);
+        when(summarizedNewsRepository.findDuplicateCandidates(
+                eq(result.getTitle()), eq(result.getSummary()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+        when(newsEmbeddingRepository.findRecentDuplicateCandidatesByVector(
+                eq(embedding), any(LocalDateTime.class), eq(0.85), eq(10)))
+                .thenReturn(List.of(new SemanticDuplicateCandidate(
+                        10L,
+                        "정부, 주택 공급 정책 검토",
+                        "정부가 주택 공급 정책을 검토하고 있습니다.",
+                        0.97)));
+
+        boolean duplicate = service.isDuplicateWithoutNewInformation(result, embedding);
+
+        assertThat(duplicate).isFalse();
+        verify(batchMetrics).recordSemanticDuplicateEvaluation(false, false, true);
     }
 
     private SynthesisResult result(String title, String summary) {

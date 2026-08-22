@@ -10,6 +10,7 @@ import com.brife.news.exception.InvalidSynthesisResultException;
 import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.RawNewsRepository;
 import com.brife.news.service.DuplicateNewsDetectionService;
+import com.brife.news.service.EmbeddingService;
 import com.brife.news.service.SummarizationService;
 import com.brife.news.service.SynthesisGroundingValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +49,8 @@ class NewsCrawlingProcessorTest {
     @Mock
     private SynthesisGroundingValidator groundingValidator;
     @Mock
+    private EmbeddingService embeddingService;
+    @Mock
     private NewsBatchMetrics batchMetrics;
     @InjectMocks
     private NewsCrawlingProcessor processor;
@@ -83,6 +86,8 @@ class NewsCrawlingProcessorTest {
         when(groundingValidator.ground(eq(synthesis), anyList()))
                 .thenAnswer(invocation -> new SynthesisGroundingValidator.GroundedSynthesis(
                         synthesis, invocation.getArgument(1)));
+        float[] embedding = new float[] {1.0f, 0.5f};
+        when(embeddingService.embedForDocument("제목 요약")).thenReturn(embedding);
         when(objectMapper.writeValueAsString(synthesis.getSections())).thenReturn("[]");
 
         ProcessedNewsDto result = processor.process(group);
@@ -90,7 +95,37 @@ class NewsCrawlingProcessorTest {
         assertThat(result).isNotNull();
         assertThat(result.getNewArticles()).hasSize(3);
         assertThat(result.getTotalArticleCount()).isEqualTo(3);
+        assertThat(result.getDocumentEmbedding()).isSameAs(embedding);
         verify(summarizationService).synthesize(eq("경제"), eq("경제"), anyList());
+        verify(duplicateNewsDetectionService).isDuplicateWithoutNewInformation(synthesis, embedding);
+        verify(batchMetrics).incrementSemanticEmbeddingPrecomputedCount();
+    }
+
+    @Test
+    void fallsBackToLexicalDuplicateCheckWhenEmbeddingFails() throws Exception {
+        Category category = Category.builder().name("경제").query("경제").build();
+        KeywordGroupDto group = group(List.of(article("1"), article("2"), article("3")), 3);
+        SynthesisResult synthesis = new SynthesisResult();
+        synthesis.setCategoryRelevant(true);
+        synthesis.setTitle("제목");
+        synthesis.setSummary("요약");
+        synthesis.setSections(List.of(new SectionDto("소제목", "본문")));
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+        when(summarizationService.synthesize(eq("경제"), eq("경제"), anyList())).thenReturn(synthesis);
+        when(groundingValidator.ground(eq(synthesis), anyList()))
+                .thenAnswer(invocation -> new SynthesisGroundingValidator.GroundedSynthesis(
+                        synthesis, invocation.getArgument(1)));
+        when(embeddingService.embedForDocument("제목 요약"))
+                .thenThrow(new RuntimeException("embedding unavailable"));
+        when(objectMapper.writeValueAsString(synthesis.getSections())).thenReturn("[]");
+
+        ProcessedNewsDto result = processor.process(group);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getDocumentEmbedding()).isNull();
+        verify(duplicateNewsDetectionService).isDuplicateWithoutNewInformation(synthesis, null);
+        verify(batchMetrics).incrementSemanticEmbeddingFallbackCount();
     }
 
     @Test

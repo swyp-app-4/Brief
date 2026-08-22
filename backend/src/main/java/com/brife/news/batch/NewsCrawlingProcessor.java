@@ -10,6 +10,7 @@ import com.brife.news.exception.InvalidSynthesisResultException;
 import com.brife.news.repository.CategoryRepository;
 import com.brife.news.repository.RawNewsRepository;
 import com.brife.news.service.DuplicateNewsDetectionService;
+import com.brife.news.service.EmbeddingService;
 import com.brife.news.service.SummarizationService;
 import com.brife.news.service.SynthesisGroundingValidator;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
     private final ObjectMapper objectMapper;
     private final DuplicateNewsDetectionService duplicateNewsDetectionService;
     private final SynthesisGroundingValidator groundingValidator;
+    private final EmbeddingService embeddingService;
     private final NewsBatchMetrics batchMetrics;
 
     @Override
@@ -76,7 +78,8 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
         }
         result = grounded.result();
         List<RawArticleDto> relevantArticles = grounded.relevantArticles();
-        if (duplicateNewsDetectionService.isDuplicateWithoutNewInformation(result)) {
+        float[] documentEmbedding = createDocumentEmbedding(result);
+        if (duplicateNewsDetectionService.isDuplicateWithoutNewInformation(result, documentEmbedding)) {
             batchMetrics.incrementSkippedClusterCount();
             return null;
         }
@@ -100,6 +103,23 @@ public class NewsCrawlingProcessor implements ItemProcessor<KeywordGroupDto, Pro
                 .totalArticleCount(relevantArticles.size())
                 .publishedDate(publishedAt.toLocalDate())
                 .publishedAt(publishedAt)
+                .documentEmbedding(documentEmbedding)
                 .build();
+    }
+
+    private float[] createDocumentEmbedding(SynthesisResult result) {
+        try {
+            float[] embedding = embeddingService.embedForDocument(result.getTitle() + " " + result.getSummary());
+            if (embedding == null || embedding.length == 0) {
+                throw new IllegalStateException("빈 임베딩 응답");
+            }
+            batchMetrics.incrementSemanticEmbeddingPrecomputedCount();
+            return embedding;
+        } catch (Exception e) {
+            batchMetrics.incrementSemanticEmbeddingFallbackCount();
+            log.warn("[Processor] 의미 중복 검사용 임베딩 생성 실패 - lexical fallback 적용. title={}, reason={}",
+                    result.getTitle(), e.getMessage());
+            return null;
+        }
     }
 }

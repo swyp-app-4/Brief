@@ -51,6 +51,11 @@ gemini:
   api:
     key: ${GEMINI_API_KEY}
 
+news:
+  duplicate:
+    semantic-enabled: ${SEMANTIC_DUPLICATE_ENABLED:true}
+    semantic-blocking-enabled: ${SEMANTIC_DUPLICATE_BLOCKING_ENABLED:false}
+
 resilience4j:
   ratelimiter:
     instances:

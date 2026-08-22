@@ -29,6 +29,12 @@ public class NewsBatchMetrics {
     private final AtomicInteger shadowRejectedClusterCount = new AtomicInteger();
     private final AtomicInteger shadowEvaluatedArticleCount = new AtomicInteger();
     private final AtomicInteger shadowRejectedArticleCount = new AtomicInteger();
+    private final AtomicInteger semanticDuplicateEvaluatedCount = new AtomicInteger();
+    private final AtomicInteger semanticDuplicateWouldBlockCount = new AtomicInteger();
+    private final AtomicInteger semanticDuplicateBlockedCount = new AtomicInteger();
+    private final AtomicInteger semanticDuplicateFollowUpCount = new AtomicInteger();
+    private final AtomicInteger semanticEmbeddingPrecomputedCount = new AtomicInteger();
+    private final AtomicInteger semanticEmbeddingFallbackCount = new AtomicInteger();
 
     // ── increment ─────────────────────────────────────────────────────────
     public void incrementNaverApiCallCount()           { naverApiCallCount.incrementAndGet(); }
@@ -49,6 +55,14 @@ public class NewsBatchMetrics {
         shadowRejectedArticleCount.addAndGet(rejectedArticles);
         if (!wouldAccept) shadowRejectedClusterCount.incrementAndGet();
     }
+    public void recordSemanticDuplicateEvaluation(boolean wouldBlock, boolean blocked, boolean followUpAllowed) {
+        semanticDuplicateEvaluatedCount.incrementAndGet();
+        if (wouldBlock) semanticDuplicateWouldBlockCount.incrementAndGet();
+        if (blocked) semanticDuplicateBlockedCount.incrementAndGet();
+        if (followUpAllowed) semanticDuplicateFollowUpCount.incrementAndGet();
+    }
+    public void incrementSemanticEmbeddingPrecomputedCount() { semanticEmbeddingPrecomputedCount.incrementAndGet(); }
+    public void incrementSemanticEmbeddingFallbackCount() { semanticEmbeddingFallbackCount.incrementAndGet(); }
 
     // ── get ───────────────────────────────────────────────────────────────
     public int  getNaverApiCallCount()           { return naverApiCallCount.get(); }
@@ -67,6 +81,12 @@ public class NewsBatchMetrics {
     public int  getShadowRejectedClusterCount()  { return shadowRejectedClusterCount.get(); }
     public int  getShadowEvaluatedArticleCount() { return shadowEvaluatedArticleCount.get(); }
     public int  getShadowRejectedArticleCount()  { return shadowRejectedArticleCount.get(); }
+    public int  getSemanticDuplicateEvaluatedCount() { return semanticDuplicateEvaluatedCount.get(); }
+    public int  getSemanticDuplicateWouldBlockCount() { return semanticDuplicateWouldBlockCount.get(); }
+    public int  getSemanticDuplicateBlockedCount() { return semanticDuplicateBlockedCount.get(); }
+    public int  getSemanticDuplicateFollowUpCount() { return semanticDuplicateFollowUpCount.get(); }
+    public int  getSemanticEmbeddingPrecomputedCount() { return semanticEmbeddingPrecomputedCount.get(); }
+    public int  getSemanticEmbeddingFallbackCount() { return semanticEmbeddingFallbackCount.get(); }
 
     // ── summary helpers ───────────────────────────────────────────────────
     /** 원문 추출 성공률 (0 ~ 1.0). 분모가 0이면 0.0 반환. */
@@ -99,5 +119,11 @@ public class NewsBatchMetrics {
         shadowRejectedClusterCount.set(0);
         shadowEvaluatedArticleCount.set(0);
         shadowRejectedArticleCount.set(0);
+        semanticDuplicateEvaluatedCount.set(0);
+        semanticDuplicateWouldBlockCount.set(0);
+        semanticDuplicateBlockedCount.set(0);
+        semanticDuplicateFollowUpCount.set(0);
+        semanticEmbeddingPrecomputedCount.set(0);
+        semanticEmbeddingFallbackCount.set(0);
     }
 }

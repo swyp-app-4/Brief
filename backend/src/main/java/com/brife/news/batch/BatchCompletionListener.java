@@ -50,7 +50,10 @@ public class BatchCompletionListener implements JobExecutionListener {
                  "vertexCalls={}, vertexRetries={}, generatedNews={}, extractSuccessRate={}, " +
                  "avgOriginalTextLength={}, embeddingSuccess={}, embeddingFail={}, " +
                  "shadowEvaluatedClusters={}, shadowWouldRejectClusters={}, " +
-                 "shadowEvaluatedArticles={}, shadowRejectedArticles={}",
+                 "shadowEvaluatedArticles={}, shadowRejectedArticles={}, " +
+                 "semanticDuplicateEvaluated={}, semanticDuplicateWouldBlock={}, " +
+                 "semanticDuplicateBlocked={}, semanticDuplicateFollowUps={}, " +
+                 "semanticEmbeddingPrecomputed={}, semanticEmbeddingFallbacks={}",
                 jobExecution.getStatus(),
                 batchMetrics.getNaverApiCallCount(),
                 batchMetrics.getFetchedArticleCount(),
@@ -66,7 +69,13 @@ public class BatchCompletionListener implements JobExecutionListener {
                 batchMetrics.getShadowEvaluatedClusterCount(),
                 batchMetrics.getShadowRejectedClusterCount(),
                 batchMetrics.getShadowEvaluatedArticleCount(),
-                batchMetrics.getShadowRejectedArticleCount());
+                batchMetrics.getShadowRejectedArticleCount(),
+                batchMetrics.getSemanticDuplicateEvaluatedCount(),
+                batchMetrics.getSemanticDuplicateWouldBlockCount(),
+                batchMetrics.getSemanticDuplicateBlockedCount(),
+                batchMetrics.getSemanticDuplicateFollowUpCount(),
+                batchMetrics.getSemanticEmbeddingPrecomputedCount(),
+                batchMetrics.getSemanticEmbeddingFallbackCount());
 
         batchMetrics.reset();
     }

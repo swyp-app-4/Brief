@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,5 +27,29 @@ class NewsEmbeddingRepositoryIntegrationTest {
 
         assertThat(embeddings).containsOnlyKeys(ids);
         assertThat(embeddings.values()).allSatisfy(vector -> assertThat(vector).hasSize(768));
+    }
+
+    @Test
+    void findsRecentSemanticDuplicateCandidatesByDocumentVector() {
+        Long newsId = jdbcTemplate.queryForObject(
+                """
+                SELECT e.news_id
+                FROM news_embedding e
+                JOIN summarized_news n ON n.id = e.news_id
+                ORDER BY n.created_at DESC
+                LIMIT 1
+                """, Long.class);
+        LocalDateTime createdAt = jdbcTemplate.queryForObject(
+                "SELECT created_at FROM summarized_news WHERE id = ?",
+                LocalDateTime.class,
+                newsId);
+        float[] embedding = repository.findEmbeddingsByNewsIds(List.of(newsId)).get(newsId);
+
+        List<SemanticDuplicateCandidate> candidates = repository.findRecentDuplicateCandidatesByVector(
+                embedding, createdAt.minusSeconds(1), 0.99, 5);
+
+        assertThat(candidates).isNotEmpty();
+        assertThat(candidates.getFirst().id()).isEqualTo(newsId);
+        assertThat(candidates.getFirst().similarity()).isGreaterThanOrEqualTo(0.99);
     }
 }

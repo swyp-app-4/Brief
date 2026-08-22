@@ -1,8 +1,10 @@
 package com.brife.news.service;
 
 import com.brife.news.dto.SynthesisResult;
+import com.brife.news.batch.NewsBatchMetrics;
 import com.brife.news.repository.DuplicateNewsCandidate;
 import com.brife.news.repository.NewsEmbeddingRepository;
+import com.brife.news.repository.SemanticDuplicateCandidate;
 import com.brife.news.repository.SummarizedNewsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +29,13 @@ import java.util.stream.Collectors;
 public class DuplicateNewsDetectionService {
 
     private static final int LOOKBACK_HOURS = 48;
+    private static final int SEMANTIC_CANDIDATE_LIMIT = 10;
     private static final double REVIEW_SIMILARITY = 0.85;
     private static final double DUPLICATE_SIMILARITY = 0.92;
+    private static final double SEMANTIC_HIGH_CONFIDENCE = 0.92;
+    private static final double SEMANTIC_HIGH_TITLE_SIMILARITY = 0.32;
+    private static final double SEMANTIC_REVIEW_TITLE_SIMILARITY = 0.50;
+    private static final double SEMANTIC_REVIEW_TOKEN_OVERLAP = 0.55;
     private static final double MIN_TITLE_SIMILARITY = 0.90;
     private static final double MIN_SUMMARY_SIMILARITY = 0.88;
     private static final double MIN_CORE_TOKEN_OVERLAP = 0.70;
@@ -47,6 +54,8 @@ public class DuplicateNewsDetectionService {
     private static final double RECOMMENDATION_EMBEDDING_SIMILARITY = 0.90;
     private static final int MIN_SHARED_RECOMMENDATION_TOKENS = 2;
     private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+(?:[.,]\\d+)*%?");
+    private static final Pattern CALENDAR_NUMBER_PATTERN = Pattern.compile(
+            "\\d{4}년|(?<!\\d)\\d{1,2}월|(?<!\\d)\\d{1,2}일|(?<!\\d)\\d{1,2}시(?:\\s*\\d{1,2}분)?");
     private static final Set<String> STATE_WORDS = Set.of(
             "예정", "검토", "추진", "발표", "확정", "결정", "체결", "승인",
             "취소", "철회", "중단", "재개", "발생", "연기", "구속", "기소",
@@ -58,9 +67,16 @@ public class DuplicateNewsDetectionService {
 
     private final SummarizedNewsRepository summarizedNewsRepository;
     private final NewsEmbeddingRepository newsEmbeddingRepository;
+    private final SemanticDuplicatePolicy semanticDuplicatePolicy;
+    private final NewsBatchMetrics batchMetrics;
     private final List<AcceptedNews> acceptedInCurrentBatch = new ArrayList<>();
 
-    public synchronized boolean isDuplicateWithoutNewInformation(SynthesisResult result) {
+    public boolean isDuplicateWithoutNewInformation(SynthesisResult result) {
+        return isDuplicateWithoutNewInformation(result, null);
+    }
+
+    public synchronized boolean isDuplicateWithoutNewInformation(
+            SynthesisResult result, float[] documentEmbedding) {
         if (result == null || isBlank(result.getTitle()) || isBlank(result.getSummary())) return false;
 
         for (AcceptedNews accepted : acceptedInCurrentBatch) {
@@ -92,8 +108,131 @@ public class DuplicateNewsDetectionService {
             }
         }
 
-        acceptedInCurrentBatch.add(new AcceptedNews(result.getTitle(), result.getSummary()));
+        SemanticEvaluation semanticEvaluation = evaluateSemanticDuplicate(result, documentEmbedding);
+        if (semanticEvaluation.evaluated()) {
+            boolean blocked = semanticEvaluation.wouldBlock()
+                    && semanticDuplicatePolicy.isBlockingEnabled();
+            batchMetrics.recordSemanticDuplicateEvaluation(
+                    semanticEvaluation.wouldBlock(), blocked, semanticEvaluation.followUpAllowed());
+
+            if (semanticEvaluation.candidate() != null) {
+                log.info("[SemanticDuplicateShadow] candidateNewsId={}, similarity={}, wouldBlock={}, "
+                                + "followUpAllowed={}, blockingEnabled={}, title={}",
+                        semanticEvaluation.candidate().id(),
+                        String.format("%.3f", semanticEvaluation.candidate().similarity()),
+                        semanticEvaluation.wouldBlock(),
+                        semanticEvaluation.followUpAllowed(),
+                        semanticDuplicatePolicy.isBlockingEnabled(),
+                        result.getTitle());
+            }
+            if (blocked) {
+                log.info("[SemanticDuplicate] Duplicate content blocked - existingNewsId={}, similarity={}",
+                        semanticEvaluation.candidate().id(), semanticEvaluation.candidate().similarity());
+                return true;
+            }
+        }
+
+        acceptedInCurrentBatch.add(new AcceptedNews(
+                result.getTitle(), result.getSummary(), copy(documentEmbedding)));
         return false;
+    }
+
+    private SemanticEvaluation evaluateSemanticDuplicate(
+            SynthesisResult result, float[] documentEmbedding) {
+        if (documentEmbedding == null || !semanticDuplicatePolicy.isEnabled()) {
+            return SemanticEvaluation.notEvaluated();
+        }
+
+        SemanticMatch closestFollowUp = null;
+        for (AcceptedNews accepted : acceptedInCurrentBatch) {
+            Double similarity = cosineSimilarity(documentEmbedding, accepted.embedding());
+            if (similarity == null || similarity < REVIEW_SIMILARITY) continue;
+            SemanticMatch match = new SemanticMatch(
+                    null, accepted.title(), accepted.summary(), similarity);
+            SemanticCandidateDecision decision = evaluateSemanticCandidate(result, match);
+            if (decision.wouldBlock()) return SemanticEvaluation.duplicate(match);
+            if (decision.followUpAllowed()
+                    && (closestFollowUp == null || match.similarity() > closestFollowUp.similarity())) {
+                closestFollowUp = match;
+            }
+        }
+
+        List<SemanticDuplicateCandidate> candidates =
+                newsEmbeddingRepository.findRecentDuplicateCandidatesByVector(
+                        documentEmbedding,
+                        LocalDateTime.now().minusHours(LOOKBACK_HOURS),
+                        REVIEW_SIMILARITY,
+                        SEMANTIC_CANDIDATE_LIMIT);
+        for (SemanticDuplicateCandidate candidate : candidates) {
+            SemanticMatch match = new SemanticMatch(
+                    candidate.id(), candidate.title(), candidate.summary(), candidate.similarity());
+            SemanticCandidateDecision decision = evaluateSemanticCandidate(result, match);
+            if (decision.wouldBlock()) return SemanticEvaluation.duplicate(match);
+            if (decision.followUpAllowed()
+                    && (closestFollowUp == null || match.similarity() > closestFollowUp.similarity())) {
+                closestFollowUp = match;
+            }
+        }
+
+        return closestFollowUp == null
+                ? SemanticEvaluation.noDuplicate()
+                : SemanticEvaluation.followUp(closestFollowUp);
+    }
+
+    private SemanticCandidateDecision evaluateSemanticCandidate(
+            SynthesisResult result, SemanticMatch candidate) {
+        if (hasSemanticMaterialChange(
+                result.getTitle(), candidate.title())) {
+            return SemanticCandidateDecision.followUp();
+        }
+
+        Set<String> newTokens = extractCoreTokens(result.getTitle());
+        Set<String> existingTokens = extractCoreTokens(candidate.title());
+        int sharedTokens = sharedTokenCount(newTokens, existingTokens);
+        double tokenOverlap = overlapCoefficient(newTokens, existingTokens);
+        double titleSimilarity = trigramSimilarity(result.getTitle(), candidate.title());
+
+        if (candidate.similarity() >= SEMANTIC_HIGH_CONFIDENCE) {
+            boolean sameEventEvidence = titleSimilarity >= SEMANTIC_HIGH_TITLE_SIMILARITY
+                    || (sharedTokens >= 3 && tokenOverlap >= SEMANTIC_REVIEW_TOKEN_OVERLAP);
+            return sameEventEvidence
+                    ? SemanticCandidateDecision.duplicate()
+                    : SemanticCandidateDecision.unrelated();
+        }
+
+        boolean sameEventEvidence = titleSimilarity >= SEMANTIC_REVIEW_TITLE_SIMILARITY
+                && sharedTokens >= SAME_BATCH_MIN_SHARED_TOKENS
+                && tokenOverlap >= SEMANTIC_REVIEW_TOKEN_OVERLAP;
+        return sameEventEvidence
+                ? SemanticCandidateDecision.duplicate()
+                : SemanticCandidateDecision.unrelated();
+    }
+
+    private boolean hasSemanticMaterialChange(String newTitle, String existingTitle) {
+        Set<String> newNumbers = extractMaterialTitleNumbers(newTitle);
+        Set<String> existingNumbers = extractMaterialTitleNumbers(existingTitle);
+        if (hasNewDistinctSignal(newNumbers, existingNumbers)) return true;
+
+        Set<String> newStates = extractStateWords(newTitle);
+        Set<String> existingStates = extractStateWords(existingTitle);
+        boolean tentativeToFinal = containsAny(existingStates, "검토", "추진", "예정")
+                && containsAny(newStates, "확정", "결정", "승인", "체결", "타결",
+                "취소", "철회", "중단", "재개", "시작");
+        boolean incidentUpdated = existingStates.contains("발생")
+                && containsAny(newStates, "사망", "부상", "구속", "기소");
+        return tentativeToFinal || incidentUpdated;
+    }
+
+    private Set<String> extractMaterialTitleNumbers(String title) {
+        return extractNumbers(CALENDAR_NUMBER_PATTERN.matcher(safe(title)).replaceAll(" "));
+    }
+
+    private boolean containsAny(Set<String> values, String... candidates) {
+        return Arrays.stream(candidates).anyMatch(values::contains);
+    }
+
+    private float[] copy(float[] embedding) {
+        return embedding == null ? null : Arrays.copyOf(embedding, embedding.length);
     }
 
     private boolean isSameBatchHeadlineDuplicate(String newTitle, String acceptedTitle) {
@@ -301,6 +440,46 @@ public class DuplicateNewsDetectionService {
         return text == null ? "" : text;
     }
 
-    private record AcceptedNews(String title, String summary) {
+    private record AcceptedNews(String title, String summary, float[] embedding) {
+    }
+
+    private record SemanticMatch(Long id, String title, String summary, double similarity) {
+    }
+
+    private record SemanticEvaluation(
+            boolean evaluated,
+            boolean wouldBlock,
+            boolean followUpAllowed,
+            SemanticMatch candidate
+    ) {
+        private static SemanticEvaluation notEvaluated() {
+            return new SemanticEvaluation(false, false, false, null);
+        }
+
+        private static SemanticEvaluation noDuplicate() {
+            return new SemanticEvaluation(true, false, false, null);
+        }
+
+        private static SemanticEvaluation duplicate(SemanticMatch candidate) {
+            return new SemanticEvaluation(true, true, false, candidate);
+        }
+
+        private static SemanticEvaluation followUp(SemanticMatch candidate) {
+            return new SemanticEvaluation(true, false, true, candidate);
+        }
+    }
+
+    private record SemanticCandidateDecision(boolean wouldBlock, boolean followUpAllowed) {
+        private static SemanticCandidateDecision duplicate() {
+            return new SemanticCandidateDecision(true, false);
+        }
+
+        private static SemanticCandidateDecision followUp() {
+            return new SemanticCandidateDecision(false, true);
+        }
+
+        private static SemanticCandidateDecision unrelated() {
+            return new SemanticCandidateDecision(false, false);
+        }
     }
 }
