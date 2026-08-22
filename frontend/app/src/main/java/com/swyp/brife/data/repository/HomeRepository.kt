@@ -19,25 +19,25 @@ class HomeRepository(
         authLocalStorage.getAccessToken()?.let { "Bearer $it" }
 
     // 로그인 여부에 따라 회원/비회원 API를 자동 분기
-    suspend fun getHomeNews(): Result<List<HomeNewsCardItem>> {
+    suspend fun getHomeNews(anchorNewsId: Long? = null): Result<List<HomeNewsCardItem>> {
         Log.d(
             "HomeNewsDebug",
             "getHomeNews isLoggedIn=${authLocalStorage.isLoggedIn()}, hasAccessToken=${authLocalStorage.getAccessToken() != null}"
         )
         return if (authLocalStorage.isLoggedIn()) {
-            getMemberHomeNews()
+            getMemberHomeNews(anchorNewsId)
         } else {
             getGuestHomeNews()
         }
     }
 
     // 회원: GET /home/news/recommended (JWT 필수)
-    private suspend fun getMemberHomeNews(): Result<List<HomeNewsCardItem>> {
+    private suspend fun getMemberHomeNews(anchorNewsId: Long?): Result<List<HomeNewsCardItem>> {
         val token = bearerToken()
             ?: return Result.failure(Exception("토큰이 없습니다."))
 
         return try {
-            val response = api.getRecommendedNews(token)
+            val response = api.getRecommendedNews(token, anchorNewsId)
 
             if (response.isSuccessful && response.body() != null) {
                 val mapped = response.body()!!.map { it.toHomeNewsCardItem() }
@@ -49,7 +49,7 @@ class HomeRepository(
                 val newAccessToken = reissueAccessToken()
                     ?: return Result.failure(Exception("토큰 재발급 실패"))
 
-                val retryResponse = api.getRecommendedNews("Bearer $newAccessToken")
+                val retryResponse = api.getRecommendedNews("Bearer $newAccessToken", anchorNewsId)
                 Log.d(
                     "AuthReissue",
                     "home retry response code=${retryResponse.code()}, success=${retryResponse.isSuccessful}"

@@ -12,7 +12,8 @@ interface HomeApiService {
     // GET /home/news/recommended — 회원용 (JWT 필수), suspend 버전 (앱 내부용)
     @GET("home/news/recommended")
     suspend fun getRecommendedNews(
-        @Header("Authorization") authorization: String
+        @Header("Authorization") authorization: String,
+        @Query("anchorNewsId") anchorNewsId: Long? = null
     ): Response<List<RecommendedNewsResponse>>
 
     // GET /home/news/recommended — 회원용, blocking Call<> 버전 (위젯 RemoteViewsFactory 전용)

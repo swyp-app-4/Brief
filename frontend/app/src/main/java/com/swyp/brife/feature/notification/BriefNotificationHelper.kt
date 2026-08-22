@@ -15,6 +15,7 @@ import com.swyp.brife.R
 
 object BriefNotificationHelper {
     private const val TAG = "BriefNotificationHelper"
+    const val EXTRA_PRIMARY_NEWS_ID = "primaryNewsId"
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -34,10 +35,11 @@ object BriefNotificationHelper {
         context: Context,
         title: String,
         body: String,
-        newsId: Long?
+        newsId: Long?,
+        primaryNewsId: Long?
     ) {
         try {
-            val pendingIntent = createContentPendingIntent(context, newsId)
+            val pendingIntent = createContentPendingIntent(context, newsId, primaryNewsId)
             val notification = NotificationCompat.Builder(
                 context,
                 BriefNotificationConstants.CHANNEL_ID
@@ -64,21 +66,35 @@ object BriefNotificationHelper {
 
     private fun createContentPendingIntent(
         context: Context,
-        newsId: Long?
+        newsId: Long?,
+        primaryNewsId: Long?
     ): PendingIntent {
-        val intent = if (newsId != null) {
-            Intent(Intent.ACTION_VIEW, Uri.parse("https://brife.app/news/$newsId"), context, MainActivity::class.java)
-        } else {
-            Intent(context, MainActivity::class.java)
+        val intent = when {
+            primaryNewsId != null -> Intent(context, MainActivity::class.java).apply {
+                putExtra(EXTRA_PRIMARY_NEWS_ID, primaryNewsId)
+            }
+            newsId != null -> Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://brife.app/news/$newsId"),
+                context,
+                MainActivity::class.java
+            )
+            else -> Intent(context, MainActivity::class.java)
         }.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                 Intent.FLAG_ACTIVITY_CLEAR_TOP or
                 Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
 
+        val requestCode = when {
+            primaryNewsId != null -> 31 * primaryNewsId.hashCode() + 1
+            newsId != null -> 31 * newsId.hashCode() + 2
+            else -> 0
+        }
+
         return PendingIntent.getActivity(
             context,
-            newsId?.hashCode() ?: 0,
+            requestCode,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

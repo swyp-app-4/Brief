@@ -20,12 +20,14 @@ class BriefFirebaseMessagingService : FirebaseMessagingService() {
             ?: remoteMessage.data["body"]
             ?: ""
         val newsId = remoteMessage.data["newsId"]?.toLongOrNull()
+        val primaryNewsId = remoteMessage.data["primaryNewsId"]?.toLongOrNull()
 
         BriefNotificationHelper.showPushNotification(
             context = this,
             title = title,
             body = body,
-            newsId = newsId
+            newsId = newsId,
+            primaryNewsId = primaryNewsId
         )
     }
 }

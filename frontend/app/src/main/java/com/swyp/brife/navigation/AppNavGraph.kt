@@ -56,7 +56,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 fun AppNavGraph(
     initialNewsId: Long? = null,
     initialOpenBookmark: Boolean = false,
-    deepLinkVersion: Int = 0
+    deepLinkVersion: Int = 0,
+    notificationPrimaryNewsId: Long? = null,
+    notificationAnchorVersion: Int = 0,
+    onNotificationAnchorConsumed: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
@@ -175,6 +178,16 @@ fun AppNavGraph(
         if (currentRoute != NavRoutes.MAIN && currentRoute != NavRoutes.SPLASH) {
             navController.navigate(NavRoutes.MAIN) {
                 popUpTo(NavRoutes.MAIN) { inclusive = false }
+                launchSingleTop = true
+            }
+        }
+    }
+
+    LaunchedEffect(notificationPrimaryNewsId, notificationAnchorVersion) {
+        if (notificationPrimaryNewsId == null) return@LaunchedEffect
+        if (navController.currentDestination?.route != NavRoutes.MAIN) {
+            navController.navigate(NavRoutes.MAIN) {
+                popUpTo(NavRoutes.SPLASH) { inclusive = true }
                 launchSingleTop = true
             }
         }
@@ -348,6 +361,9 @@ fun AppNavGraph(
                 initialDeepLinkNewsId = initialNewsId,
                 initialOpenBookmark = initialOpenBookmark,
                 deepLinkVersion = deepLinkVersion,
+                notificationPrimaryNewsId = notificationPrimaryNewsId,
+                notificationAnchorVersion = notificationAnchorVersion,
+                onNotificationAnchorConsumed = onNotificationAnchorConsumed,
                 onLogout = {
                     // 수정: 화면 이동 대신 상태 업데이트 및 로컬 데이터만 삭제
                     scope.launch {

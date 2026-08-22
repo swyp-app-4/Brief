@@ -82,7 +82,10 @@ fun MainScreen(
     initialOpenBookmark: Boolean = false,
     initialRoute: String = NavRoutes.HOME, // 추가
     initialHomeIndex: Int = 0,             // 추가
-    deepLinkVersion: Int = 0
+    deepLinkVersion: Int = 0,
+    notificationPrimaryNewsId: Long? = null,
+    notificationAnchorVersion: Int = 0,
+    onNotificationAnchorConsumed: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val onboardingStorage = remember { OnboardingLocalStorage(context) }
@@ -215,6 +218,12 @@ fun MainScreen(
             popUpTo(navController.graph.startDestinationId) { saveState = true }
             launchSingleTop = true
             restoreState = true
+        }
+    }
+
+    LaunchedEffect(notificationPrimaryNewsId, notificationAnchorVersion) {
+        if (notificationPrimaryNewsId != null) {
+            navigateTo(NavRoutes.HOME)
         }
     }
 
@@ -395,6 +404,9 @@ fun MainScreen(
                     isLoggedIn = isLoggedIn,
                     sessionVersion = sessionVersion,
                     reloadVersion = homeReloadVersion,
+                    notificationPrimaryNewsId = notificationPrimaryNewsId,
+                    notificationAnchorVersion = notificationAnchorVersion,
+                    onNotificationAnchorConsumed = onNotificationAnchorConsumed,
                     initialPage = initialHomeIndex, // ★ 로그인 전 보던 인덱스로 복귀
                     forceResetToThirdPageKey = forceResetHomePagerKey,
                     onLoginRequired = {

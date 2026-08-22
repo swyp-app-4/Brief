@@ -23,7 +23,7 @@ class HomeViewModel(
         _savedPageIndex.value = index
     }
 
-    fun loadHomeNews() {
+    fun loadHomeNews(anchorNewsId: Long? = null) {
         viewModelScope.launch {
             val currentList = _uiState.value.newsList
             // A: 뉴스가 이미 있으면 리스트를 날리지 않고 백그라운드 갱신
@@ -32,7 +32,7 @@ class HomeViewModel(
             if (currentList.isEmpty()) {
                 _uiState.value = HomeUiState(isLoading = true)
             }
-            homeRepository.getHomeNews()
+            homeRepository.getHomeNews(anchorNewsId)
                 .onSuccess { newsList ->
                     _uiState.value = HomeUiState(newsList = newsList, isLoading = false)
                 }

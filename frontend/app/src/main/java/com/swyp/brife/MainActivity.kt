@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.swyp.brife.navigation.AppNavGraph
+import com.swyp.brife.feature.notification.BriefNotificationHelper
 import com.swyp.brife.ui.theme.BrifeTheme
 
 class MainActivity : ComponentActivity() {
@@ -37,6 +38,8 @@ class MainActivity : ComponentActivity() {
     private var deepLinkNewsId by mutableStateOf<Long?>(null)
     private var deepLinkOpenBookmark by mutableStateOf(false)
     private var deepLinkVersion by mutableStateOf(0)
+    private var notificationPrimaryNewsId by mutableStateOf<Long?>(null)
+    private var notificationAnchorVersion by mutableStateOf(0)
 
     private fun extractBookmarkFromIntent(intent: Intent?): Boolean =
         intent?.getBooleanExtra("open_bookmark", false) ?: false
@@ -58,6 +61,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun extractPrimaryNewsIdFromIntent(intent: Intent?): Long? {
+        val rawValue = intent?.extras?.get(BriefNotificationHelper.EXTRA_PRIMARY_NEWS_ID)
+        return when (rawValue) {
+            is Long -> rawValue
+            is Int -> rawValue.toLong()
+            is String -> rawValue.toLongOrNull()
+            else -> null
+        }?.takeIf { it > 0L }
+    }
+
+    private fun consumeNotificationAnchor() {
+        notificationPrimaryNewsId = null
+        intent?.removeExtra(BriefNotificationHelper.EXTRA_PRIMARY_NEWS_ID)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -65,6 +83,7 @@ class MainActivity : ComponentActivity() {
 
         deepLinkNewsId = extractNewsIdFromIntent(intent)
         deepLinkOpenBookmark = extractBookmarkFromIntent(intent)
+        notificationPrimaryNewsId = extractPrimaryNewsIdFromIntent(intent)
 
         setContent {
             BrifeTheme {
@@ -78,7 +97,10 @@ class MainActivity : ComponentActivity() {
                     AppNavGraph(
                         initialNewsId = deepLinkNewsId,
                         initialOpenBookmark = deepLinkOpenBookmark,
-                        deepLinkVersion = deepLinkVersion
+                        deepLinkVersion = deepLinkVersion,
+                        notificationPrimaryNewsId = notificationPrimaryNewsId,
+                        notificationAnchorVersion = notificationAnchorVersion,
+                        onNotificationAnchorConsumed = ::consumeNotificationAnchor
                     )
                 }
             }
@@ -90,6 +112,10 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         deepLinkNewsId = extractNewsIdFromIntent(intent)
         deepLinkOpenBookmark = extractBookmarkFromIntent(intent)
+        notificationPrimaryNewsId = extractPrimaryNewsIdFromIntent(intent)
+        if (notificationPrimaryNewsId != null) {
+            notificationAnchorVersion++
+        }
         // 동일 newsId라도 매번 버전 증가 → LaunchedEffect 재실행 보장
         deepLinkVersion++
     }
