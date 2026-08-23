@@ -23,6 +23,7 @@ import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextTitle
+import com.swyp.brife.ui.theme.TextBody
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -141,7 +142,7 @@ fun CreateFolderBottomSheet(
                 color = if (isError) {
                     Negative
                 } else if (isDarkTheme) {
-                    DarkFolderHelperText
+                    TextBody
                 } else {
                     TextCaption
                 },
