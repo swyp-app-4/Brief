@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/widget_background"
-    android:scaleX="0.94"
-    android:scaleY="0.94"
+    android:scaleX="0.80"
+    android:scaleY="0.80"
     android:orientation="vertical"
     android:paddingStart="15dp"
     android:paddingTop="15dp"
@@ -41,8 +41,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="189dp"
-        android:layout_marginTop="8dp"
+        android:layout_height="155dp"
+        android:layout_marginTop="6dp"
         android:orientation="vertical"
         android:padding="3dp">
 
@@ -62,11 +62,11 @@
             android:id="@+id/widget_preview_card_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="120dp"
+            android:minHeight="100dp"
             android:background="@drawable/widget_card_bg"
             android:gravity="center_vertical"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="12dp">
 
             <TextView
                 android:id="@+id/widget_preview_summary_1"
@@ -153,14 +153,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:gravity="center"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/widget_preview_btn_prev"
-            android:layout_width="160dp"
-            android:layout_height="50dp"
+            android:layout_width="135dp"
+            android:layout_height="42dp"
             android:background="@drawable/widget_nav_button_bg"
             android:gravity="center"
             android:text="이전"
@@ -174,8 +174,8 @@
 
         <TextView
             android:id="@+id/widget_preview_btn_next"
-            android:layout_width="160dp"
-            android:layout_height="50dp"
+            android:layout_width="135dp"
+            android:layout_height="42dp"
             android:background="@drawable/widget_nav_button_next_bg"
             android:gravity="center"
             android:text="다음"

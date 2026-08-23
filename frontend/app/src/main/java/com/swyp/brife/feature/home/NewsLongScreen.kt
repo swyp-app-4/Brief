@@ -656,7 +656,7 @@ private fun SimilarNewsCard(
 
     Column(
         modifier = Modifier
-            .width(164.dp)
+            .width(184.dp)
             .clickable(onClick = onClick)
     ) {
         if (imageRes != null) {
@@ -799,7 +799,7 @@ private fun getSimilarNewsImageResForName(categoryName: String, newsId: Long): I
 
 @Composable
 private fun SimilarNewsPlaceholderCard() {
-    Column(modifier = Modifier.width(164.dp)) {
+    Column(modifier = Modifier.width(184.dp)) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

@@ -48,7 +48,9 @@ import com.swyp.brife.ui.theme.DarkHomeCategoryTagText
 import com.swyp.brife.ui.theme.DarkHomeSummaryBackground
 import com.swyp.brife.ui.theme.DarkHomeSummaryText
 import com.swyp.brife.ui.theme.Gray600
+import com.swyp.brife.ui.theme.HomeSummaryBackground
 import com.swyp.brife.ui.theme.HomeSummaryDivider
+import com.swyp.brife.ui.theme.HomeSummaryText
 import com.swyp.brife.ui.theme.Pretendard
 import com.swyp.brife.ui.theme.PrimaryNormal
 
@@ -221,7 +223,7 @@ private fun SummaryInsightBox(
                 if (isDarkTheme) {
                     DarkHomeSummaryBackground
                 } else {
-                    MaterialTheme.brifeColors.backgroundSub
+                    HomeSummaryBackground
                 }
             )
             .wrapContentHeight()
@@ -303,7 +305,7 @@ private fun SummarySection(
             Text(
                 text = title,
                 style = titleStyle,
-                color = if (isDarkTheme) PrimaryNormal else MaterialTheme.brifeColors.textTitle
+                color = PrimaryNormal
             )
         }
 
@@ -329,7 +331,7 @@ private fun SummarySection(
                     color = if (isDarkTheme) {
                         DarkHomeSummaryText
                     } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
+                        HomeSummaryText
                     },
                     // --- 추가된 속성 ---
                     maxLines = 1,
