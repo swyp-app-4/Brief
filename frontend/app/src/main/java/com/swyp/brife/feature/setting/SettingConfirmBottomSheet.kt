@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.CtaDisabled
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkGray300
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.brifeColors
 
@@ -31,6 +33,7 @@ internal fun SettingConfirmBottomSheet(
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -44,7 +47,11 @@ internal fun SettingConfirmBottomSheet(
                     .fillMaxWidth()
                     .padding(top = 80.dp)
                     .background(
-                        color = MaterialTheme.brifeColors.backgroundDefault,
+                        color = if (isDarkTheme) {
+                            DarkGray300
+                        } else {
+                            MaterialTheme.brifeColors.backgroundDefault
+                        },
                         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                     )
                     .padding(horizontal = 24.dp)

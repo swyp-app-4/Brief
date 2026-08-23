@@ -43,6 +43,8 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.AppTopBar2
 import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkGray300
 import com.swyp.brife.ui.theme.Positive
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
@@ -78,6 +80,7 @@ fun SettingScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val isDarkMode = MaterialTheme.colorScheme.background == DarkBackground
     var showLogoutSheet by remember { mutableStateOf(false) }
     var showWithdrawSheet by remember { mutableStateOf(false) }
     var showWithdrawConfirmDialog by remember { mutableStateOf(false) }
@@ -221,7 +224,11 @@ fun SettingScreen(
                         )
                     }
                 },
-                containerColor = MaterialTheme.brifeColors.backgroundDefault
+                containerColor = if (isDarkMode) {
+                    DarkGray300
+                } else {
+                    MaterialTheme.brifeColors.backgroundDefault
+                }
             )
         }
     }
@@ -233,9 +240,15 @@ private fun WithdrawConfirmDialog(
     onCancelClick: () -> Unit,
     onConfirmClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        containerColor = MaterialTheme.brifeColors.backgroundDefault,
+        containerColor = if (isDarkTheme) {
+            DarkGray300
+        } else {
+            MaterialTheme.brifeColors.backgroundDefault
+        },
         shape = RoundedCornerShape(24.dp),
         title = {
             AppText(

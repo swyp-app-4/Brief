@@ -68,6 +68,7 @@ import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.DarkBackground
 import com.swyp.brife.ui.theme.DarkBlue300
 import com.swyp.brife.ui.theme.DarkBlue700
+import com.swyp.brife.ui.theme.DarkComponentDefault
 import com.swyp.brife.ui.theme.DarkGray300
 import com.swyp.brife.ui.theme.DarkGray600
 import com.swyp.brife.ui.theme.DarkTextTitle
@@ -673,18 +674,34 @@ private fun ArchiveSearchFilterChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     AppText(
         text = text,
         style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.brifeColors.textBody,
+        color = when {
+            isDarkTheme && selected -> DarkBlue700
+            isDarkTheme -> TextCaption
+            else -> MaterialTheme.brifeColors.textBody
+        },
         modifier = modifier
             .background(
-                color = if (selected) InterestSelectedLight else ComponentDefault,
+                color = when {
+                    isDarkTheme && selected -> DarkBlue300
+                    isDarkTheme -> DarkComponentDefault
+                    selected -> InterestSelectedLight
+                    else -> ComponentDefault
+                },
                 shape = RoundedCornerShape(30.dp)
             )
             .border(
                 width = if (selected) 1.dp else 0.dp,
-                color = if (selected) PrimaryNormal else ComponentDefault,
+                color = when {
+                    isDarkTheme && selected -> DarkBlue700
+                    isDarkTheme -> Color.Transparent
+                    selected -> PrimaryNormal
+                    else -> ComponentDefault
+                },
                 shape = RoundedCornerShape(30.dp)
             )
             .clickable { onClick() }
