@@ -66,7 +66,11 @@ import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkBlue300
+import com.swyp.brife.ui.theme.DarkBlue700
+import com.swyp.brife.ui.theme.DarkGray300
 import com.swyp.brife.ui.theme.DarkGray600
+import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryNormal
@@ -856,11 +860,13 @@ private fun ArchiveSelectionModeBanner(
     text: String,
     onCancelClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = InterestSelectedLight,
+                color = if (isDarkTheme) DarkGray300 else InterestSelectedLight,
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(horizontal = 16.dp, vertical = 14.dp),
@@ -870,7 +876,7 @@ private fun ArchiveSelectionModeBanner(
         AppText(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.brifeColors.textTitle,
+            color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textTitle,
             modifier = Modifier.weight(1f)
         )
         TextButton(onClick = onCancelClick) {
@@ -901,14 +907,14 @@ fun ArchiveFolderCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = when {
-                selected -> InterestSelectedLight
+                selected -> if (isDarkTheme) DarkBlue300 else InterestSelectedLight
                 isSelectionMode -> MaterialTheme.brifeColors.componentDefault.copy(alpha = 0.95f)
                 isDarkTheme -> DarkGray600
                 else -> MaterialTheme.brifeColors.componentDefault
             }
         ),
         border = when {
-            selected -> BorderStroke(1.dp, PrimaryNormal)
+            selected -> BorderStroke(1.dp, if (isDarkTheme) DarkBlue700 else PrimaryNormal)
             isSelectionMode -> BorderStroke(1.dp, MaterialTheme.brifeColors.borderDefault)
             else -> null
         }
