@@ -388,7 +388,7 @@ private fun SettingThemeItem(
         val toggleShape = RoundedCornerShape(22.dp)
         Box(
             modifier = Modifier
-                .size(width = 76.dp, height = 44.dp)
+                .size(width = 48.dp, height = 26.dp)
                 .background(
                     color = if (isDarkTheme) {
                         ThemeToggleDarkBackground
@@ -416,7 +416,7 @@ private fun SettingThemeItem(
                     ThemeMode.LIGHT -> "라이트 테마 사용 중"
                     ThemeMode.DARK -> "다크 테마 사용 중"
                 },
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(22.dp)
             )
         }
     }
