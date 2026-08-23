@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -64,10 +65,13 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkGray600
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
+import com.swyp.brife.ui.theme.Pretendard
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
@@ -120,6 +124,7 @@ fun ArchiveScreen(
     showTopBar: Boolean = true
 ) {
     val folderCount = folders.size + 1
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val isSelectionMode = isDeleteMode || isRenameMode
     val selectionGuideText = when {
         isDeleteMode -> "삭제할 폴더를 선택해주세요"
@@ -250,8 +255,14 @@ fun ArchiveScreen(
                     }
                     append("개")
                 },
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.brifeColors.textTitle,
+                style = TextStyle(
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 13.sp,
+                    lineHeight = 19.5.sp,
+                    letterSpacing = 0.sp
+                ),
+                color = if (isDarkTheme) TextCaption else MaterialTheme.brifeColors.textTitle,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -297,11 +308,23 @@ fun ArchiveScreen(
                         ) {
                             AppText(
                                 text = "즐겨찾기",
-                                style = MaterialTheme.typography.bodyMedium
+                                style = TextStyle(
+                                    fontFamily = Pretendard,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp,
+                                    lineHeight = 24.sp,
+                                    letterSpacing = 0.sp
+                                )
                             )
                             AppText(
                                 text = "${favoriteItemCount}개",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = TextStyle(
+                                    fontFamily = Pretendard,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 12.sp,
+                                    lineHeight = 18.sp,
+                                    letterSpacing = 0.sp
+                                ),
                                 color = MaterialTheme.brifeColors.textBody
                             )
                         }
@@ -350,11 +373,23 @@ fun ArchiveScreen(
                                 ) {
                                     AppText(
                                         text = folder.folderName,
-                                        style = MaterialTheme.typography.bodyMedium
+                                        style = TextStyle(
+                                            fontFamily = Pretendard,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 16.sp,
+                                            lineHeight = 24.sp,
+                                            letterSpacing = 0.sp
+                                        )
                                     )
                                     AppText(
                                         text = "${folder.itemCount}개",
-                                        style = MaterialTheme.typography.bodySmall,
+                                        style = TextStyle(
+                                            fontFamily = Pretendard,
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = 12.sp,
+                                            lineHeight = 18.sp,
+                                            letterSpacing = 0.sp
+                                        ),
                                         color = MaterialTheme.brifeColors.textBody
                                     )
                                 }
@@ -475,6 +510,7 @@ private fun ArchiveSearchTopBar(
     modifier: Modifier = Modifier
 ) {
     val focusRequester = remember { FocusRequester() }
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -502,7 +538,7 @@ private fun ArchiveSearchTopBar(
             modifier = Modifier
                 .weight(1f)
                 .background(
-                    color = MaterialTheme.brifeColors.componentDefault,
+                    color = if (isDarkTheme) DarkGray600 else MaterialTheme.brifeColors.componentDefault,
                     shape = RoundedCornerShape(999.dp)
                 )
                 .border(
@@ -531,7 +567,9 @@ private fun ArchiveSearchTopBar(
                 modifier = Modifier
                     .weight(1f)
                     .focusRequester(focusRequester),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.brifeColors.textSubtitle),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = if (isDarkTheme) TextCaption else MaterialTheme.brifeColors.textSubtitle
+                ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { onSearchSubmit() }),
                 singleLine = true,
@@ -780,11 +818,13 @@ private fun ArchiveSearchBar(
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Row(
         modifier = modifier
             .clickable { onClick() }
             .background(
-                color = MaterialTheme.brifeColors.componentDefault,
+                color = if (isDarkTheme) DarkGray600 else MaterialTheme.brifeColors.componentDefault,
                 shape = RoundedCornerShape(999.dp)
             )
             .border(
@@ -852,6 +892,8 @@ fun ArchiveFolderCard(
     onClick: () -> Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Card(
         modifier = modifier
             .height(120.dp)
@@ -861,6 +903,7 @@ fun ArchiveFolderCard(
             containerColor = when {
                 selected -> InterestSelectedLight
                 isSelectionMode -> MaterialTheme.brifeColors.componentDefault.copy(alpha = 0.95f)
+                isDarkTheme -> DarkGray600
                 else -> MaterialTheme.brifeColors.componentDefault
             }
         ),
