@@ -414,7 +414,7 @@ private fun ExploreSearchingBody(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onRecentQueryClick(query) }
-                    .padding(vertical = 12.dp),
+                    .padding(vertical = 24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
