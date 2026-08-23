@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,10 +55,13 @@ import com.swyp.brife.feature.archive.ArchiveNewsCard
 import com.swyp.brife.feature.archive.ArchiveNewsItem
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BgDefault
+import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkBorderDefault
 import com.swyp.brife.ui.theme.DarkGray600
+import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.brifeColors
@@ -378,6 +382,8 @@ private fun ExploreSearchingBody(
     onDeleteRecentQuery: (String) -> Unit,
     onClearAllRecentQueries: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -393,17 +399,17 @@ private fun ExploreSearchingBody(
             AppText(
                 text = "최근 검색어",
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.brifeColors.textSubtitle
+                color = if (isDarkTheme) TextBody else MaterialTheme.brifeColors.textSubtitle
             )
             AppText(
                 text = "전체 삭제",
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.brifeColors.textCaption,
+                color = if (isDarkTheme) TextBody else MaterialTheme.brifeColors.textCaption,
                 modifier = Modifier.clickable { onClearAllRecentQueries() }
             )
         }
 
-        recentQueries.forEach { query ->
+        recentQueries.forEachIndexed { index, query ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -412,7 +418,13 @@ private fun ExploreSearchingBody(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_explore_recent),
+                    painter = painterResource(
+                        id = if (isDarkTheme) {
+                            R.drawable.explore_result_darkmode
+                        } else {
+                            R.drawable.ic_explore_recent
+                        }
+                    ),
                     contentDescription = null,
                     tint = Color.Unspecified,
                     modifier = Modifier.size(18.dp)
@@ -431,6 +443,14 @@ private fun ExploreSearchingBody(
                     modifier = Modifier
                         .size(18.dp)
                         .clickable { onDeleteRecentQuery(query) }
+                )
+            }
+
+            if (index != recentQueries.lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier.fillMaxWidth(),
+                    thickness = 1.dp,
+                    color = if (isDarkTheme) DarkBorderDefault else BorderDefault
                 )
             }
         }
