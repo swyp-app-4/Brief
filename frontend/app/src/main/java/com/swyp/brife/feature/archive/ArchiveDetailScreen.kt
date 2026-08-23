@@ -33,6 +33,9 @@ import com.swyp.brife.R
 import com.swyp.brife.ui.theme.DarkBackground
 import com.swyp.brife.ui.theme.DarkBorderDefault
 import com.swyp.brife.ui.theme.DarkGray300
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 
 
 // 정렬 타입
@@ -119,7 +122,17 @@ fun ArchiveDetailScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             AppText(
-                                text = "총 ${sortedItems.size}개",
+                                text = buildAnnotatedString {
+                                    append("총 ")
+
+                                    withStyle(
+                                        style = SpanStyle(color = PrimaryNormal)
+                                    ) {
+                                        append("${sortedItems.size}")
+                                    }
+
+                                    append("개")
+                                },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.brifeColors.textCaption
                             )
