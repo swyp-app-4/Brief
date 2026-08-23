@@ -981,7 +981,11 @@ private fun NewsLongTopBar(
                             }
                         ),
                         contentDescription = "즐겨찾기",
-                        tint = if (isDarkTheme) DarkTextTitle else Color.Unspecified
+                        tint = if (isDarkTheme && !isBookmarked) {
+                            DarkTextTitle
+                        } else {
+                            Color.Unspecified
+                        }
                     )
                 }
 

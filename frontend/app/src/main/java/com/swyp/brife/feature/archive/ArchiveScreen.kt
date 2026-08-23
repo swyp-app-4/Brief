@@ -72,6 +72,7 @@ import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.brifeColors
+import com.swyp.brife.ui.util.formatDisplayDate
 
 private const val SPECIAL_CHAR_ONLY_ERROR = "SPECIAL_CHAR_ONLY"
 private const val SEARCH_QUERY_MAX_LENGTH = 20
@@ -616,7 +617,7 @@ private fun ArchiveSearchResultsBody(
 
         sortedItems.forEach { item ->
             ArchiveNewsCard(
-                item = item,
+                item = item.copy(time = formatDisplayDate(item.time)),
                 onClick = { onNewsClick(item) }
             )
         }
