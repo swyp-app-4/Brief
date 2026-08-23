@@ -108,7 +108,7 @@ fun NewsBookmarkBottomSheet(
                     modifier = Modifier.size(20.dp)
                 )
                 AppText(
-                    text = "새 폴더 추가",
+                    text = "새로운 폴더 추가",
                     modifier = Modifier.padding(start = 10.dp),
                     style = MaterialTheme.typography.bodyLarge,
                     color = if (isDarkTheme) DarkTextTitle else PrimaryNormal
@@ -172,7 +172,7 @@ fun NewsBookmarkBottomSheet(
                         .weight(1f)
                         .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryNormal),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     AppText(

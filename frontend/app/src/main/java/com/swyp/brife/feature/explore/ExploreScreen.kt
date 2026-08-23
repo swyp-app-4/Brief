@@ -56,6 +56,8 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BgDefault
 import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkGray600
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.brifeColors
@@ -164,6 +166,7 @@ private fun ExploreTopBar(
     onClearQuery: () -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
 
     // 검색 활성화 시 키보드 자동 포커스
     LaunchedEffect(isSearchActive) {
@@ -194,7 +197,9 @@ private fun ExploreTopBar(
             modifier = Modifier
                 .weight(1f)
                 .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.brifeColors.componentDefault)
+                .background(
+                    if (isDarkTheme) DarkGray600 else MaterialTheme.brifeColors.componentDefault
+                )
                 .padding(horizontal = 14.dp, vertical = 12.dp)
                 .then(
                     if (!isSearchActive) Modifier.clickable { onSearchBarClick() }
