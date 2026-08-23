@@ -49,8 +49,12 @@ import androidx.compose.ui.unit.dp
 import com.swyp.brife.R
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.Blue200
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkBlue300
+import com.swyp.brife.ui.theme.DarkBlue700
+import com.swyp.brife.ui.theme.DarkComponentDefault
 import com.swyp.brife.ui.theme.PrimaryNormal
-import com.swyp.brife.ui.theme.TextTitle
 import com.swyp.brife.ui.theme.brifeColors
 
 private data class ProfileImageOption(
@@ -81,13 +85,18 @@ fun ProfileEditScreen(
         mutableStateOf(selectedImageRes.toProfileImageOption())
     }
     val selectedCategory = selectedOption.categoryLabel
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(Color(0xFFF1F6F8), Color(0xFFD8ECFF))
+                    colors = if (isDarkTheme) {
+                        listOf(DarkBackground, DarkBackground)
+                    } else {
+                        listOf(Color(0xFFF1F6F8), Color(0xFFD8ECFF))
+                    }
                 )
             )
     ) {
@@ -116,7 +125,7 @@ fun ProfileEditScreen(
                         color = PrimaryNormal,
                         modifier = Modifier
                             .clip(RoundedCornerShape(30.dp))
-                            .background(Color(0xFFC6E2FF))
+                            .background(if (isDarkTheme) DarkBlue300 else Blue200)
                             .padding(horizontal = 12.dp, vertical = 5.dp)
                     )
 
@@ -128,14 +137,14 @@ fun ProfileEditScreen(
                         withStyle(SpanStyle(color = PrimaryNormal)) {
                             append(username)
                         }
-                        withStyle(SpanStyle(color = Color(0xFF212225))) {
+                        withStyle(SpanStyle(color = MaterialTheme.brifeColors.textSubtitle)) {
                             append("님의 캐릭터")
                         }
                     },
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
-                    color = TextTitle
+                    color = MaterialTheme.brifeColors.textTitle
                 )
             }
 
@@ -207,7 +216,7 @@ private fun ProfileEditTopBar(
             text = "프로필 설정",
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = TextTitle,
+            color = MaterialTheme.brifeColors.textTitle,
             textAlign = TextAlign.Center
         )
 
@@ -220,7 +229,7 @@ private fun ProfileEditTopBar(
             AppText(
                 text = "저장",
                 style = MaterialTheme.typography.bodySmall,
-                color = TextTitle
+                color = MaterialTheme.brifeColors.textTitle
             )
         }
     }
@@ -233,10 +242,12 @@ private fun ProfileCharacterPanel(
     onImageSelected: (ProfileImageOption) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
-            .background(Color.White)
+            .background(if (isDarkTheme) DarkComponentDefault else Color.White)
             .padding(horizontal = 20.dp)
     ) {
         Column(modifier = Modifier.padding(top = 30.dp
@@ -248,7 +259,7 @@ private fun ProfileCharacterPanel(
                 AppText(
                     text = "다른 여우 탐색하기",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = Color(0xFF212225)
+                    color = MaterialTheme.brifeColors.textSubtitle
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Icon(
@@ -264,7 +275,7 @@ private fun ProfileCharacterPanel(
             AppText(
                 text = "내 취향을 대신할 여우를 선택해보세요.",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF70737C)
+                color = MaterialTheme.brifeColors.textBody
             )
         }
 
@@ -297,17 +308,28 @@ private fun ProfileImageGridItem(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
             .clip(RoundedCornerShape(20.dp))
             .background(
-                if (isSelected) Color(0xFFEDF5FF) else Color(0xFFF4F6F7)
+                when {
+                    isDarkTheme && isSelected -> DarkBlue300
+                    isDarkTheme -> DarkComponentDefault
+                    isSelected -> Color(0xFFEDF5FF)
+                    else -> Color(0xFFF4F6F7)
+                }
             )
             .then(
                 if (isSelected) {
-                    Modifier.border(1.5.dp, PrimaryNormal, RoundedCornerShape(20.dp))
+                    Modifier.border(
+                        width = 1.5.dp,
+                        color = if (isDarkTheme) DarkBlue700 else PrimaryNormal,
+                        shape = RoundedCornerShape(20.dp)
+                    )
                 } else {
                     Modifier
                 }
