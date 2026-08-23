@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -264,13 +263,12 @@ fun OneToOneInquiryScreen(
             ) {
                 Image(
                     painter = painterResource(
-                        id = if (isPrivacyChecked) R.drawable.ic_aftercheck else R.drawable.ic_beforecheck
+                        id = when {
+                            isPrivacyChecked -> R.drawable.ic_aftercheck
+                            isDarkTheme -> R.drawable.check_disabled_darkmode
+                            else -> R.drawable.ic_beforecheck
+                        }
                     ),
-                    colorFilter = if (isDarkTheme && !isPrivacyChecked) {
-                        ColorFilter.tint(DarkGray700)
-                    } else {
-                        null
-                    },
                     contentDescription = if (isPrivacyChecked) "동의됨" else "동의 안됨",
                     modifier = Modifier.size(20.dp)
                 )
@@ -505,13 +503,12 @@ private fun InquiryTypeBottomSheet(
                 ) {
                     Image(
                         painter = painterResource(
-                            id = if (isChecked) R.drawable.ic_aftercheck else R.drawable.ic_beforecheck
+                            id = when {
+                                isChecked -> R.drawable.ic_aftercheck
+                                isDarkTheme -> R.drawable.check_disabled_darkmode
+                                else -> R.drawable.ic_beforecheck
+                            }
                         ),
-                        colorFilter = if (isDarkTheme && !isChecked) {
-                            ColorFilter.tint(DarkGray700)
-                        } else {
-                            null
-                        },
                         contentDescription = if (isChecked) "선택됨" else "선택 안됨",
                         modifier = Modifier.size(20.dp)
                     )

@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,7 +36,6 @@ import com.swyp.brife.ui.theme.DarkBackground
 import com.swyp.brife.ui.theme.DarkBlue300
 import com.swyp.brife.ui.theme.DarkBlue700
 import com.swyp.brife.ui.theme.DarkComponentDefault
-import com.swyp.brife.ui.theme.DarkGray700
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.PrimaryNormal
 
@@ -180,14 +178,13 @@ fun TermsRow(
     ) {
         Image(
             painter = painterResource(
-                id = if (checked) R.drawable.ic_aftercheck else R.drawable.ic_beforecheck
+                id = when {
+                    checked -> R.drawable.ic_aftercheck
+                    isDarkTheme -> R.drawable.check_disabled_darkmode
+                    else -> R.drawable.ic_beforecheck
+                }
             ),
             contentDescription = if (checked) "선택됨" else "선택 안됨",
-            colorFilter = if (isDarkTheme && !checked) {
-                ColorFilter.tint(DarkGray700)
-            } else {
-                null
-            },
             modifier = Modifier.size(20.dp)
         )
 

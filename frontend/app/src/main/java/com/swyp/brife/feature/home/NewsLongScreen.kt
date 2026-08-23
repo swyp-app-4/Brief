@@ -84,6 +84,7 @@ import com.swyp.brife.ui.theme.DarkBackground
 import com.swyp.brife.ui.theme.DarkBorderStrong
 import com.swyp.brife.ui.theme.DarkComponentDefault
 import com.swyp.brife.ui.theme.DarkGray400
+import com.swyp.brife.ui.theme.DarkGray300
 import com.swyp.brife.ui.theme.DarkGray600
 import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.brifeColors
@@ -1027,13 +1028,14 @@ private fun NewsSourcesBottomSheet(
     onDismissRequest: () -> Unit,
     onRetry: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val context = LocalContext.current
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = MaterialTheme.brifeColors.backgroundDefault,
+        containerColor = if (isDarkTheme) DarkGray300 else MaterialTheme.brifeColors.backgroundDefault,
         dragHandle = null
     ) {
         Column(
@@ -1045,7 +1047,7 @@ private fun NewsSourcesBottomSheet(
             AppText(
                 text = "관련 뉴스기사",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.brifeColors.textTitle,
+                color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textTitle,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -1073,7 +1075,7 @@ private fun NewsSourcesBottomSheet(
                         AppText(
                             text = "기사를 불러오지 못했어요.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.brifeColors.textCaption
+                            color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textCaption
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         TextButton(onClick = onRetry) {
@@ -1096,7 +1098,7 @@ private fun NewsSourcesBottomSheet(
                         AppText(
                             text = "관련 뉴스기사가 없습니다.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.brifeColors.textCaption
+                            color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textCaption
                         )
                     }
                 }
@@ -1136,6 +1138,7 @@ private fun NewsSourceCard(
     pressName: String,
     onClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val formattedDate = formatSourcePublishedDate(publishedDate)
     val metaText = listOf(formattedDate, pressName)
         .filter { it.isNotBlank() }
@@ -1145,7 +1148,7 @@ private fun NewsSourceCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFF7F9FD))
+            .background(if (isDarkTheme) DarkGray600 else Color(0xFFF7F9FD))
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -1154,7 +1157,7 @@ private fun NewsSourceCard(
             AppText(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.brifeColors.textTitle,
+                color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textTitle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -1163,7 +1166,7 @@ private fun NewsSourceCard(
                 AppText(
                     text = metaText,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.brifeColors.textCaption
+                    color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textCaption
                 )
             }
         }
