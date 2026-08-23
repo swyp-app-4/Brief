@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:textColor="#0D1B3E"
+        android:textColor="@color/widget_title"
         android:textSize="16sp"
         android:textStyle="bold"
         android:maxLines="1"
@@ -38,7 +38,7 @@
             android:id="@+id/widget_tv_summary_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#4A5568"
+            android:textColor="@color/widget_summary"
             android:textSize="14sp"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -48,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="#4A5568"
+            android:textColor="@color/widget_summary"
             android:textSize="14sp"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -58,7 +58,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="#4A5568"
+            android:textColor="@color/widget_summary"
             android:textSize="14sp"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -68,7 +68,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="#4A5568"
+            android:textColor="@color/widget_summary"
             android:textSize="14sp"
             android:maxLines="1"
             android:ellipsize="end" />

@@ -131,7 +131,7 @@ fun OneToOneInquiryScreen(
     val contentError = showValidationErrors && content.isBlank()
 
     Scaffold(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.brifeColors.backgroundDefault,
         topBar = {
             AppTopBar2(
                 title = "문의 등록",
@@ -197,7 +197,10 @@ fun OneToOneInquiryScreen(
             }
 
             // ① - 수신 이메일 안내 (항상 표시)
-            InquiryFieldSection(label = "문의 수신 이메일") {
+            InquiryFieldSection(
+                label = "문의 수신 이메일",
+                useThemeTitleColor = false
+            ) {
                 InquiryReceiverEmailNotice()
             }
 
@@ -281,7 +284,7 @@ fun OneToOneInquiryScreen(
                         }
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSubtitle,
+                    color = if (isDarkTheme) MaterialTheme.brifeColors.textTitle else TextSubtitle,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -304,13 +307,20 @@ fun OneToOneInquiryScreen(
 @Composable
 private fun InquiryFieldSection(
     label: String,
+    useThemeTitleColor: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         AppText(
             text = label,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-            color = Color.Black
+            color = if (isDarkTheme && useThemeTitleColor) {
+                MaterialTheme.brifeColors.textTitle
+            } else {
+                Color.Black
+            }
         )
         content()
     }
@@ -334,6 +344,8 @@ private fun InquiryInputField(
     maxLength: Int = Int.MAX_VALUE,
     showCharCount: Boolean = false
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     OutlinedTextField(
         value = value,
         onValueChange = { if (it.length <= maxLength) onValueChange(it) },
@@ -342,7 +354,7 @@ private fun InquiryInputField(
             AppText(
                 text = placeholder,
                 style = MaterialTheme.typography.bodySmall,
-                color = TextBody
+                color = if (isDarkTheme) TextCaption else TextBody
             )
         },
         readOnly = readOnly,
@@ -354,14 +366,27 @@ private fun InquiryInputField(
         colors = OutlinedTextFieldDefaults.colors(
             // 읽기 전용 필드는 포커스해도 테두리 색상 유지
             focusedBorderColor = when {
-                readOnly -> BorderStrong
                 isError -> Negative
+                isDarkTheme -> Color.Transparent
+                readOnly -> BorderStrong
                 else -> PrimaryNormal
             },
-            unfocusedBorderColor = if (isError) Negative else BorderStrong,
+            unfocusedBorderColor = when {
+                isError -> Negative
+                isDarkTheme -> Color.Transparent
+                else -> BorderStrong
+            },
             errorBorderColor = Negative,
             cursorColor = if (isError) Negative else PrimaryNormal,
-            disabledBorderColor = BorderStrong
+            disabledBorderColor = if (isDarkTheme) Color.Transparent else BorderStrong,
+            focusedContainerColor = if (isDarkTheme) DarkGray600 else Color.Transparent,
+            unfocusedContainerColor = if (isDarkTheme) DarkGray600 else Color.Transparent,
+            disabledContainerColor = if (isDarkTheme) DarkGray600 else Color.Transparent,
+            errorContainerColor = if (isDarkTheme) DarkGray600 else Color.Transparent,
+            focusedTextColor = MaterialTheme.brifeColors.textTitle,
+            unfocusedTextColor = MaterialTheme.brifeColors.textTitle,
+            disabledTextColor = MaterialTheme.brifeColors.textTitle,
+            errorTextColor = MaterialTheme.brifeColors.textTitle
         )
     )
 
@@ -387,7 +412,7 @@ private fun InquiryInputField(
                 AppText(
                     text = "${value.length}/$maxLength",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Black,
+                    color = if (isDarkTheme) MaterialTheme.brifeColors.textTitle else Color.Black,
                     textAlign = TextAlign.End
                 )
             }
@@ -406,12 +431,20 @@ private fun InquiryTypeField(
     isError: Boolean,
     onClick: () -> Unit
 ) {
-    val borderColor = if (isError) Negative else BorderStrong
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val fieldShape = RoundedCornerShape(12.dp)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+            .background(if (isDarkTheme) DarkGray600 else Color.Transparent, fieldShape)
+            .then(
+                when {
+                    isError -> Modifier.border(1.dp, Negative, fieldShape)
+                    isDarkTheme -> Modifier
+                    else -> Modifier.border(1.dp, BorderStrong, fieldShape)
+                }
+            )
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -420,12 +453,17 @@ private fun InquiryTypeField(
         AppText(
             text = if (selectedType.isBlank()) "문의 유형을 선택해 주세요." else selectedType,
             style = MaterialTheme.typography.bodySmall,
-            color = if (selectedType.isBlank()) TextBody else TextSubtitle,
+            color = if (selectedType.isBlank()) {
+                if (isDarkTheme) TextCaption else TextBody
+            } else {
+                if (isDarkTheme) MaterialTheme.brifeColors.textTitle else TextSubtitle
+            },
             modifier = Modifier.weight(1f)
         )
-        Image(
+        Icon(
             painter = painterResource(id = R.drawable.ic_onetoone_fold),
             contentDescription = "문의 유형 선택",
+            tint = if (isDarkTheme) TextCaption else Color.Unspecified,
             modifier = Modifier.size(20.dp)
         )
     }
@@ -437,18 +475,21 @@ private fun InquiryTypeField(
 
 @Composable
 private fun InquiryReceiverEmailNotice() {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val fieldShape = RoundedCornerShape(12.dp)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderStrong, RoundedCornerShape(12.dp))
-            .background(Color(0xFFF8F8F8), RoundedCornerShape(12.dp))
+            .background(if (isDarkTheme) DarkGray600 else Color(0xFFF8F8F8), fieldShape)
+            .then(if (isDarkTheme) Modifier else Modifier.border(1.dp, BorderStrong, fieldShape))
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AppText(
             text = "brfggl@gmail.com",
             style = MaterialTheme.typography.bodySmall,
-            color = TextSubtitle
+            color = if (isDarkTheme) MaterialTheme.brifeColors.textTitle else TextSubtitle
         )
     }
 }
@@ -472,7 +513,7 @@ private fun InquiryTypeBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = if (isDarkTheme) DarkGray300 else Color.White,
         dragHandle = null
     ) {
         Column(
@@ -484,7 +525,7 @@ private fun InquiryTypeBottomSheet(
             AppText(
                 text = "문의 유형을 선택해 주세요",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                color = Color.Black
+                color = if (isDarkTheme) MaterialTheme.brifeColors.textTitle else Color.Black
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -516,7 +557,7 @@ private fun InquiryTypeBottomSheet(
                     AppText(
                         text = type,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSubtitle
+                        color = if (isDarkTheme) MaterialTheme.brifeColors.textTitle else TextSubtitle
                     )
                 }
             }

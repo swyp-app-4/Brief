@@ -31,6 +31,7 @@ import com.swyp.brife.navigation.AppNavGraph
 import com.swyp.brife.feature.notification.BriefNotificationHelper
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.ThemeMode
+import com.swyp.brife.feature.widget.WidgetRefreshHelper
 
 class MainActivity : ComponentActivity() {
 
@@ -129,6 +130,7 @@ class MainActivity : ComponentActivity() {
                             val nextMode = if (darkTheme) ThemeMode.LIGHT else ThemeMode.DARK
                             themeStorage.saveThemeMode(nextMode)
                             themeMode = nextMode
+                            WidgetRefreshHelper.refreshAll(applicationContext)
                         }
                     )
                 }

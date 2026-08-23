@@ -82,6 +82,8 @@ class BrifeWidgetReceiver : AppWidgetProvider() {
         appWidgetId: Int
     ) {
         val rv = RemoteViews(context.packageName, R.layout.widget_layout)
+        val isDarkTheme = WidgetThemeHelper.isDarkTheme(context)
+        WidgetThemeHelper.applyContainerTheme(context, rv, isDarkTheme)
         val isLoggedIn = AuthLocalStorage(context).isLoggedIn()
         val maxAccessiblePos = if (isLoggedIn) ITEM_COUNT - 1 else 2
 

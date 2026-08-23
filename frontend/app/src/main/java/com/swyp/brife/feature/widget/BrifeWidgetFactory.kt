@@ -145,6 +145,11 @@ class BrifeWidgetFactory(private val context: Context) : RemoteViewsService.Remo
     override fun getViewAt(position: Int): RemoteViews {
         val news = currentData[position]
         val rv = RemoteViews(context.packageName, R.layout.widget_stack_item)
+        WidgetThemeHelper.applyItemTheme(
+            context = context,
+            views = rv,
+            isDarkTheme = WidgetThemeHelper.isDarkTheme(context)
+        )
 
         // ── 텍스트 바인딩 ─────────────────────────────────────────────────────
         rv.setTextViewText(R.id.widget_tv_title, news.title)

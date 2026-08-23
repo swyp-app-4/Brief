@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_background">#FFFFFF</color>
+    <color name="widget_title">#212225</color>
+    <color name="widget_summary">#545E7E</color>
+
+    <color name="widget_background_light">#FFFFFF</color>
+    <color name="widget_background_dark">#0E1827</color>
+    <color name="widget_title_light">#212225</color>
+    <color name="widget_title_dark">#FFFFFF</color>
+    <color name="widget_summary_light">#545E7E</color>
+    <color name="widget_summary_dark">#FFFFFF</color>
+</resources>
