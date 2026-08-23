@@ -17,12 +17,13 @@ import com.swyp.brife.ui.theme.Gray600
 @Composable
 fun CategoryChip(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    containerColor: Color = Gray600
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(Gray600)
+            .background(containerColor)
             .padding(horizontal = 10.dp, vertical = 5.dp),
         contentAlignment = Alignment.Center
     ) {

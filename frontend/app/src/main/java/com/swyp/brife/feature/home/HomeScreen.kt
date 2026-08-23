@@ -34,6 +34,7 @@ import androidx.compose.ui.zIndex
 import kotlin.math.absoluteValue
 import com.swyp.brife.R
 import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkHomeCardBackground
 import com.swyp.brife.ui.theme.brifeColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,6 +52,7 @@ fun HomeScreen(
     onPageChanged: (Int) -> Unit = {},
     topPadding: Dp = 0.dp
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     var shareFlowStep by remember { mutableStateOf(ShareFlowStep.Closed) }
     var selectedShareData by remember { mutableStateOf<NewsShareData?>(null) }
 
@@ -304,7 +306,11 @@ fun HomeScreen(
                             shape = RoundedCornerShape(20.dp),
                             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.brifeColors.componentDefault
+                                containerColor = if (isDarkTheme) {
+                                    DarkHomeCardBackground
+                                } else {
+                                    MaterialTheme.brifeColors.componentDefault
+                                }
                             )
                         ) {
                             if (isLoading) {

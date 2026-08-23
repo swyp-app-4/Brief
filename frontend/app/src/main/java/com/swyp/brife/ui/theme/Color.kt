@@ -76,6 +76,11 @@ val DarkBorderStrong = Color(0xFF6C6E79)
 val DarkComponentDefault = Color(0xFF1B1C1E)
 val DarkCtaDisabled = Color(0xFF989BA2)
 
+val DarkHomeCardBackground = Color(0xFF272F3C)
+val DarkHomeCategoryTagBackground = Color(0xFF333D48)
+val DarkHomeSummaryBackground = Color(0xFF1A2029)
+val DarkHomeSummaryText = Color(0xFFD1D6DB)
+
 val DarkBlue100 = Color(0xFF09111E)
 val DarkBlue200 = Color(0xFF0E1827)
 val DarkBlue300 = Color(0xFF0C264C)

@@ -40,6 +40,12 @@ import com.swyp.brife.ui.component.CategoryChip
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.CompactPrimaryButtonTextStyle
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkHomeCategoryTagBackground
+import com.swyp.brife.ui.theme.DarkHomeSummaryBackground
+import com.swyp.brife.ui.theme.DarkHomeSummaryText
+import com.swyp.brife.ui.theme.Gray600
+import com.swyp.brife.ui.theme.PrimaryNormal
 
 
 
@@ -51,6 +57,7 @@ fun HomeNewsCardContent(
     onDetailClick: () -> Unit = {},
     contentScaleFactor: Float = 1f
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val scale = contentScaleFactor.coerceIn(0f, 1f)
     val titleStyle = MaterialTheme.typography.titleMedium.copy(
         fontSize = (19.5f + 2.5f * scale).sp,
@@ -89,9 +96,23 @@ fun HomeNewsCardContent(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                CategoryChip(text = item.category)
+                CategoryChip(
+                    text = item.category,
+                    containerColor = if (isDarkTheme) {
+                        DarkHomeCategoryTagBackground
+                    } else {
+                        Gray600
+                    }
+                )
                 if (item.subCategory.isNotBlank()) {
-                    CategoryChip(text = item.subCategory)
+                    CategoryChip(
+                        text = item.subCategory,
+                        containerColor = if (isDarkTheme) {
+                            DarkHomeCategoryTagBackground
+                        } else {
+                            Gray600
+                        }
+                    )
                 }
             }
 
@@ -126,7 +147,7 @@ fun HomeNewsCardContent(
             Icon(
                 painter = painterResource(id = R.drawable.ic_home_alert),
                 contentDescription = "알림",
-                tint = Color.Unspecified,
+                tint = if (isDarkTheme) MaterialTheme.brifeColors.textBody else Color.Unspecified,
                 modifier = Modifier.size(16.dp)
             )
 
@@ -136,7 +157,11 @@ fun HomeNewsCardContent(
                 text = item.notice,
                 modifier = Modifier.weight(1f),
                 style = bodyStyle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (isDarkTheme) {
+                    MaterialTheme.brifeColors.textBody
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -171,6 +196,7 @@ private fun SummaryInsightBox(
     bodyStyle: TextStyle,
     summaryBulletStyle: TextStyle
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val verticalPadding = (12.5f + 4f * contentScaleFactor).dp
     val summaryHeaderSpacing = (7.5f + 3f * contentScaleFactor).dp
     val summaryItemSpacing = (4.5f + 2f * contentScaleFactor).dp
@@ -181,7 +207,13 @@ private fun SummaryInsightBox(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.brifeColors.backgroundSub)
+            .background(
+                if (isDarkTheme) {
+                    DarkHomeSummaryBackground
+                } else {
+                    MaterialTheme.brifeColors.backgroundSub
+                }
+            )
             .wrapContentHeight()
             .padding(vertical = verticalPadding)
     ) {
@@ -209,7 +241,11 @@ private fun SummaryInsightBox(
         Text(
             text = insight,
             style = bodyStyle,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (isDarkTheme) {
+                MaterialTheme.brifeColors.textCaption
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
             maxLines = 3,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -243,6 +279,8 @@ private fun SummarySection(
     itemSpacing: Dp,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -255,7 +293,7 @@ private fun SummarySection(
             Text(
                 text = title,
                 style = titleStyle,
-                color = MaterialTheme.brifeColors.textTitle
+                color = if (isDarkTheme) PrimaryNormal else MaterialTheme.brifeColors.textTitle
             )
         }
 
@@ -278,7 +316,11 @@ private fun SummarySection(
                     text = point,
                     modifier = Modifier.weight(1f),
                     style = pointStyle,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isDarkTheme) {
+                        DarkHomeSummaryText
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
                     // --- 추가된 속성 ---
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
