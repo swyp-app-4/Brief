@@ -1,5 +1,6 @@
 package com.swyp.brife.feature.onboarding
 
+import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,28 +21,38 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.view.WindowCompat
 import com.swyp.brife.R
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.BgSub
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkComponentDefault
+import com.swyp.brife.ui.theme.DarkGray300
+import com.swyp.brife.ui.theme.DarkTextTitle
 import kotlinx.coroutines.launch
 
 data class OnboardingGuidePage(
     val title: String,
     val description: String,
     val imageRes: Int,
+    val darkImageRes: Int,
     val characterRes: Int
 )
 
@@ -52,19 +63,22 @@ private val onboardingPages = listOf(
     OnboardingGuidePage(
         title = "바쁜 아침에도\n뉴스는 가볍게",
         description = "내가 고른 관심사를\n매일 아침 뉴스카드로 보여드려요.",
-        imageRes = R.drawable.ill_onboarding_screen_01_new,
+        imageRes = R.drawable.ill_onboarding_screen_01,
+        darkImageRes = R.drawable.onboarding1_darkmode,
         characterRes = R.drawable.img_onboarding_character_01
     ),
     OnboardingGuidePage(
         title = "단락별 요약으로\n핵심만 빠르게",
         description = "긴 기사도 부담 없이\n핵심만 빠르게 볼 수 있어요.",
         imageRes = R.drawable.ill_onboarding_screen_02,
+        darkImageRes = R.drawable.onboarding2_darkmode,
         characterRes = R.drawable.img_onboarding_character_02
     ),
     OnboardingGuidePage(
         title = "홈에서 뉴스로\n바로가기",
         description = "위젯에서 별을 누르면 바로\n기사로 이동할 수 있어요.",
-        imageRes = R.drawable.ill_onboarding_screen_03_new,
+        imageRes = R.drawable.ill_onboarding_screen_03,
+        darkImageRes = R.drawable.onboarding3_darkmode,
         characterRes = R.drawable.img_onboarding_character_03
     )
 )
@@ -109,16 +123,53 @@ private fun OnboardingGuideContent(
     onButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val guideImageRes = if (isDarkTheme) {
+        item.darkImageRes
+    } else {
+        item.imageRes
+    }
+    val topBackgroundColor = if (isDarkTheme) DarkGray300 else BgSub
+    val bottomBackgroundColor = if (isDarkTheme) DarkComponentDefault else Color.White
+    val titleColor = if (isDarkTheme) DarkTextTitle else Color.Black
+    val view = LocalView.current
+
+    DisposableEffect(view, isDarkTheme) {
+        val window = (view.context as? Activity)?.window
+        if (!isDarkTheme || window == null) {
+            onDispose { }
+        } else {
+            val controller = WindowCompat.getInsetsController(window, view)
+            val previousStatusBarColor = window.statusBarColor
+            val previousLightStatusBars = controller.isAppearanceLightStatusBars
+
+            onDispose {
+                window.statusBarColor = previousStatusBarColor
+                controller.isAppearanceLightStatusBars = previousLightStatusBars
+            }
+        }
+    }
+
+    SideEffect {
+        if (isDarkTheme) {
+            val window = (view.context as? Activity)?.window
+            if (window != null) {
+                window.statusBarColor = DarkGray300.toArgb()
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+            }
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(bottomBackgroundColor)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.70f)
-                .background(BgSub)
+                .background(topBackgroundColor)
         )
 
         Column(
@@ -149,7 +200,7 @@ private fun OnboardingGuideContent(
                         )
 
                         Image(
-                            painter = painterResource(id = item.imageRes),
+                            painter = painterResource(id = guideImageRes),
                             contentDescription = null,
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
@@ -173,7 +224,7 @@ private fun OnboardingGuideContent(
                         )
 
                         Image(
-                            painter = painterResource(id = item.imageRes),
+                            painter = painterResource(id = guideImageRes),
                             contentDescription = null,
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
@@ -186,7 +237,7 @@ private fun OnboardingGuideContent(
 
                     else -> {
                         Image(
-                            painter = painterResource(id = item.imageRes),
+                            painter = painterResource(id = guideImageRes),
                             contentDescription = null,
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
@@ -214,7 +265,7 @@ private fun OnboardingGuideContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.8f)
-                    .background(Color.White)
+                    .background(bottomBackgroundColor)
             ) {
                 Column(
                     modifier = Modifier
@@ -227,7 +278,7 @@ private fun OnboardingGuideContent(
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold
                         ),
-                        color = Color.Black,
+                        color = titleColor,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
