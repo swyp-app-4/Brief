@@ -18,7 +18,8 @@ import com.swyp.brife.ui.theme.Gray600
 fun CategoryChip(
     text: String,
     modifier: Modifier = Modifier,
-    containerColor: Color = Gray600
+    containerColor: Color = Gray600,
+    contentColor: Color = Color.White
 ) {
     Box(
         modifier = modifier
@@ -30,7 +31,7 @@ fun CategoryChip(
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,
-            color = Color.White,
+            color = contentColor,
             maxLines = 1
         )
     }

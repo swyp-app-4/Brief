@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -42,9 +43,11 @@ import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.CompactPrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.DarkBackground
 import com.swyp.brife.ui.theme.DarkHomeCategoryTagBackground
+import com.swyp.brife.ui.theme.DarkHomeCategoryTagText
 import com.swyp.brife.ui.theme.DarkHomeSummaryBackground
 import com.swyp.brife.ui.theme.DarkHomeSummaryText
 import com.swyp.brife.ui.theme.Gray600
+import com.swyp.brife.ui.theme.Pretendard
 import com.swyp.brife.ui.theme.PrimaryNormal
 
 
@@ -59,9 +62,12 @@ fun HomeNewsCardContent(
 ) {
     val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val scale = contentScaleFactor.coerceIn(0f, 1f)
-    val titleStyle = MaterialTheme.typography.titleMedium.copy(
-        fontSize = (19.5f + 2.5f * scale).sp,
-        lineHeight = (27.5f + 2.5f * scale).sp
+    val titleStyle = TextStyle(
+        fontFamily = Pretendard,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp,
+        lineHeight = 27.sp,
+        letterSpacing = (-0.2).sp
     )
     val bodyStyle = MaterialTheme.typography.bodySmall.copy(
         fontSize = (10.5f + 1.5f * scale).sp,
@@ -102,7 +108,8 @@ fun HomeNewsCardContent(
                         DarkHomeCategoryTagBackground
                     } else {
                         Gray600
-                    }
+                    },
+                    contentColor = if (isDarkTheme) DarkHomeCategoryTagText else Color.White
                 )
                 if (item.subCategory.isNotBlank()) {
                     CategoryChip(
@@ -111,7 +118,8 @@ fun HomeNewsCardContent(
                             DarkHomeCategoryTagBackground
                         } else {
                             Gray600
-                        }
+                        },
+                        contentColor = if (isDarkTheme) DarkHomeCategoryTagText else Color.White
                     )
                 }
             }

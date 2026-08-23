@@ -78,6 +78,7 @@ val DarkCtaDisabled = Color(0xFF989BA2)
 
 val DarkHomeCardBackground = Color(0xFF272F3C)
 val DarkHomeCategoryTagBackground = Color(0xFF333D48)
+val DarkHomeCategoryTagText = Color(0xFFAFB7C0)
 val DarkHomeSummaryBackground = Color(0xFF1A2029)
 val DarkHomeSummaryText = Color(0xFFD1D6DB)
 
