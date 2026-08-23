@@ -32,6 +32,10 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.BgDefault
 import com.swyp.brife.ui.theme.ComponentDefault
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkBlue300
+import com.swyp.brife.ui.theme.DarkBlue700
+import com.swyp.brife.ui.theme.DarkComponentDefault
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.PrimaryNormal
 
@@ -47,15 +51,17 @@ fun LoginTermsScreen(
     initialPrivacyAgree: Boolean = false,
 ) {
     val allAgree = initialServiceAgree && initialPrivacyAgree
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val screenBackground = if (isDarkTheme) DarkBackground else BgDefault
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = BgDefault
+        color = screenBackground
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BgDefault)
+                .background(screenBackground)
                 .statusBarsPadding()
         ) {
             Column(
@@ -130,9 +136,12 @@ fun TermsRow(
     highlightBox: Boolean = false,
     showArrow: Boolean = true
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val rowShape = RoundedCornerShape(20.dp)
 
     val backgroundColor = when {
+        isDarkTheme && highlightBox && checked -> DarkBlue300
+        isDarkTheme && highlightBox -> DarkComponentDefault
         highlightBox && checked -> InterestSelectedLight
         highlightBox && !checked -> ComponentDefault
         else -> Color.Transparent
@@ -141,7 +150,7 @@ fun TermsRow(
     val borderModifier = if (highlightBox && checked) {
         Modifier.border(
             width = 2.dp,
-            color = PrimaryNormal,
+            color = if (isDarkTheme) DarkBlue700 else PrimaryNormal,
             shape = rowShape
         )
     } else {
