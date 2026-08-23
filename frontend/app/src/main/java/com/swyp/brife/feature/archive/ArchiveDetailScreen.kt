@@ -30,6 +30,9 @@ import com.swyp.brife.ui.theme.TextTitle
 import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.ui.util.formatDisplayDate
 import com.swyp.brife.R
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkBorderDefault
+import com.swyp.brife.ui.theme.DarkGray300
 
 
 // 정렬 타입
@@ -73,6 +76,7 @@ fun ArchiveDetailScreen(
         SortType.OLDEST -> newsItems.reversed()
         SortType.NAME -> newsItems.sortedBy { it.title }
     }
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
 
     Scaffold(
         topBar = {
@@ -123,10 +127,15 @@ fun ArchiveDetailScreen(
                                 modifier = Modifier.clickable { showFilterSheet = true },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_archive_filter_detail),
+                                Image(
+                                    painter = painterResource(
+                                        id = if (isDarkTheme) {
+                                            R.drawable.sort_darkmode
+                                        } else {
+                                            R.drawable.ic_archive_filter_detail
+                                        }
+                                    ),
                                     contentDescription = "정렬",
-                                    tint = Color.Unspecified,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -284,11 +293,11 @@ private fun ArchiveDetailMoreBottomSheet(
     onEditClick: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = MaterialTheme.brifeColors.backgroundDefault,
+        containerColor = if (isDarkTheme) DarkGray300 else MaterialTheme.brifeColors.backgroundDefault,
         dragHandle = null
     ) {
         Column(
@@ -343,6 +352,7 @@ private fun SortFilterBottomSheet(
     onDismissRequest: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -362,7 +372,7 @@ private fun SortFilterBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onSortSelected(type) }
-                        .padding(vertical = 16.dp)
+                        .padding(vertical = 20.dp)
                 ) {
                     AppText(
                         text = type.label,
@@ -371,7 +381,9 @@ private fun SortFilterBottomSheet(
                     )
                 }
                 if (index < SortType.entries.lastIndex) {
-                    HorizontalDivider(color = Color(0xFFF0F0F0))
+                    HorizontalDivider(
+                        color = if (isDarkTheme) DarkBorderDefault else Color(0xFFF0F0F0)
+                    )
                 }
             }
 
@@ -403,6 +415,8 @@ private fun EditableArchiveNewsCard(
     isSelected: Boolean,
     onToggle: (Long) -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -410,12 +424,16 @@ private fun EditableArchiveNewsCard(
             .padding(vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
+        Image(
             painter = painterResource(
-                id = if (isSelected) R.drawable.ic_aftercheck else R.drawable.ic_beforecheck
+                id = when {
+                    isSelected -> R.drawable.ic_aftercheck
+                    isDarkTheme -> R.drawable.check_disabled_darkmode
+                    else -> R.drawable.ic_beforecheck
+                }
             ),
             contentDescription = if (isSelected) "선택됨" else "선택 안됨",
-            tint = Color.Unspecified,
+//            tint = Color.Unspecified,
             modifier = Modifier
                 .padding(start = 4.dp, end = 8.dp)
                 .size(24.dp)
