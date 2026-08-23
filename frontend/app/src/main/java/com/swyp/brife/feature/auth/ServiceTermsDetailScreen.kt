@@ -46,8 +46,14 @@ import com.swyp.brife.ui.component.AppTopBar2
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkComponentDefault
+import com.swyp.brife.ui.theme.DarkGray300
+import com.swyp.brife.ui.theme.DarkGray500
+import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.TextBody
+import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 
 @Composable
@@ -58,8 +64,10 @@ fun ServiceTermsDetailScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Scaffold(
-        containerColor = Color.White,
+        containerColor = if (isDarkTheme) DarkBackground else Color.White,
         topBar = {
             AppTopBar2(
                 title = "서비스 이용약관 필수 동의",
@@ -127,10 +135,19 @@ fun ServiceTermsDetailScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(if (isDarkTheme) DarkGray300 else Color.White)
+                    .then(
+                        if (isDarkTheme) {
+                            Modifier.border(width = 1.dp, color = DarkGray500)
+                        } else {
+                            Modifier
+                        }
+                    )
                     .navigationBarsPadding()
             ) {
-                HorizontalDivider(color = Color(0xFFE9EDF2))
+                HorizontalDivider(
+                    color = if (isDarkTheme) DarkGray500 else Color(0xFFE9EDF2)
+                )
 
                 Row(
                     modifier = Modifier
@@ -160,7 +177,7 @@ fun ServiceTermsDetailScreen(
                             }
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSubtitle,
+                        color = if (isDarkTheme) TextCaption else TextSubtitle,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -187,6 +204,8 @@ private fun ServiceTermsClause(
     expanded: Boolean,
     onToggle: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
 // 1. 회전(rotate) 대신 Y축 스케일(scaleY) 애니메이션 사용
     // expanded가 true일 때 1f (정방향), false일 때 -1f (상하 반전)
     val scaleY by animateFloatAsState(targetValue = if (expanded) 1f else -1f)
@@ -202,7 +221,7 @@ private fun ServiceTermsClause(
             AppText(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = TextSubtitle,
+                color = if (isDarkTheme) DarkTextTitle else TextSubtitle,
                 modifier = Modifier.weight(1f)
             )
             Icon(
@@ -223,13 +242,23 @@ private fun ServiceTermsClause(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .then(
+                        if (isDarkTheme) {
+                            Modifier.background(
+                                color = DarkComponentDefault,
+                                shape = RoundedCornerShape(20.dp)
+                            )
+                        } else {
+                            Modifier
+                        }
+                    )
                     .border(BorderStroke(1.dp, BorderDefault), RoundedCornerShape(20.dp))
                     .padding(horizontal = 16.dp, vertical = 14.dp)
             ) {
                 AppText(
                     text = content,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextBody,
+                    color = if (isDarkTheme) TextCaption else TextBody,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

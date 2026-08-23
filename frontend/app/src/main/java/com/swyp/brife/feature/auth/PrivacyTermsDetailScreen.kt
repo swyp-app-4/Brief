@@ -38,8 +38,14 @@ import com.swyp.brife.ui.component.AppTopBar2
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkComponentDefault
+import com.swyp.brife.ui.theme.DarkGray300
+import com.swyp.brife.ui.theme.DarkGray500
+import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.TextBody
+import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 
 @Composable
@@ -50,8 +56,12 @@ fun PrivacyTermsDetailScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val primaryTextColor = if (isDarkTheme) DarkTextTitle else TextSubtitle
+    val agreementTextColor = if (isDarkTheme) TextCaption else TextSubtitle
+
     Scaffold(
-        containerColor = Color.White,
+        containerColor = if (isDarkTheme) DarkBackground else Color.White,
         topBar = {
             AppTopBar2(
                 title = "개인정보 처리 동의서",
@@ -92,7 +102,7 @@ fun PrivacyTermsDetailScreen(
                 AppText(
                     text = "  제 1조 (개인정보 수집 및 이용 목적)",
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = TextSubtitle,
+                    color = primaryTextColor,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -108,7 +118,7 @@ fun PrivacyTermsDetailScreen(
                 AppText(
                     text = "  제 2조 (개인정보 수집 및 이용 항목)",
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = TextSubtitle,
+                    color = primaryTextColor,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -124,7 +134,7 @@ fun PrivacyTermsDetailScreen(
                 AppText(
                     text = "  제 3조 (개인정보 보유 및 이용기간)",
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = TextSubtitle,
+                    color = primaryTextColor,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -140,7 +150,7 @@ fun PrivacyTermsDetailScreen(
                 AppText(
                     text = "제 4조 (동의 거부 관리)",
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = TextSubtitle,
+                    color = primaryTextColor,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -156,7 +166,7 @@ fun PrivacyTermsDetailScreen(
                 AppText(
                     text = "본인은 위의 동의서 내용을 충분히 숙지하였으며,\n위와 같이 개인정보를 수집·이용하는데 동의합니다.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSubtitle,
+                    color = agreementTextColor,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -191,7 +201,7 @@ fun PrivacyTermsDetailScreen(
                             }
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSubtitle,
+                        color = agreementTextColor,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -203,10 +213,19 @@ fun PrivacyTermsDetailScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(if (isDarkTheme) DarkGray300 else Color.White)
+                    .then(
+                        if (isDarkTheme) {
+                            Modifier.border(width = 1.dp, color = DarkGray500)
+                        } else {
+                            Modifier
+                        }
+                    )
                     .navigationBarsPadding()
             ) {
-                HorizontalDivider(color = Color(0xFFE9EDF2))
+                HorizontalDivider(
+                    color = if (isDarkTheme) DarkGray500 else Color(0xFFE9EDF2)
+                )
 
                 PrimaryButton(
                     text = "다음",
@@ -224,9 +243,21 @@ fun PrivacyTermsDetailScreen(
 // 반복되는 border 박스 — 본문 설명 텍스트를 감싸는 컨테이너
 @Composable
 private fun PrivacyTermsBox(text: String) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .then(
+                if (isDarkTheme) {
+                    Modifier.background(
+                        color = DarkComponentDefault,
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .border(
                 border = BorderStroke(1.dp, BorderDefault),
                 shape = RoundedCornerShape(20.dp)
@@ -236,7 +267,7 @@ private fun PrivacyTermsBox(text: String) {
         AppText(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = TextBody,
+            color = if (isDarkTheme) TextCaption else TextBody,
             modifier = Modifier.fillMaxWidth()
         )
     }
