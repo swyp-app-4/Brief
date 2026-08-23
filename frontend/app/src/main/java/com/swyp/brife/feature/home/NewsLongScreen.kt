@@ -75,12 +75,17 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.component.CategoryChip
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.DarkBlue200
 import com.swyp.brife.ui.theme.LongFormCtaTextStyle
 import com.swyp.brife.ui.theme.PrimaryNormal
-import com.swyp.brife.ui.theme.TextBody
+import com.swyp.brife.ui.theme.Gray600
 import com.swyp.brife.ui.theme.TextCaption
-import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkBorderStrong
+import com.swyp.brife.ui.theme.DarkComponentDefault
+import com.swyp.brife.ui.theme.DarkGray400
+import com.swyp.brife.ui.theme.DarkGray600
+import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.brifeColors
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -195,7 +200,8 @@ fun NewsLongScreen(
 
     val window = (view.context as? Activity)?.window
     val screenBackground = MaterialTheme.brifeColors.backgroundDefault
-    val useDarkSystemBarIcons = screenBackground != DarkBackground
+    val isDarkTheme = screenBackground == DarkBackground
+    val useDarkSystemBarIcons = !isDarkTheme
 
     DisposableEffect(view) {
         val effectWindow = window
@@ -327,7 +333,14 @@ fun NewsLongScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .background(MaterialTheme.brifeColors.backgroundDefault)
+                .background(if (isDarkTheme) DarkGray400 else MaterialTheme.brifeColors.backgroundDefault)
+                .then(
+                    if (isDarkTheme) {
+                        Modifier.border(width = 1.dp, color = DarkBorderStrong)
+                    } else {
+                        Modifier
+                    }
+                )
                 .navigationBarsPadding()
                 .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
@@ -416,6 +429,8 @@ private fun NewsLongContent(
     sectionsError: Boolean = false,
     onRetryLoadSections: () -> Unit = {}
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Image(
             painter = painterResource(id = imageRes),
@@ -440,9 +455,15 @@ private fun NewsLongContent(
                 .padding(horizontal = 24.dp, vertical = 24.dp)
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                CategoryChip(text = item.category)
+                CategoryChip(
+                    text = item.category,
+                    containerColor = if (isDarkTheme) DarkGray600 else Gray600
+                )
                 if (item.subCategory.isNotBlank()) {
-                    CategoryChip(text = item.subCategory)
+                    CategoryChip(
+                        text = item.subCategory,
+                        containerColor = if (isDarkTheme) DarkGray600 else Gray600
+                    )
                 }
             }
 
@@ -470,12 +491,24 @@ private fun NewsLongContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFFE7EBF0),
-                        shape = RoundedCornerShape(14.dp)
+                    .then(
+                        if (isDarkTheme) {
+                            Modifier
+                        } else {
+                            Modifier.border(
+                                width = 1.dp,
+                                color = Color(0xFFE7EBF0),
+                                shape = RoundedCornerShape(14.dp)
+                            )
+                        }
                     )
-                    .background(MaterialTheme.brifeColors.backgroundDefault)
+                    .background(
+                        if (isDarkTheme) {
+                            DarkComponentDefault
+                        } else {
+                            MaterialTheme.brifeColors.backgroundDefault
+                        }
+                    )
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -576,7 +609,7 @@ private fun SimilarNewsSection(
             modifier = Modifier.padding(horizontal = 24.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         if (isLoading) {
             LazyRow(
@@ -611,6 +644,7 @@ private fun SimilarNewsCard(
     news: NewsListItem,
     onClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val imageRes = remember(news.groupName, news.categoryName, news.id) {
         getSimilarNewsImageRes(
             categoryName = news.categoryName,
@@ -630,7 +664,7 @@ private fun SimilarNewsCard(
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(96.dp)
+                    .height(110.dp)
                     .clip(RoundedCornerShape(14.dp)),
                 contentScale = ContentScale.Crop
             )
@@ -648,10 +682,16 @@ private fun SimilarNewsCard(
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             news.groupName?.takeIf { it.isNotBlank() }?.let {
-                CategoryChip(text = it)
+                CategoryChip(
+                    text = it,
+                    containerColor = if (isDarkTheme) Gray600 else Gray600
+                )
             }
             if (news.categoryName.isNotBlank()) {
-                CategoryChip(text = news.categoryName)
+                CategoryChip(
+                    text = news.categoryName,
+                    containerColor = if (isDarkTheme) Gray600 else Gray600
+                )
             }
         }
 
@@ -803,11 +843,13 @@ private fun SimilarNewsPlaceholderCard() {
 private fun SummaryCard(
     summaryPoints: List<String>
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFF5F9FF))
+            .background(if (isDarkTheme) DarkBlue200 else Color(0xFFF5F9FF))
             .padding(20.dp)
     ) {
         Column {
@@ -821,7 +863,7 @@ private fun SummaryCard(
                 AppText(
                     text = "네줄 간편요약",
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.brifeColors.textTitle
+                    color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textTitle
                 )
             }
 
@@ -835,13 +877,13 @@ private fun SummaryCard(
                     AppText(
                         text = "•",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = PrimaryNormal
+                        color = if (isDarkTheme) DarkTextTitle else PrimaryNormal
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     AppText(
                         text = point,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.DarkGray
+                        color = if (isDarkTheme) DarkTextTitle else Color.DarkGray
                     )
                 }
             }
@@ -854,10 +896,19 @@ private fun LongFormSectionBlock(
     index: Int,
     section: NewsDetailSection
 ) {
-    val iconRes = when (index) {
-        0 -> R.drawable.ic_longform_number1
-        1 -> R.drawable.ic_longform_number2
-        else -> R.drawable.ic_longform_number3
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val iconRes = if (isDarkTheme) {
+        when (index) {
+            0 -> R.drawable.longform_number1_darkmode
+            1 -> R.drawable.longform_number2_darkmode
+            else -> R.drawable.longform_number3_darkmode
+        }
+    } else {
+        when (index) {
+            0 -> R.drawable.ic_longform_number1
+            1 -> R.drawable.ic_longform_number2
+            else -> R.drawable.ic_longform_number3
+        }
     }
 
     Column {
@@ -872,8 +923,8 @@ private fun LongFormSectionBlock(
             )
             AppText(
                 text = section.heading,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.brifeColors.textSubtitle
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textSubtitle
             )
         }
 
@@ -883,7 +934,7 @@ private fun LongFormSectionBlock(
             AppText(
                 text = line,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.brifeColors.textBody,
+                color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textBody,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
         }
@@ -898,6 +949,8 @@ private fun NewsLongTopBar(
     onBookmarkClick: () -> Unit,
     onShareClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     TopAppBar(
         modifier = Modifier
             .background(MaterialTheme.brifeColors.backgroundDefault)
@@ -927,7 +980,7 @@ private fun NewsLongTopBar(
                             }
                         ),
                         contentDescription = "즐겨찾기",
-                        tint = Color.Unspecified
+                        tint = if (isDarkTheme) DarkTextTitle else Color.Unspecified
                     )
                 }
 
