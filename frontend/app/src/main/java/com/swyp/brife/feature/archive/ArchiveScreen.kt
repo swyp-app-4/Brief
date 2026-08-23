@@ -419,7 +419,7 @@ fun ArchiveScreen(
                         containerColor = Negative,
                         disabledContainerColor = Negative.copy(alpha = 0.4f)
                     ),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
                 ) {
                     AppText(

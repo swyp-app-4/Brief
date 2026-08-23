@@ -12,6 +12,9 @@ import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkGray300
+import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextSubtitle
@@ -24,10 +27,12 @@ fun ArchiveMoreBottomSheet(
     onRenameClick: () -> Unit,  // 1차: 미구현, 표시만
     onDeleteClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = MaterialTheme.brifeColors.backgroundDefault,
+        containerColor = if (isDarkTheme) DarkGray300 else MaterialTheme.brifeColors.backgroundDefault,
         dragHandle = null
     ) {
         Column(
@@ -48,7 +53,7 @@ fun ArchiveMoreBottomSheet(
                 AppText(
                     text = "폴더명 수정",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSubtitle
+                    color = if (isDarkTheme) DarkTextTitle else TextSubtitle
                 )
             }
 

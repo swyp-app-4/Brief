@@ -155,7 +155,7 @@ fun NewsBookmarkBottomSheet(
                         .weight(1f)
                         .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.brifeColors.ctaDisabled),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     AppText(
