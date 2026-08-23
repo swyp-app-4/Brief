@@ -1,5 +1,6 @@
 package com.swyp.brife.feature.onboarding
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,6 +24,7 @@ import com.swyp.brife.data.model.CategoryResponse
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.OnboardingInterestRowCard
 import com.swyp.brife.ui.component.PrimaryButton
+import com.swyp.brife.ui.theme.DarkBackground
 
 @Composable
 fun OnboardingInterestScreen(
@@ -31,9 +33,12 @@ fun OnboardingInterestScreen(
     onSubmitClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(
         modifier = modifier
             .fillMaxSize()
+            .then(if (isDarkTheme) Modifier.background(DarkBackground) else Modifier)
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(60.dp))

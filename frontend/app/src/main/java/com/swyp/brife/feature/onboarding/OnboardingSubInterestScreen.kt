@@ -2,6 +2,7 @@ package com.swyp.brife.feature.onboarding
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,10 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
 import com.swyp.brife.ui.theme.CtaDisabled
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkBlue300
+import com.swyp.brife.ui.theme.DarkBlue700
+import com.swyp.brife.ui.theme.DarkComponentDefault
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
@@ -54,9 +59,12 @@ fun OnboardingSubInterestScreen(
     onSubmitClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(
         modifier = modifier
             .fillMaxSize()
+            .then(if (isDarkTheme) Modifier.background(DarkBackground) else Modifier)
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(60.dp))
@@ -255,20 +263,37 @@ private fun SubCategoryChip(
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val containerColor = when {
+        isDarkTheme && selected -> DarkBlue300
+        isDarkTheme -> DarkComponentDefault
+        selected -> InterestSelectedLight
+        else -> ComponentDefault
+    }
+    val contentColor = when {
+        isDarkTheme && selected -> DarkBlue700
+        else -> MaterialTheme.colorScheme.onBackground
+    }
+
     Surface(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        color = if (selected) InterestSelectedLight else ComponentDefault,
+        color = containerColor,
         border = BorderStroke(
             width = if (selected) 1.5.dp else 0.dp,
-            color = if (selected) PrimaryNormal else androidx.compose.ui.graphics.Color.Transparent
+            color = when {
+                !selected -> Color.Transparent
+                isDarkTheme -> DarkBlue700
+                else -> PrimaryNormal
+            }
         )
     ) {
         AppText(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
+            color = contentColor,
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
         )
     }
