@@ -78,7 +78,7 @@ fun NewsBookmarkBottomSheet(
                     .fillMaxWidth()
                     .clickable(enabled = !isSaving) { onMyFolderClick() }
                     .padding(horizontal = 20.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.Start,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppText(
@@ -86,12 +86,20 @@ fun NewsBookmarkBottomSheet(
                     style = MaterialTheme.typography.titleMedium,
                     color = if (isDarkTheme) DarkTextTitle else TextTitle
                 )
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_longform_arrow_right),
-                    contentDescription = "내 폴더로 이동",
-                    tint = Color.Unspecified
-                )
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AppText(
+                        text = "바로가기",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = PrimaryNormal
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_longform_arrow_right),
+                        contentDescription = "내 폴더로 이동",
+                        tint = PrimaryNormal
+                    )
+                }
             }
 
             Row(
@@ -102,7 +110,13 @@ fun NewsBookmarkBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_longform_add),
+                    painter = painterResource(
+                        id = if (isDarkTheme) {
+                            R.drawable.add_darkmode
+                        } else {
+                            R.drawable.ic_longform_add
+                        }
+                    ),
                     contentDescription = "새 폴더 추가",
                     tint = Color.Unspecified,
                     modifier = Modifier.size(20.dp)

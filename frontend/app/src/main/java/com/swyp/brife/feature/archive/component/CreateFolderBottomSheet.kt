@@ -105,7 +105,7 @@ fun CreateFolderBottomSheet(
                 },
                 singleLine = true,
                 isError = isError,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = if (isDarkTheme) DarkGray600 else Color.Transparent,
                     unfocusedContainerColor = if (isDarkTheme) DarkGray600 else Color.Transparent,
@@ -164,7 +164,7 @@ fun CreateFolderBottomSheet(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.brifeColors.ctaDisabled
                     ),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     AppText(
@@ -184,7 +184,7 @@ fun CreateFolderBottomSheet(
                         containerColor = PrimaryNormal,
                         disabledContainerColor = PrimaryNormal.copy(alpha = 0.5f)
                     ),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     enabled = !isError && folderName.isNotBlank(),
                     contentPadding = PaddingValues(0.dp)
                 ) {
