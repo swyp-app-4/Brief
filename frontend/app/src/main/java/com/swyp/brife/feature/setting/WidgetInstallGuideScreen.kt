@@ -29,19 +29,26 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.AppTopBar2
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.BrifeTheme
-import com.swyp.brife.ui.theme.TextCaption
-import com.swyp.brife.ui.theme.TextTitle
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.brifeColors
 
 @Composable
 fun WidgetInstallGuideScreen(
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val screenBackground = if (isDarkTheme) DarkBackground else Color.White
+    val imageRes = if (isDarkTheme) {
+        R.drawable.widgetinstall_darkmode
+    } else {
+        R.drawable.ill_setting_screen2
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(screenBackground)
     ) {
         AppTopBar2(
             title = "위젯 설정",
@@ -62,7 +69,7 @@ fun WidgetInstallGuideScreen(
                     .height(424.dp)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.ill_setting_screen2),
+                    painter = painterResource(id = imageRes),
                     contentDescription = null,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
@@ -78,9 +85,9 @@ fun WidgetInstallGuideScreen(
                         .background(
                             brush = Brush.verticalGradient(
                                 0.0f to Color.Transparent,
-                                0.3f to Color.White.copy(alpha = 0.5f),
-                                0.6f to Color.White.copy(alpha = 0.95f),
-                                1.0f to Color.White
+                                0.3f to screenBackground.copy(alpha = 0.5f),
+                                0.6f to screenBackground.copy(alpha = 0.95f),
+                                1.0f to screenBackground
                             )
                         )
                 )
@@ -89,7 +96,7 @@ fun WidgetInstallGuideScreen(
             AppText(
                 text = "위젯을 설치하여\n홈화면에서 뉴스를 확인 하세요",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                color = TextTitle,
+                color = MaterialTheme.brifeColors.textTitle,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
@@ -99,7 +106,7 @@ fun WidgetInstallGuideScreen(
             AppText(
                 text = "위젯을 설치하고 홈화면에서 빠르게 뉴스를 확인하세요",
                 style = MaterialTheme.typography.bodySmall,
-                color = TextCaption,
+                color = MaterialTheme.brifeColors.textCaption,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
@@ -109,7 +116,7 @@ fun WidgetInstallGuideScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .background(Color.White)
+                .background(screenBackground)
                 .navigationBarsPadding()
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 24.dp, top = 12.dp)

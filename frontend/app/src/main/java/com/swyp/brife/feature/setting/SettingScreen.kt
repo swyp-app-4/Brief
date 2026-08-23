@@ -416,7 +416,7 @@ private fun SettingThemeItem(
                     ThemeMode.LIGHT -> "라이트 테마 사용 중"
                     ThemeMode.DARK -> "다크 테마 사용 중"
                 },
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(18.dp)
             )
         }
     }
