@@ -252,7 +252,16 @@ private fun ServiceTermsClause(
                             Modifier
                         }
                     )
-                    .border(BorderStroke(1.dp, BorderDefault), RoundedCornerShape(20.dp))
+                    .then(
+                        if (isDarkTheme) {
+                            Modifier
+                        } else {
+                            Modifier.border(
+                                border = BorderStroke(1.dp, BorderDefault),
+                                shape = RoundedCornerShape(20.dp)
+                            )
+                        }
+                    )
                     .padding(horizontal = 16.dp, vertical = 14.dp)
             ) {
                 AppText(
