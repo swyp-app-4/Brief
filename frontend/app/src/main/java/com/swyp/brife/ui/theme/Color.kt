@@ -82,6 +82,7 @@ val DarkHomeCategoryTagText = Color(0xFFAFB7C0)
 val DarkHomeSummaryBackground = Color(0xFF1A2029)
 val DarkHomeSummaryText = Color(0xFFD1D6DB)
 val HomeSummaryDivider = Color(0xFFE6EBF5)
+val DarkFolderHelperText = Color(0xFFCDCED7)
 
 val DarkBlue100 = Color(0xFF09111E)
 val DarkBlue200 = Color(0xFF0E1827)

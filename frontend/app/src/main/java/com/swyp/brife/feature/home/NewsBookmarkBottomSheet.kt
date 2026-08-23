@@ -37,6 +37,10 @@ import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkBorderDefault
+import com.swyp.brife.ui.theme.DarkGray300
+import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.TextTitle
 
@@ -51,6 +55,7 @@ fun NewsBookmarkBottomSheet(
     onFolderBookmarkClick: (BookmarkFolderUiModel) -> Unit,
     onSaveClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -59,7 +64,7 @@ fun NewsBookmarkBottomSheet(
         },
         sheetState = sheetState,
         dragHandle = null,
-        containerColor = MaterialTheme.brifeColors.backgroundDefault,
+        containerColor = if (isDarkTheme) DarkGray300 else MaterialTheme.brifeColors.backgroundDefault,
         contentColor = MaterialTheme.brifeColors.textTitle
     ) {
         Column(
@@ -79,7 +84,7 @@ fun NewsBookmarkBottomSheet(
                 AppText(
                     text = "내 폴더",
                     style = MaterialTheme.typography.titleMedium,
-                    color = TextTitle
+                    color = if (isDarkTheme) DarkTextTitle else TextTitle
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
@@ -106,13 +111,13 @@ fun NewsBookmarkBottomSheet(
                     text = "새 폴더 추가",
                     modifier = Modifier.padding(start = 10.dp),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = PrimaryNormal
+                    color = if (isDarkTheme) DarkTextTitle else PrimaryNormal
                 )
             }
 
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 20.dp),
-                color = Color(0xFFE9EDF2)
+                color = if (isDarkTheme) DarkBorderDefault else Color(0xFFE9EDF2)
             )
 
             Column(
@@ -129,7 +134,7 @@ fun NewsBookmarkBottomSheet(
                     if (index != folders.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 20.dp),
-                            color = Color(0xFFE9EDF2)
+                            color = if (isDarkTheme) DarkBorderDefault else Color(0xFFE9EDF2)
                         )
                     }
                 }
@@ -187,6 +192,8 @@ private fun FolderBookmarkRow(
     enabled: Boolean,
     onBookmarkClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -203,7 +210,7 @@ private fun FolderBookmarkRow(
         AppText(
             text = folderLabel,
             style = MaterialTheme.typography.bodyLarge,
-            color = TextSubtitle
+            color = if (isDarkTheme) DarkTextTitle else TextSubtitle
         )
 
         IconButton(
@@ -219,7 +226,11 @@ private fun FolderBookmarkRow(
                     }
                 ),
                 contentDescription = if (folder.isSelected) "저장 해제" else "저장",
-                tint = Color.Unspecified
+                tint = if (isDarkTheme && !folder.isSelected) {
+                    DarkTextTitle
+                } else {
+                    Color.Unspecified
+                }
             )
         }
     }

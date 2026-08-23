@@ -13,6 +13,11 @@ import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkFolderHelperText
+import com.swyp.brife.ui.theme.DarkGray300
+import com.swyp.brife.ui.theme.DarkGray600
+import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.Negative
@@ -29,6 +34,7 @@ fun CreateFolderBottomSheet(
     title: String = "새 폴더 만들기",       // 수정 바텀시트 재사용 시 "폴더명 수정"으로 전달
     initialFolderName: String = ""          // 수정 시 기존 폴더명을 초기값으로 전달
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val sheetState = rememberModalBottomSheetState()
     var folderName by remember { mutableStateOf(initialFolderName) }
     var isDirty by remember { mutableStateOf(false) }
@@ -54,7 +60,7 @@ fun CreateFolderBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = MaterialTheme.brifeColors.backgroundDefault,
+        containerColor = if (isDarkTheme) DarkGray300 else MaterialTheme.brifeColors.backgroundDefault,
         dragHandle = null
     ) {
         Column(
@@ -67,7 +73,7 @@ fun CreateFolderBottomSheet(
             AppText(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                color = TextTitle
+                color = if (isDarkTheme) DarkTextTitle else TextTitle
             )
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -76,7 +82,7 @@ fun CreateFolderBottomSheet(
             AppText(
                 text = "폴더 이름",
                 style = MaterialTheme.typography.bodySmall,
-                color = TextCaption
+                color = if (isDarkTheme) DarkTextTitle else TextCaption
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -91,14 +97,37 @@ fun CreateFolderBottomSheet(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { AppText(text = "ex) 양자역학", color = Color.LightGray) },
+                placeholder = {
+                    AppText(
+                        text = "ex) 양자역학",
+                        color = if (isDarkTheme) TextCaption else Color.LightGray
+                    )
+                },
                 singleLine = true,
                 isError = isError,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (isError) Negative else PrimaryNormal,
-                    unfocusedBorderColor = if (isError) Negative else Color.LightGray,
-                    errorBorderColor = Negative,
+                    focusedContainerColor = if (isDarkTheme) DarkGray600 else Color.Transparent,
+                    unfocusedContainerColor = if (isDarkTheme) DarkGray600 else Color.Transparent,
+                    errorContainerColor = if (isDarkTheme) DarkGray600 else Color.Transparent,
+                    focusedTextColor = if (isDarkTheme) DarkTextTitle else Color.Unspecified,
+                    unfocusedTextColor = if (isDarkTheme) DarkTextTitle else Color.Unspecified,
+                    errorTextColor = if (isDarkTheme) DarkTextTitle else Color.Unspecified,
+                    focusedBorderColor = if (isDarkTheme) {
+                        Color.Transparent
+                    } else if (isError) {
+                        Negative
+                    } else {
+                        PrimaryNormal
+                    },
+                    unfocusedBorderColor = if (isDarkTheme) {
+                        Color.Transparent
+                    } else if (isError) {
+                        Negative
+                    } else {
+                        Color.LightGray
+                    },
+                    errorBorderColor = if (isDarkTheme) Color.Transparent else Negative,
                     cursorColor = if (isError) Negative else PrimaryNormal
                 )
             )
@@ -109,7 +138,13 @@ fun CreateFolderBottomSheet(
             AppText(
                 text = helperText,
                 style = MaterialTheme.typography.labelSmall,
-                color = if (isError) Negative else TextCaption,
+                color = if (isError) {
+                    Negative
+                } else if (isDarkTheme) {
+                    DarkFolderHelperText
+                } else {
+                    TextCaption
+                },
                 modifier = Modifier.padding(start = 4.dp)
             )
 
