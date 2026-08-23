@@ -7,8 +7,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
@@ -17,6 +20,7 @@ import com.swyp.brife.ui.theme.DarkGray300
 import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
+import com.swyp.brife.ui.theme.Pretendard
 import com.swyp.brife.ui.theme.TextSubtitle
 
 @OptIn(ExperimentalMaterial3Api::class)

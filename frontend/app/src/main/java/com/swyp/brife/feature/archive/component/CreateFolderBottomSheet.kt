@@ -8,8 +8,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
@@ -20,6 +24,7 @@ import com.swyp.brife.ui.theme.DarkGray600
 import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
+import com.swyp.brife.ui.theme.Pretendard
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextTitle
@@ -73,7 +78,13 @@ fun CreateFolderBottomSheet(
             // 1. 타이틀
             AppText(
                 text = title,
-                style = MaterialTheme.typography.titleLarge,
+                style = TextStyle(
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp,
+                    lineHeight = 26.4.sp,
+                    letterSpacing = (-0.2).sp
+                ),
                 color = if (isDarkTheme) DarkTextTitle else TextTitle
             )
 
@@ -98,9 +109,26 @@ fun CreateFolderBottomSheet(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
+                textStyle = TextStyle(
+                    fontFamily = Pretendard,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    lineHeight = 21.sp,
+                    letterSpacing = 0.sp,
+                    textAlign = TextAlign.Left
+                ),
                 placeholder = {
                     AppText(
                         text = "ex) 양자역학",
+                        style = TextStyle(
+                            fontFamily = Pretendard,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp,
+                            lineHeight = 21.sp,
+                            letterSpacing = 0.sp
+                        ),
+                        textAlign = TextAlign.Left,
+                        modifier = Modifier.fillMaxWidth(),
                         color = if (isDarkTheme) TextCaption else Color.LightGray
                     )
                 },
@@ -114,21 +142,21 @@ fun CreateFolderBottomSheet(
                     focusedTextColor = if (isDarkTheme) DarkTextTitle else Color.Unspecified,
                     unfocusedTextColor = if (isDarkTheme) DarkTextTitle else Color.Unspecified,
                     errorTextColor = if (isDarkTheme) DarkTextTitle else Color.Unspecified,
-                    focusedBorderColor = if (isDarkTheme) {
-                        Color.Transparent
-                    } else if (isError) {
+                    focusedBorderColor = if (isError) {
                         Negative
+                    } else if (isDarkTheme) {
+                        Color.Transparent
                     } else {
                         PrimaryNormal
                     },
-                    unfocusedBorderColor = if (isDarkTheme) {
-                        Color.Transparent
-                    } else if (isError) {
+                    unfocusedBorderColor = if (isError) {
                         Negative
+                    } else if (isDarkTheme) {
+                        Color.Transparent
                     } else {
                         Color.LightGray
                     },
-                    errorBorderColor = if (isDarkTheme) Color.Transparent else Negative,
+                    errorBorderColor = Negative,
                     cursorColor = if (isError) Negative else PrimaryNormal
                 )
             )
@@ -196,44 +224,6 @@ fun CreateFolderBottomSheet(
                     )
                 }
             }
-        }
-    }
-}
-
-// Preview 5. 폴더명 수정 바텀시트 (기존 폴더명 초기값)
-@Preview(showBackground = true, name = "5. 폴더명 수정 바텀시트")
-@Composable
-fun RenameFolderBottomSheetPreview() {
-    BrifeTheme {
-        CreateFolderBottomSheet(
-            onDismissRequest = {},
-            onSave = {},
-            title = "폴더명 수정",
-            initialFolderName = "경제 공부",
-            existingFolders = listOf("즐겨찾기", "IT 트렌드") // 수정 대상 본인 제외
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "1. 기본 상태")
-@Composable
-fun DefaultPreview() {
-    BrifeTheme {
-        CreateFolderBottomSheet(onDismissRequest = {}, onSave = {})
-    }
-}
-
-@Preview(showBackground = true, name = "2. 에러 상태(특수문자)")
-@Composable
-fun ErrorPreview() {
-    BrifeTheme {
-        // 내부 로직 확인을 위해 Surface 위에서 호출
-        Surface(color = MaterialTheme.brifeColors.backgroundDefault) {
-            CreateFolderBottomSheet(
-                onDismissRequest = {},
-                onSave = {},
-                existingFolders = listOf("양자역학")
-            )
         }
     }
 }
