@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -12,8 +13,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.theme.CtaActive
-import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
+import com.swyp.brife.ui.theme.brifeColors
 
 
 @Composable
@@ -33,7 +34,7 @@ fun PrimaryButton(
         shape = RoundedCornerShape(14.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = CtaActive,
-            disabledContainerColor = CtaDisabled
+            disabledContainerColor = MaterialTheme.brifeColors.ctaDisabled
         )
     ) {
         AppText(

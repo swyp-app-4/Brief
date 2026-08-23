@@ -42,7 +42,6 @@ import com.swyp.brife.data.model.SubCategoryResponse
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
-import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.DarkBackground
 import com.swyp.brife.ui.theme.DarkBlue300
 import com.swyp.brife.ui.theme.DarkBlue700
@@ -50,6 +49,7 @@ import com.swyp.brife.ui.theme.DarkComponentDefault
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
+import com.swyp.brife.ui.theme.brifeColors
 
 @Composable
 fun OnboardingSubInterestScreen(
@@ -151,7 +151,7 @@ fun OnboardingSubInterestScreen(
                     .heightIn(min = 56.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CtaDisabled,
+                    containerColor = MaterialTheme.brifeColors.ctaDisabled,
                     contentColor = Color.White
                 )
             ) {

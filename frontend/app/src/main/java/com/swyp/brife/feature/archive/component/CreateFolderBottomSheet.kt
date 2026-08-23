@@ -127,7 +127,7 @@ fun CreateFolderBottomSheet(
                         .weight(1f)
                         .heightIn(min = 56.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFD5D8DC)
+                        containerColor = MaterialTheme.brifeColors.ctaDisabled
                     ),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(0.dp)

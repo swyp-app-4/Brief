@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -92,6 +93,7 @@ fun OneToOneInquiryScreen(
     onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     var selectedInquiryType by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -264,6 +266,11 @@ fun OneToOneInquiryScreen(
                     painter = painterResource(
                         id = if (isPrivacyChecked) R.drawable.ic_aftercheck else R.drawable.ic_beforecheck
                     ),
+                    colorFilter = if (isDarkTheme && !isPrivacyChecked) {
+                        ColorFilter.tint(DarkGray700)
+                    } else {
+                        null
+                    },
                     contentDescription = if (isPrivacyChecked) "동의됨" else "동의 안됨",
                     modifier = Modifier.size(20.dp)
                 )
@@ -459,6 +466,7 @@ private fun InquiryTypeBottomSheet(
     onTypeSelected: (String) -> Unit,
     onDismissRequest: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     // 확정 전 임시 선택 상태 — "선택 완료" 클릭 전까지 반영되지 않음
     var tempSelected by remember { mutableStateOf(selectedType) }
@@ -499,6 +507,11 @@ private fun InquiryTypeBottomSheet(
                         painter = painterResource(
                             id = if (isChecked) R.drawable.ic_aftercheck else R.drawable.ic_beforecheck
                         ),
+                        colorFilter = if (isDarkTheme && !isChecked) {
+                            ColorFilter.tint(DarkGray700)
+                        } else {
+                            null
+                        },
                         contentDescription = if (isChecked) "선택됨" else "선택 안됨",
                         modifier = Modifier.size(20.dp)
                     )
@@ -522,7 +535,7 @@ private fun InquiryTypeBottomSheet(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.brifeColors.ctaDisabled),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {

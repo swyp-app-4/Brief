@@ -42,11 +42,13 @@ import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.CompactPrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkHomeCardBackground
 import com.swyp.brife.ui.theme.DarkHomeCategoryTagBackground
 import com.swyp.brife.ui.theme.DarkHomeCategoryTagText
 import com.swyp.brife.ui.theme.DarkHomeSummaryBackground
 import com.swyp.brife.ui.theme.DarkHomeSummaryText
 import com.swyp.brife.ui.theme.Gray600
+import com.swyp.brife.ui.theme.HomeSummaryDivider
 import com.swyp.brife.ui.theme.Pretendard
 import com.swyp.brife.ui.theme.PrimaryNormal
 
@@ -242,7 +244,7 @@ private fun SummaryInsightBox(
                 vertical = dividerVerticalPadding,
                 horizontal = 16.dp
             ),
-            color = Color(0xFFE3E3E3),
+            color = if (isDarkTheme) DarkHomeCardBackground else HomeSummaryDivider,
             thickness = 1.dp
         )
 

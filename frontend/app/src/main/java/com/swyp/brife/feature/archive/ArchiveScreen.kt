@@ -64,7 +64,6 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.ComponentDefault
 import com.swyp.brife.ui.theme.CtaActive
-import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.InterestSelectedLight
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryNormal
@@ -399,7 +398,7 @@ fun ArchiveScreen(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.brifeColors.ctaDisabled),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
                 ) {

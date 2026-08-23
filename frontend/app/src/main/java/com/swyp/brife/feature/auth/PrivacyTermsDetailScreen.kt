@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -42,6 +43,7 @@ import com.swyp.brife.ui.theme.DarkBackground
 import com.swyp.brife.ui.theme.DarkComponentDefault
 import com.swyp.brife.ui.theme.DarkGray300
 import com.swyp.brife.ui.theme.DarkGray500
+import com.swyp.brife.ui.theme.DarkGray700
 import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.TextBody
@@ -185,6 +187,11 @@ fun PrivacyTermsDetailScreen(
                             id = if (isChecked) R.drawable.ic_aftercheck else R.drawable.ic_beforecheck
                         ),
                         contentDescription = if (isChecked) "동의됨" else "동의 안됨",
+                        colorFilter = if (isDarkTheme && !isChecked) {
+                            ColorFilter.tint(DarkGray700)
+                        } else {
+                            null
+                        },
                         modifier = Modifier.size(20.dp)
                     )
 

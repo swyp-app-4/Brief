@@ -22,7 +22,6 @@ import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.feature.home.LongFormImageProvider
 import com.swyp.brife.ui.component.AppTopBar
 import com.swyp.brife.ui.theme.BrifeTheme
-import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
@@ -195,7 +194,7 @@ fun ArchiveDetailScreen(
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Negative,
-                            disabledContainerColor = CtaDisabled
+                            disabledContainerColor = MaterialTheme.brifeColors.ctaDisabled
                         ),
                         contentPadding = PaddingValues(0.dp)
                     ) {
@@ -321,7 +320,7 @@ private fun ArchiveDetailMoreBottomSheet(
                     .fillMaxWidth()
                     .heightIn(min = 50.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.brifeColors.ctaDisabled),
                 contentPadding = PaddingValues(0.dp)
             ) {
                 AppText(
@@ -383,7 +382,7 @@ private fun SortFilterBottomSheet(
                     .fillMaxWidth()
                     .heightIn(min = 50.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.brifeColors.ctaDisabled),
                 contentPadding = PaddingValues(0.dp)
             ) {
                 AppText(

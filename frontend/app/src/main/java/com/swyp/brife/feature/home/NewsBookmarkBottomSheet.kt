@@ -35,7 +35,6 @@ import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.R
 import com.swyp.brife.data.local.BookmarkFolderUiModel
 import com.swyp.brife.ui.component.AppText
-import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextSubtitle
@@ -150,7 +149,7 @@ fun NewsBookmarkBottomSheet(
                     modifier = Modifier
                         .weight(1f)
                         .heightIn(min = 56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.brifeColors.ctaDisabled),
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {

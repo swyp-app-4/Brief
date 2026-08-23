@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
-import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextBody
@@ -91,7 +90,7 @@ internal fun WidgetInstallBottomSheet(
                         .fillMaxHeight(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = CtaDisabled,
+                        containerColor = MaterialTheme.brifeColors.ctaDisabled,
                         contentColor = Color.White
                     ),
                     contentPadding = PaddingValues(0.dp)

@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import com.swyp.brife.ui.theme.brifeColors
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BrifeTheme
-import com.swyp.brife.ui.theme.CtaDisabled
 import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextSubtitle
@@ -76,7 +75,7 @@ fun ArchiveMoreBottomSheet(
                     .fillMaxWidth()
                     .heightIn(min = 50.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CtaDisabled),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.brifeColors.ctaDisabled),
                 contentPadding = PaddingValues(0.dp)
             ) {
                 AppText(
