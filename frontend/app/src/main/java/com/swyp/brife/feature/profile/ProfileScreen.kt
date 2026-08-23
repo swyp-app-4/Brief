@@ -41,8 +41,13 @@ import com.swyp.brife.R
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BorderDefault
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkComponentDefault
+import com.swyp.brife.ui.theme.DarkGray400
+import com.swyp.brife.ui.theme.DarkTextTitle
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
+import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.brifeColors
 
@@ -122,10 +127,12 @@ private fun GuestContent(
     onLoginClick: () -> Unit,
     onResetInterestClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     AppText(
         text = "로그인을 해주세요",
         style = MaterialTheme.typography.titleMedium,
-        color = Black,
+        color = if (isDarkTheme) DarkTextTitle else Black,
         textAlign = TextAlign.Center
     )
 
@@ -147,7 +154,7 @@ private fun GuestContent(
         AppText(
             text = "로그인",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.brifeColors.textBody
+            color = if (isDarkTheme) DarkTextTitle else MaterialTheme.brifeColors.textBody
         )
     }
 
@@ -165,10 +172,12 @@ private fun LoggedInContent(
     uiState: ProfileUiState,
     onResetInterestClick: () -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     AppText(
         text = uiState.userName,
         style = MaterialTheme.typography.titleMedium,
-        color = Black,
+        color = if (isDarkTheme) DarkTextTitle else Black,
         textAlign = TextAlign.Center
     )
 
@@ -191,14 +200,27 @@ private fun LoggedInContent(
 @Composable
 private fun InterestBox(interests: List<ProfileCategoryItem>) {
     if (interests.isEmpty()) return
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .border(1.dp, MaterialTheme.brifeColors.borderDefault, RoundedCornerShape(16.dp))
+            .then(
+                if (isDarkTheme) {
+                    Modifier
+                } else {
+                    Modifier.border(
+                        1.dp,
+                        MaterialTheme.brifeColors.borderDefault,
+                        RoundedCornerShape(16.dp)
+                    )
+                }
+            )
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.brifeColors.backgroundDefault),
+            .background(
+                if (isDarkTheme) DarkComponentDefault else MaterialTheme.brifeColors.backgroundDefault
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         interests.forEachIndexed { index, item ->
@@ -218,7 +240,7 @@ private fun InterestBox(interests: List<ProfileCategoryItem>) {
                 AppText(
                     text = item.name,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.brifeColors.textBody,
+                    color = if (isDarkTheme) TextCaption else MaterialTheme.brifeColors.textBody,
                     textAlign = TextAlign.Center
                 )
             }
@@ -229,7 +251,9 @@ private fun InterestBox(interests: List<ProfileCategoryItem>) {
                         .width(1.dp)
                         .fillMaxHeight()
                         .padding(vertical = 12.dp)
-                        .background(MaterialTheme.brifeColors.borderDefault)
+                        .background(
+                            if (isDarkTheme) DarkGray400 else MaterialTheme.brifeColors.borderDefault
+                        )
                 )
             }
         }
@@ -241,12 +265,26 @@ private fun MemberInfoBox(
     userName: String,
     userEmail: String
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, MaterialTheme.brifeColors.borderDefault, RoundedCornerShape(16.dp))
+            .then(
+                if (isDarkTheme) {
+                    Modifier
+                } else {
+                    Modifier.border(
+                        1.dp,
+                        MaterialTheme.brifeColors.borderDefault,
+                        RoundedCornerShape(16.dp)
+                    )
+                }
+            )
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.brifeColors.backgroundDefault)
+            .background(
+                if (isDarkTheme) DarkComponentDefault else MaterialTheme.brifeColors.backgroundDefault
+            )
             .padding(horizontal = 20.dp, vertical = 20.dp)
     ) {
         AppText(
@@ -297,12 +335,26 @@ private fun MemberInfoBox(
 
 @Composable
 private fun ResetInterestBox(onClick: () -> Unit) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, MaterialTheme.brifeColors.borderDefault, RoundedCornerShape(16.dp))
+            .then(
+                if (isDarkTheme) {
+                    Modifier
+                } else {
+                    Modifier.border(
+                        1.dp,
+                        MaterialTheme.brifeColors.borderDefault,
+                        RoundedCornerShape(16.dp)
+                    )
+                }
+            )
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.brifeColors.backgroundDefault)
+            .background(
+                if (isDarkTheme) DarkComponentDefault else MaterialTheme.brifeColors.backgroundDefault
+            )
             .clickable { onClick() }
             .padding(horizontal = 20.dp, vertical = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,

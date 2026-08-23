@@ -96,7 +96,7 @@ fun AppTopBar(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_setting),
                         contentDescription = "Settings",
-                        tint = MaterialTheme.brifeColors.topBarIcon
+                        tint = Color.Unspecified
                     )
                 }
             } else if (centerTitle && !showMore) {
