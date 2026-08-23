@@ -4,14 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/widget_background"
-    android:scaleX="0.80"
-    android:scaleY="0.80"
     android:orientation="vertical"
-    android:paddingStart="15dp"
-    android:paddingTop="15dp"
-    android:paddingEnd="15dp"
-    android:paddingBottom="10dp">
+    android:paddingStart="10dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="8dp">
 
+    <!-- 상단 로고 + 북마크 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,8 +19,8 @@
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:layout_marginStart="5dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="4dp"
             android:adjustViewBounds="true"
             android:scaleType="fitStart"
             android:src="@drawable/img_widget_toplogo3" />
@@ -32,41 +31,42 @@
             android:layout_weight="1" />
 
         <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginEnd="5dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="4dp"
             android:scaleType="fitCenter"
             android:src="@drawable/img_widget_bookmark_inactive" />
     </LinearLayout>
 
+    <!-- 뉴스 제목 + 네줄요약 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="155dp"
-        android:layout_marginTop="6dp"
+        android:layout_height="125dp"
+        android:layout_marginTop="4dp"
         android:orientation="vertical"
-        android:padding="3dp">
+        android:padding="2dp">
 
         <TextView
             android:id="@+id/widget_preview_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="Brief가 고른 맞춤 뉴스 TOP 5"
             android:textColor="@color/widget_title"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <LinearLayout
             android:id="@+id/widget_preview_card_body"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="100dp"
+            android:minHeight="88dp"
             android:background="@drawable/widget_card_bg"
             android:gravity="center_vertical"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="8dp">
 
             <TextView
                 android:id="@+id/widget_preview_summary_1"
@@ -76,43 +76,44 @@
                 android:maxLines="1"
                 android:text="주요 내용이 빠르게 정리됩니다"
                 android:textColor="@color/widget_summary"
-                android:textSize="14sp" />
+                android:textSize="11sp" />
 
             <TextView
                 android:id="@+id/widget_preview_summary_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="핵심 흐름을 한눈에 확인하세요"
                 android:textColor="@color/widget_summary"
-                android:textSize="14sp" />
+                android:textSize="11sp" />
 
             <TextView
                 android:id="@+id/widget_preview_summary_3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="지금 이슈를 간단히 살펴보세요"
                 android:textColor="@color/widget_summary"
-                android:textSize="14sp" />
+                android:textSize="11sp" />
 
             <TextView
                 android:id="@+id/widget_preview_summary_4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="놓치기 쉬운 배경까지 확인하세요"
                 android:textColor="@color/widget_summary"
-                android:textSize="14sp" />
+                android:textSize="11sp" />
         </LinearLayout>
     </LinearLayout>
 
+    <!-- 페이지 인디케이터 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -120,67 +121,68 @@
         android:orientation="horizontal">
 
         <ImageView
-            android:layout_width="6dp"
-            android:layout_height="6dp"
-            android:layout_marginHorizontal="3dp"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginHorizontal="2dp"
             android:src="@drawable/widget_dot_active" />
 
         <ImageView
-            android:layout_width="6dp"
-            android:layout_height="6dp"
-            android:layout_marginHorizontal="3dp"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginHorizontal="2dp"
             android:src="@drawable/widget_dot_inactive" />
 
         <ImageView
-            android:layout_width="6dp"
-            android:layout_height="6dp"
-            android:layout_marginHorizontal="3dp"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginHorizontal="2dp"
             android:src="@drawable/widget_dot_inactive" />
 
         <ImageView
-            android:layout_width="6dp"
-            android:layout_height="6dp"
-            android:layout_marginHorizontal="3dp"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginHorizontal="2dp"
             android:src="@drawable/widget_dot_inactive" />
 
         <ImageView
-            android:layout_width="6dp"
-            android:layout_height="6dp"
-            android:layout_marginHorizontal="3dp"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_marginHorizontal="2dp"
             android:src="@drawable/widget_dot_inactive" />
     </LinearLayout>
 
+    <!-- 이전 / 다음 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:gravity="center"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/widget_preview_btn_prev"
-            android:layout_width="135dp"
-            android:layout_height="42dp"
+            android:layout_width="120dp"
+            android:layout_height="34dp"
             android:background="@drawable/widget_nav_button_bg"
             android:gravity="center"
             android:text="이전"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <TextView
-            android:layout_width="12dp"
+            android:layout_width="8dp"
             android:layout_height="1dp" />
 
         <TextView
             android:id="@+id/widget_preview_btn_next"
-            android:layout_width="135dp"
-            android:layout_height="42dp"
+            android:layout_width="120dp"
+            android:layout_height="34dp"
             android:background="@drawable/widget_nav_button_next_bg"
             android:gravity="center"
             android:text="다음"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
     </LinearLayout>
 
