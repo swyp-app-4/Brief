@@ -338,7 +338,7 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            if (!isNewsLongRoute && !isInterestResetRoute && !isArchiveDeleteMode && !isArchiveDetailRoute && !isProfileEditRoute) {
+            if (!isNewsLongRoute && !isInterestResetRoute && !isArchiveDeleteMode && !isArchiveDetailRoute) {
                 AppNavigationBar(
                     selectedIndex = if (showLoginBottomSheet) {
                         // 바텀시트가 떠 있을 때는 현재 실제 경로에 따른 인덱스 유지
@@ -347,6 +347,7 @@ fun MainScreen(
                             NavRoutes.EXPLORE -> 1
                             NavRoutes.ARCHIVE -> 2
                             NavRoutes.PROFILE -> 3
+                            NavRoutes.PROFILE_EDIT -> 3
                             else -> 0
                         }
                     } else {
@@ -356,6 +357,7 @@ fun MainScreen(
                             NavRoutes.EXPLORE -> 1
                             NavRoutes.ARCHIVE -> 2
                             NavRoutes.PROFILE -> 3
+                            NavRoutes.PROFILE_EDIT -> 3
                             else -> 0
                         }
                     },
