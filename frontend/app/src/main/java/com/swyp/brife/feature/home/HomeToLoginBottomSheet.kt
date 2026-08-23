@@ -9,11 +9,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.PrimaryButton
 import com.swyp.brife.ui.theme.CtaDisabled
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkGray300
+import com.swyp.brife.ui.theme.Pretendard
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import androidx.compose.foundation.background
 import com.swyp.brife.R
@@ -27,6 +32,13 @@ fun HomeToLoginBottomSheet(
     onLoginClick: () -> Unit,
     onBrowseClick: () -> Unit = {}
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val sheetBackgroundColor = if (isDarkTheme) {
+        DarkGray300
+    } else {
+        MaterialTheme.brifeColors.backgroundDefault
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
@@ -45,7 +57,7 @@ fun HomeToLoginBottomSheet(
                     .fillMaxWidth()
                     .padding(top = 80.dp) // 일러스트 크기(160dp)의 절반만큼 아래로 내려서 배치
                     .background(
-                        color = MaterialTheme.brifeColors.backgroundDefault,
+                        color = sheetBackgroundColor,
                         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                     )
                     .padding(horizontal = 24.dp)
@@ -60,7 +72,13 @@ fun HomeToLoginBottomSheet(
                 // 텍스트 (위치 그대로 유지됨)
                 AppText(
                     text = "지금 로그인하고 \n나만의 맞춤 뉴스 받아보기!",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = Pretendard,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp,
+                        lineHeight = 26.4.sp,
+                        letterSpacing = (-0.2).sp
+                    ),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
