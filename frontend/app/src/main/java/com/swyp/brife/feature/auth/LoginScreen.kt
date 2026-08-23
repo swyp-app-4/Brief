@@ -35,6 +35,9 @@ import com.swyp.brife.R
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.theme.BgDefault
 import com.swyp.brife.ui.theme.BrifeTheme
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkTextTitle
+import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.TextBody
 
 private val SulphurPoint = FontFamily(
@@ -51,14 +54,17 @@ fun LoginScreen(
     onAgreeTerms: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+    val screenBackground = if (isDarkTheme) DarkBackground else BgDefault
+
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = BgDefault
+        color = screenBackground
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BgDefault)
+                .background(screenBackground)
                 .statusBarsPadding()
                 .navigationBarsPadding()
                 .padding(horizontal = 24.dp),
@@ -118,6 +124,8 @@ fun LoginScreen(
 
 @Composable
 private fun LogoSection() {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -134,7 +142,7 @@ private fun LogoSection() {
 
             Text(
                 text = "Brief",
-                color = Color(0xFF464646),
+                color = if (isDarkTheme) PrimaryNormal else Color(0xFF464646),
                 fontFamily = SulphurPoint,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold
@@ -146,7 +154,7 @@ private fun LogoSection() {
         AppText(
             text = "간편한 지식 습득을 경험해요",
             style = MaterialTheme.typography.titleSmall,
-            color = TextBody
+            color = if (isDarkTheme) DarkTextTitle else TextBody
         )
         Spacer(modifier = Modifier.height(180.dp))
     }
