@@ -3,10 +3,13 @@ package com.swyp.brife.feature.setting
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,9 +45,12 @@ import com.swyp.brife.R
 import com.swyp.brife.ui.component.AppText
 import com.swyp.brife.ui.component.AppTopBar2
 import com.swyp.brife.ui.theme.BorderDefault
+import com.swyp.brife.ui.theme.BorderStrong
 import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkComponentDefault
 import com.swyp.brife.ui.theme.DarkGray300
+import com.swyp.brife.ui.theme.Negative
 import com.swyp.brife.ui.theme.Positive
 import com.swyp.brife.ui.theme.PrimaryNormal
 import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
@@ -53,6 +59,8 @@ import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.TextTitle
 import com.swyp.brife.ui.theme.ThemeMode
+import com.swyp.brife.ui.theme.ThemeToggleDarkBackground
+import com.swyp.brife.ui.theme.ThemeToggleLightBackground
 import com.swyp.brife.ui.theme.brifeColors
 
 
@@ -145,7 +153,7 @@ fun SettingScreen(
                                 showWithdrawConfirmDialog = true
                             }
                         },
-                        color = MaterialTheme.brifeColors.textCaption
+                        color = Negative
                     )
                 } else {
                     SettingTextItem(
@@ -296,10 +304,22 @@ private fun SettingSection(
     title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val isDarkMode = MaterialTheme.colorScheme.background == DarkBackground
+
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.brifeColors.backgroundDefault),
-        border = BorderStroke(1.dp, MaterialTheme.brifeColors.borderDefault),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDarkMode) {
+                DarkComponentDefault
+            } else {
+                MaterialTheme.brifeColors.backgroundDefault
+            }
+        ),
+        border = if (isDarkMode) {
+            null
+        } else {
+            BorderStroke(1.dp, MaterialTheme.brifeColors.borderDefault)
+        },
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -310,7 +330,11 @@ private fun SettingSection(
             AppText(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.brifeColors.textBody,
+                color = if (isDarkMode) {
+                    MaterialTheme.brifeColors.textTitle
+                } else {
+                    MaterialTheme.brifeColors.textBody
+                },
                 modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)
             )
             content()
@@ -361,17 +385,40 @@ private fun SettingThemeItem(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.brifeColors.textSubtitle
         )
-        Image(
-            painter = painterResource(
-                id = if (isDarkTheme) R.drawable.theme_dark else R.drawable.theme_light
-            ),
-            contentDescription = when (themeMode) {
-                ThemeMode.SYSTEM -> "시스템 테마 사용 중"
-                ThemeMode.LIGHT -> "라이트 테마 사용 중"
-                ThemeMode.DARK -> "다크 테마 사용 중"
-            },
-            modifier = Modifier.size(36.dp)
-        )
+        val toggleShape = RoundedCornerShape(22.dp)
+        Box(
+            modifier = Modifier
+                .size(width = 76.dp, height = 44.dp)
+                .background(
+                    color = if (isDarkTheme) {
+                        ThemeToggleDarkBackground
+                    } else {
+                        ThemeToggleLightBackground
+                    },
+                    shape = toggleShape
+                )
+                .then(
+                    if (isDarkTheme) {
+                        Modifier
+                    } else {
+                        Modifier.border(0.5.dp, BorderStrong, toggleShape)
+                    }
+                )
+                .padding(horizontal = 4.dp),
+            contentAlignment = if (isDarkTheme) Alignment.CenterStart else Alignment.CenterEnd
+        ) {
+            Image(
+                painter = painterResource(
+                    id = if (isDarkTheme) R.drawable.theme_dark else R.drawable.theme_light
+                ),
+                contentDescription = when (themeMode) {
+                    ThemeMode.SYSTEM -> "시스템 테마 사용 중"
+                    ThemeMode.LIGHT -> "라이트 테마 사용 중"
+                    ThemeMode.DARK -> "다크 테마 사용 중"
+                },
+                modifier = Modifier.size(36.dp)
+            )
+        }
     }
 }
 
