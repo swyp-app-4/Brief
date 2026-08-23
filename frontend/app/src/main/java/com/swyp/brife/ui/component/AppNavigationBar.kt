@@ -15,6 +15,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.swyp.brife.R
+import com.swyp.brife.ui.theme.DarkBackground
+import com.swyp.brife.ui.theme.DarkGray500
 import com.swyp.brife.ui.theme.brifeColors
 
 @Composable
@@ -22,8 +24,14 @@ fun AppNavigationBar(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit
 ) {
+    val isDarkTheme = MaterialTheme.colorScheme.background == DarkBackground
+
     NavigationBar(
-        containerColor = MaterialTheme.brifeColors.backgroundDefault,
+        containerColor = if (isDarkTheme) {
+            DarkGray500
+        } else {
+            MaterialTheme.brifeColors.backgroundDefault
+        },
         tonalElevation = 0.dp
     ) {
 
