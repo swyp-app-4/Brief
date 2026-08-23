@@ -15,7 +15,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,7 +25,7 @@ import com.swyp.brife.ui.theme.BrifeTheme
 import com.swyp.brife.ui.theme.PrimaryStrong
 import com.swyp.brife.ui.theme.TextBody
 import com.swyp.brife.ui.theme.TextCaption
-import com.swyp.brife.ui.theme.TextTitle
+import com.swyp.brife.ui.theme.brifeColors
 
 @Composable
 fun AlarmSettingScreen(
@@ -48,7 +47,7 @@ fun AlarmSettingScreen(
     val isToggleEnabled = !isLoading && !isSaving
 
     Scaffold(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.brifeColors.backgroundDefault,
         topBar = {
             AppTopBar2(
                 title = "알림 설정",
@@ -59,7 +58,7 @@ fun AlarmSettingScreen(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(MaterialTheme.brifeColors.backgroundDefault)
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp)
                 .padding(top = 32.dp),
@@ -121,7 +120,7 @@ private fun DailyNewsAlarmItem(
             AppText(
                 text = "데일리 뉴스 알림",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                color = TextTitle
+                color = MaterialTheme.brifeColors.textTitle
             )
             AppText(
                 text = "관심사 뉴스 알림을 설정하고 받아보세요",
@@ -158,7 +157,7 @@ private fun AlarmTimeToggleItem(
             AppText(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                color = TextTitle
+                color = MaterialTheme.brifeColors.textTitle
             )
             AppText(
                 text = time,
