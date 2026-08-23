@@ -28,6 +28,7 @@ import com.swyp.brife.ui.theme.PrimaryButtonTextStyle
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextTitle
 import com.swyp.brife.ui.theme.brifeColors
+import com.swyp.brife.ui.util.formatDisplayDate
 import com.swyp.brife.R
 
 
@@ -476,7 +477,7 @@ fun ArchiveNewsCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     AppText(
-                        text = item.time,
+                        text = formatDisplayDate(item.time),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.brifeColors.textCaption
                     )

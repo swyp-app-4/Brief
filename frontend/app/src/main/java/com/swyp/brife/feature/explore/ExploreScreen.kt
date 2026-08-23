@@ -61,6 +61,7 @@ import com.swyp.brife.ui.theme.DarkGray600
 import com.swyp.brife.ui.theme.TextCaption
 import com.swyp.brife.ui.theme.TextSubtitle
 import com.swyp.brife.ui.theme.brifeColors
+import com.swyp.brife.ui.util.formatDisplayDate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -360,7 +361,7 @@ private fun RecentNewsHeader(lastUpdatedTime: String, modifier: Modifier = Modif
 
         if (lastUpdatedTime.isNotBlank()) {
             AppText(
-                text = "$lastUpdatedTime 기준",
+                text = "${formatDisplayDate(lastUpdatedTime)} 기준",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.brifeColors.textCaption
             )
