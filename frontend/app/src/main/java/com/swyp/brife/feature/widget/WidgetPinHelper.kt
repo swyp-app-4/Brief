@@ -59,5 +59,5 @@ object WidgetPinHelper {
     private const val PREVIEW_PREFS_NAME = "widget_preview_prefs"
     private const val KEY_PREVIEW_IS_DARK = "preview_is_dark"
     private const val KEY_PREVIEW_STYLE_VERSION = "preview_style_version"
-    private const val PREVIEW_STYLE_VERSION = 2
+    private const val PREVIEW_STYLE_VERSION = 3
 }

@@ -26,12 +26,12 @@ internal object WidgetThemeHelper {
         val previousButtonBackground = if (isDarkTheme) {
             R.drawable.widget_nav_button_bg_dark
         } else {
-            R.drawable.widget_nav_button_bg
+            R.drawable.widget_nav_button_bg_light
         }
         val nextButtonBackground = if (isDarkTheme) {
             R.drawable.widget_nav_button_next_bg_dark
         } else {
-            R.drawable.widget_nav_button_next_bg
+            R.drawable.widget_nav_button_next_bg_light
         }
         views.setInt(R.id.widget_btn_prev, "setBackgroundResource", previousButtonBackground)
         views.setInt(R.id.widget_btn_next, "setBackgroundResource", nextButtonBackground)
@@ -45,7 +45,7 @@ internal object WidgetThemeHelper {
         views.setInt(
             R.id.widget_card_body,
             "setBackgroundResource",
-            if (isDarkTheme) R.drawable.widget_card_bg_dark else R.drawable.widget_card_bg
+            if (isDarkTheme) R.drawable.widget_card_bg_dark else R.drawable.widget_card_bg_light
         )
         val summaryColor = context.getColor(
             if (isDarkTheme) R.color.widget_summary_dark else R.color.widget_summary_light
@@ -72,7 +72,7 @@ internal object WidgetThemeHelper {
             views.setInt(
                 R.id.widget_preview_card_body,
                 "setBackgroundResource",
-                if (isDarkTheme) R.drawable.widget_card_bg_dark else R.drawable.widget_card_bg
+                if (isDarkTheme) R.drawable.widget_card_bg_dark else R.drawable.widget_card_bg_light
             )
             val summaryColor = context.getColor(
                 if (isDarkTheme) R.color.widget_summary_dark else R.color.widget_summary_light
@@ -84,12 +84,12 @@ internal object WidgetThemeHelper {
             val previousButtonBackground = if (isDarkTheme) {
                 R.drawable.widget_nav_button_bg_dark
             } else {
-                R.drawable.widget_nav_button_bg
+                R.drawable.widget_nav_button_bg_light
             }
             val nextButtonBackground = if (isDarkTheme) {
                 R.drawable.widget_nav_button_next_bg_dark
             } else {
-                R.drawable.widget_nav_button_next_bg
+                R.drawable.widget_nav_button_next_bg_light
             }
             views.setInt(
                 R.id.widget_preview_btn_prev,
